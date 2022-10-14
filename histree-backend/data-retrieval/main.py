@@ -1,6 +1,5 @@
-import wptools
+from wrapper import WikiNetwork
 
-so = wptools.page('Edmund Tudor, 1st Earl of Richmond').get_parse()
-infobox = so.data['infobox']
-# print(infobox)
-print(infobox['module'])
+network = WikiNetwork()
+network.add_person_and_immediates("Q9682") # Elizabeth II
+print(network.network)
