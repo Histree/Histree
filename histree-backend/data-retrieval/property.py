@@ -1,3 +1,8 @@
+'''
+from frontend, identify the property labels that user requested
+e.g. just fathers 
+default option: parents + children (direct relationships)
+'''
 PROPERTY_MAP = {
     "relationships": {
         "direct": {

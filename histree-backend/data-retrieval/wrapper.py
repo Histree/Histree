@@ -1,7 +1,10 @@
+from queue import Empty
+from tokenize import String
+from typing import Dict, List, Tuple
 from qwikidata.entity import WikidataItem
 from qwikidata.linked_data_interface import get_entity_dict_from_api
 from property import PROPERTY_MAP
-
+from qwikidata.sparql import return_sparql_query_results
 
 class WikiNetwork:
     def __init__(self):
@@ -13,6 +16,29 @@ class WikiNetwork:
     def add_person_and_immediates(self, id: str) -> None:
         self.add_person(id)
         self.network[id].add_relationships_to_network()
+    
+    def retrieve_potential_seeds(self, name) -> List[Tuple[str, str]]:
+        id_to_person = []
+
+        query = '''
+            SELECT distinct ?item ?itemLabel WHERE{  
+                ?item ?label \"''' + name + '''\"@en.  
+                ?item wdt:P31 wd:Q5 .
+                ?article schema:about ?item .
+                ?article schema:inLanguage "en" .
+                ?article schema:isPartOf <https://en.wikipedia.org/>.	
+                SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }    
+            }
+        '''
+
+        res = return_sparql_query_results(query)
+
+        for row in res["results"]["bindings"]:
+            qid = row["item"]["value"].split('/')[-1]
+            wikiLabel = row["itemLabel"]["value"]
+            id_to_person.append((qid, wikiLabel))
+        
+        return id_to_person
 
 
 class WikiPerson:
