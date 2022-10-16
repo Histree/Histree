@@ -7,18 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json",
-    "prepare": "cd .. && husky install histree-frontend/.husky",
-    "format": "prettier --write ./src/**/*.{js,svelte,html,ts}",
-    "lint": "eslint \"./src/**/*.{js,ts,svelte}\"",
-    "lint:fix": "eslint --fix \"./src/**/*.{js,ts,svelte}\"",
-    "prelint": "npm run format",
-    "svelte-check": "svelte-check"
+    "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "lint-staged": {
     "*.{js,ts,svelte}": [
-      "npm run svelte-check",
-      "npm run lint:fix"
+      "eslint",
+      "prettier --write"
     ]
   },
   "devDependencies": {
@@ -34,6 +28,8 @@
     "eslint-plugin-svelte3": "^4.0.0",
     "husky": "^8.0.1",
     "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
+    "prettier-plugin-svelte": "^2.8.0",
     "sass": "^1.55.0",
     "svelte": "^3.49.0",
     "svelte-check": "^2.8.1",
