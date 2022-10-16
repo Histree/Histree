@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="typescript">
   let count = 0;
   const increment = () => {
     count += 1;
