@@ -1,10 +1,5 @@
 module.exports = {
     parser: '@typescript-eslint/parser',
-    extends: [
-      'eslint:recommended',
-      'plugin:@typescript-eslint/recommended',
-      'plugin:@typescript-eslint/recommended-requiring-type-checking'
-    ],
     parserOptions: {
       ecmaVersion: 2020,
       sourceType: 'module',
@@ -12,6 +7,11 @@ module.exports = {
       project: ['./tsconfig.json'],
       extraFileExtensions: ['.svelte']
     },
+    extends: [
+      'eslint:recommended',
+      'plugin:@typescript-eslint/recommended',
+      'plugin:@typescript-eslint/recommended-requiring-type-checking'
+    ],
     env: {
       es6: true,
       browser: true
@@ -29,5 +29,5 @@ module.exports = {
       'svelte3/ignore-styles': () => true
     },
     plugins: ['svelte3', '@typescript-eslint'],
-    ignorePatterns: ['node_modules', '.eslintrc.*']
+    ignorePatterns: ['node_modules', '.eslintrc.*', '*.config.*']
   }
