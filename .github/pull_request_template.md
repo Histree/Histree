@@ -1,4 +1,4 @@
-JIRA Link: (<HIS-???>)[<JIRA LINK>]
+JIRA Link: [HIS-??](JIRA URL)
 
 # Description
 
