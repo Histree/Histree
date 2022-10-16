@@ -1,7 +1,7 @@
 <script lang="typescript">
   let count = 0;
   const increment = () => {
-    counter += 1;
+    count += 1;
   };
 </script>
 
