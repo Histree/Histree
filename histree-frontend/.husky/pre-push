@@ -1,3 +1,0 @@
-# run lint-staged command
-cd histree-frontend
-npx lint-staged
