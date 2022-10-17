@@ -47,11 +47,10 @@ jobs:
       - name: Install dependencies
         run: |
           echo Installing Python Dependencies...
-          pwd
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       # Runs a set of commands using the runners shell
       - name: test with Python
         run: |
-          echo Testing with Python using (???)
-          echo No test at moment:(
+          echo Testing with Python using NOT_DECIDED
+          echo No test at moment!
