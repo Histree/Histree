@@ -6,28 +6,28 @@ default option: parents + children (direct relationships)
 PROPERTY_MAP = {
     "relationships": {
         "direct": {
-            "P22": "father",
-            "P25": "mother",
-            "P26": "spouse",
-            "P40": "child",
-            "P3373": "sibling",
-            "P8810": "parent"
+           "father": "P22",
+            "mother": "P25",
+            "spouse": "P26",
+            "child": "P40",
+            "sibling": "P3373",
+            "parent": "P8810"
         },
         "indirect": {
-            "P53": "family"
+            "family": "P53"
         },
         "qualifier": {
-            "P1039": "kinship to subject"
+            "kinship to subject": "P1039"
         }
     },
     "attributes": {
-        "P19": "place of birth",
-        "P21": "sex/gender",
-        "P39": "position held",
-        "P734": "family name",
-        "P735": "given name",
-        "P569": "date of birth",
-        "P570": "date of death",
-        "P3150": "birthday"
+        "place of birth": "P19",
+        "sex/gender": "P21",
+        "position held": "P39",
+        "family name": "P734",
+        "given name": "P735",
+        "date of birth": "P569",
+        "date of death": "P570",
+        "birthday": "P3150"
     }
 }
