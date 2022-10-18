@@ -16,4 +16,4 @@ qid = int(input("Choose the option you wish to query: ")) - 1
 
 network.add_person_and_immediates(matches[qid][0]) 
 
-print(network.network)
+print(network.to_json())
