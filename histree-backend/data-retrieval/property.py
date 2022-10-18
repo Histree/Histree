@@ -31,3 +31,13 @@ PROPERTY_MAP = {
         "birthday": "P3150"
     }
 }
+
+PROPERTY_LABEL = {
+    "Q6581097": "male",
+    "Q6581072": "female",
+    "Q48270": "non-binary",
+    "Q1097630": "intersex",
+    "Q2449503": "transgender male",
+    "Q1052281": "transgender female",
+    "Q505371": "agender"
+}
