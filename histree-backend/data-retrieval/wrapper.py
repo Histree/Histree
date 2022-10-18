@@ -1,9 +1,9 @@
 from typing import Dict, List, Tuple
 from qwikidata.entity import WikidataItem
 from qwikidata.linked_data_interface import get_entity_dict_from_api
-from property import PROPERTY_MAP
+from property import PROPERTY_MAP, PROPERTY_LABEL
 from qwikidata.sparql import return_sparql_query_results
-
+from datetime import datetime, date
 
 class WikiNetwork:
     def __init__(self):
@@ -72,29 +72,29 @@ class WikiPerson:
         item = WikidataItem(entity_dict)
         self.name = item.get_label()
 
-        # Store immediate relationships
+        # Store immediate relationships (not currently used)
         for (label, property) in PROPERTY_MAP['relationships']['direct'].items():
             claim_group = item.get_claim_group(
                 property)._claims
             if not claim_group:
                 continue
             self.relationships[label] = set(
-                claim.mainsnak.datavalue.value['id'] for claim in claim_group)
+                claim.mainsnak.datavalue.value['id'] for claim in claim_group if claim.mainsnak.datavalue)
 
-        # Keep track of family
+        # Keep track of family for network representation
         self.parents = self.network.add_family(
             self._get_parent_ids())
 
-        # Attributes need to be parsed individually as not all have the id
-        # property - some involve dates or numerical values.
+        # Parse desired attributes if available
+        gender_ids = [claim.mainsnak.datavalue.value['id']
+                      for claim in item.get_claim_group(PROPERTY_MAP['attributes']['sex/gender'])._claims]
+        self.attributes['sex/gender'] = 'undefined' if not gender_ids else PROPERTY_LABEL.get(
+            next(iter(gender_ids)), 'undefined')
 
-        # for (label, property) in PROPERTY_MAP['attributes'].items():
-        #     claim_group = item.get_claim_group(
-        #         property)._claims
-        #     if not claim_group:
-        #         continue
-        #     self.attributes[label] = set(
-        #         claim.mainsnak.datavalue.value['id'] for claim in claim_group)
+        dob = [claim.mainsnak.datavalue.value['time'] for claim in item.get_claim_group(PROPERTY_MAP['attributes']['date of birth'])._claims]
+        if dob:
+            # TODO: consider edge-cases when month and day are unknown, e.g. 1501-00-00
+            self.attributes['date of birth'] = datetime.strptime(dob[0], '+%Y-%m-%dT%H:%M:%S%z').strftime("%Y-%m-%d")
 
     def add_relationships_to_network(self) -> None:
         for relations in self.relationships.values():
@@ -107,7 +107,7 @@ class WikiPerson:
         output['id'] = self.id
         output['name'] = self.name
         output['parents'] = self.parents
-        output['metadata'] = list(self.attributes.items())
+        output['metadata'] = self.attributes
         return output
 
     def _get_parent_ids(self) -> Tuple[str, str]:
@@ -132,7 +132,7 @@ class WikiFamily:
         output['id'] = self.id
         output['parents'] = list(self.parents)
         if self.metadata:
-            output['metadata'] = list(self.metadata.items())
+            output['metadata'] = self.metadata
         return output
 
     def _hash_id_pair(self, id: str, other_id: str) -> str:
