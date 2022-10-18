@@ -5,6 +5,7 @@ from property import PROPERTY_MAP, PROPERTY_LABEL
 from qwikidata.sparql import return_sparql_query_results
 from datetime import datetime, date
 
+
 class WikiNetwork:
     def __init__(self):
         self.network: Dict[str, WikiPerson] = dict()
@@ -91,10 +92,12 @@ class WikiPerson:
         self.attributes['sex/gender'] = 'undefined' if not gender_ids else PROPERTY_LABEL.get(
             next(iter(gender_ids)), 'undefined')
 
-        dob = [claim.mainsnak.datavalue.value['time'] for claim in item.get_claim_group(PROPERTY_MAP['attributes']['date of birth'])._claims]
+        dob = [claim.mainsnak.datavalue.value['time'] for claim in item.get_claim_group(
+            PROPERTY_MAP['attributes']['date of birth'])._claims]
         if dob:
             # TODO: consider edge-cases when month and day are unknown, e.g. 1501-00-00
-            self.attributes['date of birth'] = datetime.strptime(dob[0], '+%Y-%m-%dT%H:%M:%S%z').strftime("%Y-%m-%d")
+            self.attributes['date of birth'] = datetime.strptime(
+                dob[0], '+%Y-%m-%dT%H:%M:%S%z').strftime("%Y-%m-%d")
 
     def add_relationships_to_network(self) -> None:
         for relations in self.relationships.values():
