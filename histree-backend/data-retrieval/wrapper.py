@@ -1,9 +1,8 @@
+from property import PROPERTY_MAP, PROPERTY_LABEL
 from typing import Dict, List, Tuple
 from qwikidata.entity import WikidataItem
 from qwikidata.linked_data_interface import get_entity_dict_from_api
-from property import PROPERTY_MAP, PROPERTY_LABEL
 from qwikidata.sparql import return_sparql_query_results
-from datetime import datetime, date
 
 
 class WikiNetwork:
@@ -94,10 +93,9 @@ class WikiPerson:
 
         dob = [claim.mainsnak.datavalue.value['time'] for claim in item.get_claim_group(
             PROPERTY_MAP['attributes']['date of birth'])._claims]
+        # Note: month and day could be unknown, e.g. 1501-00-00
         if dob:
-            # TODO: consider edge-cases when month and day are unknown, e.g. 1501-00-00
-            self.attributes['date of birth'] = datetime.strptime(
-                dob[0], '+%Y-%m-%dT%H:%M:%S%z').strftime("%Y-%m-%d")
+            self.attributes['date of birth'] = dob[0][1:].split('T')[0]
 
     def add_relationships_to_network(self) -> None:
         for relations in self.relationships.values():
