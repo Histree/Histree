@@ -1,0 +1,42 @@
+{
+  "name": "histree-frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "prepare": "cd .. && husky install histree-frontend/.husky"
+  },
+  "lint-staged": {
+    "*.{js,ts,svelte}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^1.0.2",
+    "@tsconfig/svelte": "^3.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.40.0",
+    "@typescript-eslint/parser": "^5.40.0",
+    "eslint": "^8.25.0",
+    "eslint-config-standard-with-typescript": "^23.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.3.0",
+    "eslint-plugin-promise": "^6.1.0",
+    "eslint-plugin-svelte3": "^4.0.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^13.0.3",
+    "prettier": "^2.7.1",
+    "prettier-plugin-svelte": "^2.8.0",
+    "sass": "^1.55.0",
+    "svelte": "^3.49.0",
+    "svelte-check": "^2.8.1",
+    "svelte-preprocess": "^4.10.7",
+    "tslib": "^2.4.0",
+    "typescript": "^4.8.4",
+    "vite": "^3.1.0"
+  }
+}
