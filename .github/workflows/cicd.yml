@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: CICD
 
 # Controls when the workflow will run
 on:
@@ -54,3 +54,21 @@ jobs:
         run: |
           echo Testing with Python using NOT_DECIDED
           echo No test at moment!
+  
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Fly
+        run: curl -L https://fly.io/install.sh | sh
+
+      - name: Login to Fly
+        run: flyctl auth login --email ${{ secrets.FLYIO_EMAIL }} --access-token ${{ secrets.FLYIO_TOKEN }}
+
+      - name: Run the App
+        run: FLASK_APP=histree flask run
+
+      - name: Launch and Deploy
+        run: |
+          flyctl launch
+          flyctl deploy
