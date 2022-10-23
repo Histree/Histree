@@ -56,22 +56,11 @@ jobs:
           echo No test at moment!
   
   deploy:
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLYIO_TOKEN }}
+
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install Fly
-        run: curl -L https://fly.io/install.sh | sh
-          
-      - name: Add alias          
-        run: alias flyctl='/home/runner/.fly/bin/flyctl'
-
-      - name: Login to Fly
-        run: /home/runner/.fly/bin/flyctl auth login --email ${{ secrets.FLYIO_EMAIL }} --password ${{ secrets.FLYIO_TOKEN }}
-
-      - name: Run the App
-        run: FLASK_APP=histree flask run
-
-      - name: Launch and Deploy
-        run: |
-          flyctl launch
-          flyctl deploy
+        - uses: superfly/flyctl-actions/setup-flyctl@master
+        - run: flyctl deploy --remote-only
