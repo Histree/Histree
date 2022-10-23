@@ -63,4 +63,6 @@ jobs:
 
     steps:
         - uses: superfly/flyctl-actions/setup-flyctl@master
-        - run: flyctl deploy --remote-only
+        - run: |
+            cd deployment
+            flyctl deploy --remote-only
