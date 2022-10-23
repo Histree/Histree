@@ -63,7 +63,7 @@ jobs:
         run: curl -L https://fly.io/install.sh | sh
           
       - name: Add alias          
-        run: alias flyctl=/home/runner/.fly/bin/flyctl
+        run: alias flyctl='/home/runner/.fly/bin/flyctl'
 
       - name: Login to Fly
         run: flyctl auth login --email ${{ secrets.FLYIO_EMAIL }} --access-token ${{ secrets.FLYIO_TOKEN }}
