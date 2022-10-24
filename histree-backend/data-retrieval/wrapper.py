@@ -91,8 +91,8 @@ class WikiPerson:
         self.attributes['sex/gender'] = 'undefined' if not gender_ids else PROPERTY_LABEL.get(
             next(iter(gender_ids)), 'undefined')
 
-        dob = [claim.mainsnak.datavalue.value['time'] for claim in item.get_claim_group(
-            PROPERTY_MAP['attributes']['date of birth'])._claims]
+        dob = [claim.mainsnak.datavalue.value.get('time', 'n/a') for claim in item.get_claim_group(
+            PROPERTY_MAP['attributes']['date of birth'])._claims if claim.mainsnak.datavalue]
         # Note: month and day could be unknown, e.g. 1501-00-00
         if dob:
             self.attributes['date of birth'] = dob[0][1:].split('T')[0]
@@ -112,7 +112,7 @@ class WikiPerson:
         return output
 
     def _get_parent_ids(self) -> Tuple[str, str]:
-        parents = [next(iter(self.relationships.get(parent, {''})))
+        parents = [next(iter(self.relationships.get(parent, {''})), '')
                    for parent in ('mother', 'father')]
         return (parents[0], parents[1])
 
