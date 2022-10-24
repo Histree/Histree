@@ -1,0 +1,69 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CICD
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+      
+      # Svelte
+      - name: Set up NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: "17.x"
+      # Set up dependencies and test
+      - name: Installing dependencies
+        run: |
+          echo installing npm dependecies
+          cd histree-frontend
+          npm ci
+          npm run build --if-present
+          npm test --if-present
+
+      # Python 
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+      - name: Install dependencies
+        run: |
+          echo Installing Python Dependencies...
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      # Runs a set of commands using the runners shell
+      - name: test with Python
+        run: |
+          echo Testing with Python using NOT_DECIDED
+          echo No test at moment!
+  
+  deploy:
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLYIO_TOKEN }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+        - uses: actions/checkout@v2
+        - uses: superfly/flyctl-actions/setup-flyctl@master
+        - run: |
+            cd deployment
+            flyctl deploy --remote-only
