@@ -30,14 +30,15 @@ class WikiSeed:
         tree.flowers[item.entity_id].pair = parent_pair.id
 
     def branch_down(self, item: WikidataItem, tree: "WikiTree") -> None:
-        # Store item/flower and its partner as a WikiPair
-        partner_flowers = self.partner_stem.parse(
-            item, tree.flowers)
-        for partner_flower in partner_flowers:
-            if not partner_flower:
-                continue
-            flower_pair = WikiPair(tree.flowers[item.entity_id], partner_flower)
-            tree.pairs[flower_pair.id] = flower_pair
+        # # May not be necessary if we don't consider spouse without children
+        # # Store item/flower and its partner as a WikiPair
+        # partner_flowers = self.partner_stem.parse(
+        #     item, tree.flowers)
+        # for partner_flower in partner_flowers:
+        #     if not partner_flower:
+        #         continue
+        #     flower_pair = WikiPair(tree.flowers[item.entity_id], partner_flower)
+        #     tree.pairs[flower_pair.id] = flower_pair
 
         # Add children flowers to collection
         children_flowers = self.down_stem.parse(
