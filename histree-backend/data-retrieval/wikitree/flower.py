@@ -22,6 +22,7 @@ class WikiPair:
 
 
 class WikiPetal:
+    _instance = None
     undefined = "undefined"
 
     def __init__(self, id: str, label: str):
@@ -32,11 +33,25 @@ class WikiPetal:
     def parse(self, item: WikidataItem) -> str:
         pass
 
+    @classmethod
+    def instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
 
 class WikiStem:
+    _instance = None
+
     def __init__(self, id: str):
         self.id = id
 
     @abstractmethod
     def parse(self, item: WikidataItem, flowers: Dict[str, WikiFlower]) -> List[WikiFlower]:
         pass
+
+    @classmethod
+    def instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
