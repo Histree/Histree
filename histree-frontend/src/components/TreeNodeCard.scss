@@ -1,0 +1,10 @@
+.treenodecard {
+  max-width: 20em;
+  max-height: 20em;
+
+  &-modal {
+    width: 50em;
+    display: flex;
+    padding: 2em;
+  }
+}
