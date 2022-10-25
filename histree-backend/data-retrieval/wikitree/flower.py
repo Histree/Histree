@@ -6,8 +6,10 @@ from qwikidata.entity import WikidataItem
 class WikiFlower:
     def __init__(self, id: str, petals: Dict[str, str]):
         self.id = id
+        self.name = ""
         self.petals = petals
-        self.branched = False
+        self.branched_up = False
+        self.branched_down = False
         self.pair = None
 
 
