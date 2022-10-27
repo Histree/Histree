@@ -1,14 +1,17 @@
-import { createSlice, PayloadAction, configureStore } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  PayloadAction,
+  configureStore,
+  createSelector,
+} from "@reduxjs/toolkit";
 import { SelectedPerson } from "../models";
 
 interface HistreeState {
-  selected?: SelectedPerson;
+  selected: SelectedPerson | undefined;
 }
 
 const initialState: HistreeState = {
-  selected: {
-    name: "wtf",
-  },
+  selected: undefined,
 };
 
 export const histreeState = createSlice({
@@ -16,20 +19,20 @@ export const histreeState = createSlice({
   initialState,
   reducers: {
     setSelected: (state, action: PayloadAction<SelectedPerson | undefined>) => {
-      if (action.payload != null) {
-        state.selected = action.payload;
-      }
+      state.selected = action.payload;
     },
   },
 });
 
-export const getSelected = (state: HistreeState): SelectedPerson | undefined =>
-  state.selected;
+export const getSelected = createSelector(
+  (state: HistreeState) => {
+    return state.selected;
+  },
+  (x) => x
+);
 
 export const { setSelected } = histreeState.actions;
 
 export const store = configureStore({
-  reducer: {
-    histreeState: histreeState.reducer,
-  },
+  reducer: histreeState.reducer,
 });

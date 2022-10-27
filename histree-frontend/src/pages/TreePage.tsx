@@ -16,7 +16,7 @@ const TreePage = () => {
 				<Drawer
 					hideBackdrop
 					anchor="right"
-					open={selected !== undefined}
+					open={!!selected}
 					onClose={() => dispatch(setSelected(undefined))}
 				>
 					<Box className="treenodecard-modal">
