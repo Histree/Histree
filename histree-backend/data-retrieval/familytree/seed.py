@@ -13,6 +13,7 @@ class FamilySeed(WikiSeed):
                 NamePetal.instance(),
                 GenderPetal.instance(),
                 BirthDatePetal.instance(),
-                DeathDatePetal.instance()
+                DeathDatePetal.instance(),
+                BirthNamePetal.instance()
             ]
         )

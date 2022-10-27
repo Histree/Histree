@@ -54,3 +54,15 @@ class BirthDatePetal(DatePetal):
 class DeathDatePetal(DatePetal):
     def __init__(self):
         super().__init__("P570", "date of death")
+
+
+class BirthNamePetal(WikiPetal):
+    def __init__(self):
+        super().__init__("P1477", "birth name")
+
+    def parse(self, item: WikidataItem) -> str:
+        birth_names = [claim.mainsnak.datavalue.value['text']
+                       for claim in item.get_claim_group(self.id)._claims if claim.mainsnak.datavalue]
+        if not birth_names:
+            return self.undefined
+        return birth_names[0]
