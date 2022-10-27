@@ -1,34 +1,23 @@
 import { Drawer, Box, Typography } from "@mui/material";
-import React, { useState } from "react";
+import React from "react";
+import { useDispatch } from "react-redux";
+import { setSelected } from "../stores/base";
 import "./TreeNodeCard.scss";
 
 const TreeNodeCard = (props: { displayName: string }) => {
-  const [expanded, setExpanded] = useState(false);
+	const dispatch = useDispatch();
+	const { displayName } = props;
 
-  const { displayName } = props;
+	const expandWindow = () => {
+		dispatch(setSelected({ name: displayName, }));
+		console.log(`expanded: ${displayName}`);
+	};
 
-  const expandWindow = () => {
-    setExpanded(!expanded);
-    console.log(`expanded: ${expanded}`);
-  };
-
-  return (
-    <div className="treenodecard" onClick={expandWindow}>
-      <Typography variant="body1">{displayName}</Typography>
-      {expanded && (
-        <Drawer
-          hideBackdrop
-          anchor="right"
-          open={expanded}
-          onClose={() => setExpanded(false)}
-        >
-          <Box className="treenodecard-modal">
-            <Typography variant="h4">{displayName}</Typography>
-          </Box>
-        </Drawer>
-      )}
-    </div>
-  );
+	return (
+		<div className="treenodecard" onClick={expandWindow}>
+			<Typography variant="body1">{displayName}</Typography>
+		</div>
+	);
 };
 
 export default TreeNodeCard;
