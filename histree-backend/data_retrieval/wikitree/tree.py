@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from typing import Dict, List
 from qwikidata.entity import WikidataItem
 from qwikidata.linked_data_interface import get_entity_dict_from_api
@@ -50,18 +51,34 @@ class WikiSeed:
             tree.grow(child_flower.id,
                       branch_up=True, branch_down=False)
 
+class WikiAPI:
+    @abstractmethod
+    def get_wikidata_item(id: str) -> WikidataItem:
+        pass
+
+class WikidataAPI(WikiAPI):
+    _instance = None
+
+    def get_wikidata_item(id: str) -> WikidataItem:
+        return WikidataItem(get_entity_dict_from_api(id))
+    
+    @classmethod
+    def instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
 
 class WikiTree:
-    def __init__(self, seed: WikiSeed):
+    def __init__(self, seed: WikiSeed, api: WikiAPI=WikidataAPI.instance()):
         self.seed = seed
         self.flowers = {'': WikiFlower('', dict())}
         self.pairs = dict()
+        self.api = api
 
     def grow(self, id: str, branch_up: bool = True, branch_down: bool = True) -> None:
         if id in self.flowers and self.flowers[id].branched_up and self.flowers[id].branched_down:
             return
-        item = WikidataItem(
-            get_entity_dict_from_api(id))
+        item = self.api.get_wikidata_item(id)
 
         # Find petals of the flower
         if id not in self.flowers:
