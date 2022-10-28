@@ -13,11 +13,14 @@ class WikiFlower:
         self.pair = None
 
     def to_json(self) -> Dict[str, any]:
-        return {
+        json_dict = {
             "id": self.id,
             "name": self.name,
             "petals": self.petals
         }
+        if self.pair:
+            json_dict["pair"] = self.pair.id
+        return json_dict
 
 
 class WikiPair:
