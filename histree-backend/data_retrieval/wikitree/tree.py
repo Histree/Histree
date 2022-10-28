@@ -59,7 +59,7 @@ class WikiAPI:
 class WikidataAPI(WikiAPI):
     _instance = None
 
-    def get_wikidata_item(id: str) -> WikidataItem:
+    def get_wikidata_item(self, id: str) -> WikidataItem:
         return WikidataItem(get_entity_dict_from_api(id))
     
     @classmethod
@@ -79,7 +79,6 @@ class WikiTree:
         if id in self.flowers and self.flowers[id].branched_up and self.flowers[id].branched_down:
             return
         item = self.api.get_wikidata_item(id)
-
         # Find petals of the flower
         if id not in self.flowers:
             self.flowers[id] = WikiFlower(id, dict())

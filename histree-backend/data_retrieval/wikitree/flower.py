@@ -19,7 +19,7 @@ class WikiFlower:
             "petals": self.petals
         }
         if self.pair:
-            json_dict["pair"] = self.pair.id
+            json_dict["pair"] = self.pair
         return json_dict
 
 
