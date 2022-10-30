@@ -3,7 +3,7 @@ import "./App.scss";
 import TreePage from "./pages/TreePage";
 
 const App = () => {
-  return <TreePage />;
+	return <TreePage />;
 };
 
 export default App;
