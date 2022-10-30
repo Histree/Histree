@@ -1,6 +1,7 @@
 from typing import Dict, List
 from wikitree.flower import WikiFlower, WikiStem
 from qwikidata.entity import WikidataItem
+from wikitree_instance.familytree.property import PROPERTY_MAP
 
 
 class HumanStem(WikiStem):
@@ -17,22 +18,22 @@ class HumanStem(WikiStem):
 
 class ChildStem(HumanStem):
     def __init__(self):
-        super().__init__("P40")
+        super().__init__(PROPERTY_MAP["stems"]["child"])
 
 
 class FatherStem(HumanStem):
     def __init__(self):
-        super().__init__("P22")
+        super().__init__(PROPERTY_MAP["stems"]["father"])
 
 
 class MotherStem(HumanStem):
     def __init__(self):
-        super().__init__("P25")
+        super().__init__(PROPERTY_MAP["stems"]["mother"])
 
 
 class ParentStem(WikiStem):
     def __init__(self):
-        super().__init__("P8810")
+        super().__init__(PROPERTY_MAP["stems"]["parent"])
 
     def parse(self, item: WikidataItem, flowers: Dict[str, WikiFlower]) -> List[WikiFlower]:
         return sum([parent_stem.instance().parse(item, flowers) for parent_stem in (FatherStem, MotherStem)], [])
@@ -40,7 +41,7 @@ class ParentStem(WikiStem):
 
 class SpouseStem(WikiStem):
     def __init__(self):
-        super().__init__("P26")
+        super().__init__(PROPERTY_MAP["stems"]["spouse"])
 
     def parse(self, item: WikidataItem, flowers: Dict[str, WikiFlower]) -> List[WikiFlower]:
         spouses = [claim.mainsnak.datavalue.value['id'] for claim in item.get_claim_group(

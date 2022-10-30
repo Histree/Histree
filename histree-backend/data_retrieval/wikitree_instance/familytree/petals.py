@@ -1,5 +1,6 @@
 from wikitree.flower import WikiPetal
 from qwikidata.entity import WikidataItem
+from wikitree_instance.familytree.property import PROPERTY_MAP
 
 
 class NamePetal(WikiPetal):
@@ -23,7 +24,9 @@ class GenderPetal(WikiPetal):
     }
 
     def __init__(self):
-        super().__init__("P21", "sex/gender")
+        label = "sex/gender"
+        super().__init__(
+            PROPERTY_MAP["petals"][label], label)
 
     def parse(self, item: WikidataItem) -> str:
         gender_ids = [claim.mainsnak.datavalue.value['id']
@@ -48,17 +51,23 @@ class DatePetal(WikiPetal):
 
 class BirthDatePetal(DatePetal):
     def __init__(self):
-        super().__init__("P569", "date of birth")
+        label = "date of birth"
+        super().__init__(
+            PROPERTY_MAP["petals"][label], label)
 
 
 class DeathDatePetal(DatePetal):
     def __init__(self):
-        super().__init__("P570", "date of death")
+        label = "date of death"
+        super().__init__(
+            PROPERTY_MAP["petals"][label], label)
 
 
 class BirthNamePetal(WikiPetal):
     def __init__(self):
-        super().__init__("P1477", "birth name")
+        label = "birth name"
+        super().__init__(
+            PROPERTY_MAP["petals"][label], label)
 
     def parse(self, item: WikidataItem) -> str:
         birth_names = [claim.mainsnak.datavalue.value['text']
