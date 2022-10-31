@@ -4,14 +4,17 @@ import {
   configureStore,
   createSelector,
 } from "@reduxjs/toolkit";
-import { SelectedPerson } from "../models";
+import { RenderContent, SelectedPerson } from "../models";
+import { ServiceStatus } from "../services";
 
 interface HistreeState {
   selected: SelectedPerson | undefined;
+  renderContent: ServiceStatus<RenderContent | undefined>;
 }
 
 const initialState: HistreeState = {
   selected: undefined,
+  renderContent: { status: "Initial" },
 };
 
 export const histreeState = createSlice({
@@ -21,8 +24,21 @@ export const histreeState = createSlice({
     setSelected: (state, action: PayloadAction<SelectedPerson | undefined>) => {
       state.selected = action.payload;
     },
+    setRenderContent: (
+      state,
+      action: PayloadAction<ServiceStatus<RenderContent | undefined>>
+    ) => {
+      state.renderContent = action.payload;
+    },
   },
 });
+
+export const getRenderContent = createSelector(
+  (state: HistreeState) => {
+    return state.renderContent;
+  },
+  (x) => x
+);
 
 export const getSelected = createSelector(
   (state: HistreeState) => {
@@ -31,7 +47,7 @@ export const getSelected = createSelector(
   (x) => x
 );
 
-export const { setSelected } = histreeState.actions;
+export const { setSelected, setRenderContent } = histreeState.actions;
 
 export const store = configureStore({
   reducer: histreeState.reducer,
