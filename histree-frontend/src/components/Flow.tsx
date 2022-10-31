@@ -102,7 +102,7 @@ const mockEdges: Edge[] = [
 const Flow = () => {
 	return (
 		<div style={{ height: "100%" }}>
-			<ReactFlow nodes={mockNodes} edges={mockEdges}>
+			<ReactFlow nodes={mockNodes} edges={mockEdges} onNodeClick={(e) => console.log(e.target)}>
 				<Background />
 				<Controls />
 			</ReactFlow>
