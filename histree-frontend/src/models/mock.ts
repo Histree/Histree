@@ -19,18 +19,6 @@ const mockEdgeInfo: EdgeInfo[] = [
     targetId: "2",
   },
   {
-    sourceId: "1",
-    targetId: "5",
-  },
-  {
-    sourceId: "1",
-    targetId: "6",
-  },
-  {
-    sourceId: "1",
-    targetId: "7",
-  },
-  {
     sourceId: "2",
     targetId: "5",
   },
