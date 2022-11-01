@@ -8,6 +8,8 @@ import {
   mockAdjList,
   NodeId,
 } from "../models";
+import { getDepth } from "../stores/base";
+import { useSelector } from "react-redux";
 import TreeNodeCard from "./TreeNodeCard";
 
 const CENTER_X = 800;
@@ -168,10 +170,11 @@ const layoutEdges = (adjList: AdjList): Edge[] => {
 };
 
 const Flow = () => {
+  const depth = useSelector(getDepth);
   return (
     <div style={{ height: "100%" }}>
       <ReactFlow
-        nodes={layoutNodes(mockNodeInfo["2"], mockAdjList, 1)}
+        nodes={layoutNodes(mockNodeInfo["2"], mockAdjList, depth)}
         edges={layoutEdges(mockAdjList)}
         onNodeClick={(e) => console.log(e.target)}
       >
