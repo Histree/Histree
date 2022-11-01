@@ -11,20 +11,17 @@ const NODE_BOX_WIDTH = 150;
 const HORIZONTAL_SPACING = NODE_BOX_WIDTH + 25;
 const VERTICAL_SPACING = 100;
 
-const layoutElements = (
-  nodesInfo: NodeInfo[],
-  edgesInfo: EdgeInfo[],
-  depth: number
-): { nodes: Node[]; edges: Edge[] } => {
+const layoutNodes = (nodesInfo: NodeInfo[], depth: number): Node[] => {
   const completeNodes: Node[] = [];
-  const completeEdges: Edge[] = [];
 
   const generated: number[] = new Array(depth * 2 + 1).fill(0);
 
+  // Generate node for each node info
   nodesInfo.forEach((info) => {
     const level: number = info.distanceFromSource + depth;
 
-    const xPos = CENTER_X + HORIZONTAL_SPACING * generated[level];
+    const offset = level % 2 == 0 ? HORIZONTAL_SPACING : 0;
+    const xPos = CENTER_X + HORIZONTAL_SPACING * generated[level] - offset;
     const yPos = CENTER_Y + VERTICAL_SPACING * info.distanceFromSource;
 
     const node: Node = {
@@ -38,6 +35,12 @@ const layoutElements = (
     generated[level]++;
   });
 
+  return completeNodes;
+};
+
+const layoutEdges = (edgesInfo: EdgeInfo[]): Edge[] => {
+  const completeEdges: Edge[] = [];
+
   edgesInfo.forEach((edgeInfo) => {
     const edge: Edge = {
       id: `${edgeInfo.sourceId}-${edgeInfo.targetId}`,
@@ -48,16 +51,15 @@ const layoutElements = (
     completeEdges.push(edge);
   });
 
-  return { nodes: completeNodes, edges: completeEdges };
+  return completeEdges;
 };
 
 const Flow = () => {
-  const { nodes, edges } = layoutElements(mockNodeInfo, mockEdgeInfo, 1);
   return (
     <div style={{ height: "100%" }}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={layoutNodes(mockNodeInfo, 1)}
+        edges={layoutEdges(mockEdgeInfo)}
         onNodeClick={(e) => console.log(e.target)}
       >
         <Background />
