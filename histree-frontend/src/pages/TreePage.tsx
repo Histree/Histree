@@ -1,10 +1,9 @@
 import React from "react";
 import Flow from "../components/Flow";
-import { Drawer, Box, Typography } from "@mui/material";
 import { getSelected, setSelected } from "../stores/base";
 import { useSelector, useDispatch } from 'react-redux';
 import "./TreePage.scss";
-import DescriptorCard from "../components/general/DescriptorCard";
+import { DescriptorCard, SearchBar } from "../components";
 
 const TreePage = () => {
 	const selected = useSelector(getSelected);
@@ -12,6 +11,7 @@ const TreePage = () => {
 	return (
 		<div className="treepage">
 			<Flow />
+			<SearchBar />
 			{selected !== undefined && (
 				<DescriptorCard selectedPerson={selected} />
 			)}
