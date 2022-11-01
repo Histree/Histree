@@ -1,15 +1,13 @@
-
-
 from flask import Flask, render_template
 from typing import Dict
 
-
-import sys
-sys.path.append('../histree-backend/data_retrieval/')
-from histree_query import HistreeQuery
+from histree_backend.data_retrieval.histree_query import HistreeQuery
 
 
 app = Flask(__name__)
+
+@app.route('/')
+
 
 
 # Pass in a name and return a dictionary of potential matches names to Wiki IDs
