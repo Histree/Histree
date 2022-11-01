@@ -1,10 +1,10 @@
+export type NodeId = string;
+
 export interface NodeInfo {
   name: string;
-  id: string;
+  id: NodeId;
   distanceFromSource: number;
 }
 
-export interface EdgeInfo {
-  sourceId: string;
-  targetId: string;
-}
+export type AdjList = Record<NodeId, NodeId[]>;
+export type NodesList = Record<NodeId, NodeInfo>;
