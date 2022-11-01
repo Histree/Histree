@@ -171,7 +171,7 @@ const Flow = () => {
   return (
     <div style={{ height: "100%" }}>
       <ReactFlow
-        nodes={layoutNodes(mockNodeInfo["2"], mockAdjList, 3)}
+        nodes={layoutNodes(mockNodeInfo["2"], mockAdjList, 1)}
         edges={layoutEdges(mockAdjList)}
         onNodeClick={(e) => console.log(e.target)}
       >
