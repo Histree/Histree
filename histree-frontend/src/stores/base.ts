@@ -7,7 +7,8 @@ import {
 import { SelectedPerson } from "../models";
 
 interface HistreeState {
-  selected: SelectedPerson | undefined;
+  selected?: SelectedPerson;
+  searchTerm?: string;
   depth: number;
 }
 
@@ -20,6 +21,9 @@ export const histreeState = createSlice({
   name: "histreeState",
   initialState,
   reducers: {
+    setSearchTerm: (state, action: PayloadAction<string>) => {
+      state.searchTerm = action.payload;
+    },
     setSelected: (state, action: PayloadAction<SelectedPerson | undefined>) => {
       state.selected = action.payload;
     },
@@ -43,7 +47,7 @@ export const getDepth = createSelector(
   (x) => x
 );
 
-export const { setSelected, setDepth } = histreeState.actions;
+export const { setSelected, setDepth, setSearchTerm } = histreeState.actions;
 
 export const store = configureStore({
   reducer: histreeState.reducer,

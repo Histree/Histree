@@ -1,12 +1,12 @@
-import { Drawer, Box, Typography, Card, CardContent, CardHeader, IconButton } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import React from "react";
+import { Card, CardContent, CardHeader, IconButton } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelected, getSelected } from "../../stores/base";
-import "./DescriptorCard.scss";
 import { SelectedPerson } from "../../models";
+import "./DescriptorCard.scss";
 
-const DescriptorCard = (props: { selectedPerson: SelectedPerson }) => {
+export const DescriptorCard = (props: { selectedPerson: SelectedPerson }) => {
 	const dispatch = useDispatch();
 	const selected = useSelector(getSelected);
 
@@ -35,5 +35,3 @@ const DescriptorCard = (props: { selectedPerson: SelectedPerson }) => {
 		</div>
 	);
 };
-
-export default DescriptorCard;
