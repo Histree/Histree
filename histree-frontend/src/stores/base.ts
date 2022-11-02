@@ -8,19 +8,25 @@ import { RenderContent, SelectedPerson } from "../models";
 import { ServiceStatus } from "../services";
 
 interface HistreeState {
-  selected: SelectedPerson | undefined;
   renderContent: ServiceStatus<RenderContent | undefined>;
+  selected?: SelectedPerson;
+  searchTerm?: string;
+  depth: number;
 }
 
 const initialState: HistreeState = {
   selected: undefined,
   renderContent: { status: "Initial" },
+  depth: 0,
 };
 
 export const histreeState = createSlice({
   name: "histreeState",
   initialState,
   reducers: {
+    setSearchTerm: (state, action: PayloadAction<string>) => {
+      state.searchTerm = action.payload;
+    },
     setSelected: (state, action: PayloadAction<SelectedPerson | undefined>) => {
       state.selected = action.payload;
     },
@@ -29,6 +35,9 @@ export const histreeState = createSlice({
       action: PayloadAction<ServiceStatus<RenderContent | undefined>>
     ) => {
       state.renderContent = action.payload;
+    },
+    setDepth: (state, action: PayloadAction<number>) => {
+      state.depth = action.payload;
     },
   },
 });
@@ -47,7 +56,15 @@ export const getSelected = createSelector(
   (x) => x
 );
 
-export const { setSelected, setRenderContent } = histreeState.actions;
+export const getDepth = createSelector(
+  (state: HistreeState) => {
+    return state.depth;
+  },
+  (x) => x
+);
+
+export const { setSelected, setDepth, setSearchTerm, setRenderContent } =
+  histreeState.actions;
 
 export const store = configureStore({
   reducer: histreeState.reducer,
