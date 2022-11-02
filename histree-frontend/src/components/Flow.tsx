@@ -1,5 +1,5 @@
 import React from "react";
-import ReactFlow, { Controls, Background, Node, Edge } from "reactflow";
+import ReactFlow, { Controls, Background, Node, Edge, useReactFlow } from "reactflow";
 import "reactflow/dist/style.css";
 import TreeNodeCard from "./TreeNodeCard";
 
@@ -100,9 +100,16 @@ const mockEdges: Edge[] = [
 ];
 
 const Flow = () => {
+	const { setCenter, getZoom } = useReactFlow();
 	return (
 		<div style={{ height: "100%" }}>
-			<ReactFlow nodes={mockNodes} edges={mockEdges} onNodeClick={(e) => console.log(e.target)}>
+			<ReactFlow nodes={mockNodes} edges={mockEdges}
+				onSelectionChange={(e) => {
+					if (e.nodes.length > 0) {
+						const { x, y } = e.nodes[0].position;
+						setCenter(x, y, { zoom: getZoom() })
+					}
+				}}>
 				<Background />
 				<Controls />
 			</ReactFlow>
