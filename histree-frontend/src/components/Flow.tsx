@@ -2,155 +2,148 @@ import React from "react";
 import ReactFlow, { Controls, Background, Node, Edge, useReactFlow } from "reactflow";
 import "reactflow/dist/style.css";
 import {
-	NodeInfo,
-	AdjList,
-	mockNodeInfo,
-	mockAdjList,
-	NodeId,
+  NodeInfo,
+  NodesList,
+  AdjList,
+  mockNodeInfo,
+  mockAdjList,
+  NodeId,
 } from "../models";
 import { getDepth } from "../stores/base";
 import { useSelector } from "react-redux";
 import TreeNodeCard from "./TreeNodeCard";
+import dagre, { graphlib } from "dagre";
 
-const CENTER_X = 800;
-const CENTER_Y = 400;
-const NODE_BOX_WIDTH = 150;
+// const CENTER_X = 800;
+// const CENTER_Y = 400;
+const NODE_BOX_WIDTH = 155;
+const NODE_BOX_HEIGHT = 50;
 
-const HORIZONTAL_SPACING = NODE_BOX_WIDTH + 25;
-const VERTICAL_SPACING = 100;
+// Populate a Dagre graph with nodes and edges.
+const populateGraph = (
+  nodes: NodesList,
+  adjList: AdjList,
+  graph: graphlib.Graph
+): void => {
+  Object.keys(nodes).forEach((node) => {
+    const { id, name } = nodes[node];
+    graph.setNode(id, {
+      label: name,
+      width: NODE_BOX_WIDTH,
+      height: NODE_BOX_HEIGHT,
+    });
+  });
 
-const layoutNodes = (
-	selectedNodeInfo: NodeInfo,
-	adjList: AdjList,
-	depth: number
-): Node[] => {
-	if (depth < 0) {
-		return [];
-	}
-
-	const result: Node[] = [];
-	// BFS find all ancestors
-	const ancestorQueue: Node[] = [];
-
-	const selectedNode: Node = {
-		id: selectedNodeInfo.id,
-		data: { label: <TreeNodeCard displayName={`${selectedNodeInfo.name}`} /> },
-		position: { x: CENTER_X, y: CENTER_Y },
-		type: "default",
-	};
-
-	if (depth == 0) {
-		return [selectedNode];
-	}
-
-	let currDepth: number = 1;
-	ancestorQueue.push(selectedNode);
-
-	while (currDepth <= depth) {
-		const tmpList: Node[] = [];
-
-		while (ancestorQueue.length > 0) {
-			let generated = 0;
-			// get node and find its direct ancestors
-			const currNode: Node = ancestorQueue.shift()!;
-
-			const ancestors: NodeId[] = [];
-			Object.keys(adjList).forEach((nodeId) => {
-				if (adjList[nodeId].includes(currNode.id)) {
-					ancestors.push(nodeId);
-				}
-			});
-
-			const offset = HORIZONTAL_SPACING / 2;
-			let xPos =
-				ancestors.length % 2 == 0
-					? currNode.position.x -
-					(HORIZONTAL_SPACING * currDepth * ancestors.length) / 2 +
-					offset
-					: currNode.position.x -
-					(HORIZONTAL_SPACING * currDepth * (ancestors.length - 1)) / 2;
-
-			ancestors.forEach((nodeId) => {
-				// node is an ancestor
-				const n: Node = {
-					id: nodeId,
-					data: {
-						label: (
-							<TreeNodeCard displayName={`${mockNodeInfo[nodeId].name}`} />
-						),
-					},
-					position: {
-						x: xPos,
-						y: currNode.position.y - VERTICAL_SPACING,
-					},
-					type: "default",
-				};
-				tmpList.push(n);
-				xPos += HORIZONTAL_SPACING;
-			});
-			result.push(currNode);
-		}
-		tmpList.forEach((x) => {
-			ancestorQueue.push(x);
-		});
-		currDepth++;
-	}
-	ancestorQueue.forEach((x) => result.push(x));
-
-	// BFS find all descendants
-	const descendantQueue: Node[] = [];
-	currDepth = 1;
-	descendantQueue.push(selectedNode);
-
-	while (currDepth <= depth) {
-		const tmpList: Node[] = [];
-
-		while (descendantQueue.length > 0) {
-			// get node and find its direct descendants
-			const currNode: Node = descendantQueue.shift()!;
-			const offset = HORIZONTAL_SPACING / 2;
-
-			let xPos =
-				adjList[currNode.id].length % 2 == 0
-					? currNode.position.x -
-					(HORIZONTAL_SPACING * currDepth * adjList[currNode.id].length) / 2 +
-					offset
-					: currNode.position.x -
-					(HORIZONTAL_SPACING *
-						currDepth *
-						(adjList[currNode.id].length - 1)) /
-					2;
-
-			adjList[currNode.id].forEach((nodeId) => {
-				const n: Node = {
-					id: nodeId,
-					data: {
-						label: (
-							<TreeNodeCard displayName={`${mockNodeInfo[nodeId].name}`} />
-						),
-					},
-					position: {
-						x: xPos,
-						y: currNode.position.y + VERTICAL_SPACING,
-					},
-					type: "default",
-				};
-				tmpList.push(n);
-				xPos += HORIZONTAL_SPACING;
-			});
-			result.push(currNode);
-		}
-		tmpList.forEach((x) => {
-			descendantQueue.push(x);
-		});
-		currDepth++;
-	}
-	descendantQueue.forEach((x) => result.push(x));
-
-	result.push(selectedNode);
-	return result;
+  Object.keys(adjList).forEach((sourceId) => {
+    adjList[sourceId].forEach((targetId) => {
+      graph.setEdge(sourceId, targetId);
+    });
+  });
 };
 
+// Convert dagre graph to list of Nodes for React Flow rendering.
+const dagreToFlowNodes = (graph: graphlib.Graph): Node[] => {
+  const ns: Node[] = [];
+
+  const dagreNodes = graph.nodes();
+
+  dagreNodes.forEach((n) => {
+    const nodeObj = graph.node(n);
+    if (nodeObj) {
+      const flowNode: Node = {
+        id: n,
+        data: {
+          label: <TreeNodeCard displayName={`${nodeObj.label}`} />,
+        },
+        position: { x: nodeObj.x, y: nodeObj.y },
+      };
+      ns.push(flowNode);
+    }
+  });
+  return ns;
+};
+
+// Returns nodes to be displayed on the graph based on the depth provided.
+const nodesToDisplay = (
+  selectedNodeInfo: NodeInfo,
+  nodesInfo: NodesList,
+  adjList: AdjList,
+  depth: number
+): NodesList => {
+  if (depth < 0) {
+    return {};
+  }
+
+  const result: NodesList = {};
+  // BFS find all ancestors
+  const ancestorQueue: NodeInfo[] = [];
+
+  if (depth == 0) {
+    const result: NodesList = {};
+    result[selectedNodeInfo.id] = selectedNodeInfo;
+  }
+
+  let currDepth: number = 1;
+  ancestorQueue.push(selectedNodeInfo);
+
+  while (currDepth <= depth) {
+    const tmpList: NodeInfo[] = [];
+
+    while (ancestorQueue.length > 0) {
+      let generated = 0;
+      // get node and find its direct ancestors
+      const currNode: NodeInfo = ancestorQueue.shift()!;
+
+      const ancestors: NodeId[] = [];
+      Object.keys(adjList).forEach((nodeId) => {
+        if (adjList[nodeId].includes(currNode.id)) {
+          ancestors.push(nodeId);
+        }
+      });
+
+      ancestors.forEach((nodeId) => {
+        tmpList.push(nodesInfo[nodeId]);
+      });
+      result[currNode.id] = currNode;
+    }
+    tmpList.forEach((x) => {
+      ancestorQueue.push(x);
+    });
+    currDepth++;
+  }
+  ancestorQueue.forEach((x) => (result[x.id] = x));
+
+  // BFS find all descendants
+  const descendantQueue: NodeInfo[] = [];
+  currDepth = 1;
+  descendantQueue.push(selectedNodeInfo);
+
+  while (currDepth <= depth) {
+    const tmpList: NodeInfo[] = [];
+
+    while (descendantQueue.length > 0) {
+      // get node and find its direct descendants
+      const currNode: NodeInfo = descendantQueue.shift()!;
+
+      if (Object.keys(adjList).includes(currNode.id)) {
+        adjList[currNode.id].forEach((nodeId) => {
+          tmpList.push(nodesInfo[nodeId]);
+        });
+      }
+      result[currNode.id] = currNode;
+    }
+    tmpList.forEach((x) => {
+      descendantQueue.push(x);
+    });
+    currDepth++;
+  }
+  descendantQueue.forEach((x) => (result[x.id] = x));
+
+  result[selectedNodeInfo.id] = selectedNodeInfo;
+  return result;
+};
+
+// Converts adjacency list to list of Edges for React Flow rendering.
 const layoutEdges = (adjList: AdjList): Edge[] => {
 	const completeEdges: Edge[] = [];
 
@@ -170,19 +163,35 @@ const layoutEdges = (adjList: AdjList): Edge[] => {
 };
 
 const Flow = () => {
-	const depth = useSelector(getDepth);
-	return (
-		<div style={{ height: "100%" }}>
-			<ReactFlow
-				nodes={layoutNodes(mockNodeInfo["2"], mockAdjList, depth)}
-				edges={layoutEdges(mockAdjList)}
-				onNodeClick={(e) => console.log(e.target)}
-			>
-				<Background />
-				<Controls />
-			</ReactFlow>
-		</div>
-	);
+  const depth = useSelector(getDepth);
+
+  const graph: graphlib.Graph = new graphlib.Graph();
+  graph.setGraph({});
+  graph.setDefaultEdgeLabel(function () {
+    return {};
+  });
+
+  const nodes = nodesToDisplay(
+    mockNodeInfo["2"],
+    mockNodeInfo,
+    mockAdjList,
+    depth
+  );
+  populateGraph(nodes, mockAdjList, graph);
+  dagre.layout(graph);
+
+  return (
+    <div style={{ height: "100%" }}>
+      <ReactFlow
+        nodes={dagreToFlowNodes(graph)}
+        edges={layoutEdges(mockAdjList)}
+        onNodeClick={(e) => console.log(e.target)}
+      >
+        <Background />
+        <Controls />
+      </ReactFlow>
+    </div>
+  );
 };
 
 export default Flow;
