@@ -1,7 +1,9 @@
 from typing import Dict, List
-from wikitree.flower import WikiFlower, WikiStem
+
+from histree_backend.data_retrieval.wikitree.flower import WikiFlower, WikiStem
 from qwikidata.entity import WikidataItem
-from wikitree_instance.familytree.property import PROPERTY_MAP
+from histree_backend.data_retrieval.wikitree_instance.familytree.property import PROPERTY_MAP
+
 
 
 class HumanStem(WikiStem):

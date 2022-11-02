@@ -1,6 +1,6 @@
-from wikitree.flower import WikiPetal
 from qwikidata.entity import WikidataItem
-from wikitree_instance.familytree.property import PROPERTY_MAP
+from histree_backend.data_retrieval.wikitree.flower import WikiPetal
+from histree_backend.data_retrieval.wikitree_instance.familytree.property import PROPERTY_MAP
 
 
 class NamePetal(WikiPetal):

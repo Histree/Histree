@@ -6,8 +6,10 @@ from histree_backend.data_retrieval.histree_query import HistreeQuery
 
 app = Flask(__name__)
 
-@app.route('/')
 
+@app.route('/')
+def greet():
+    return render_template('intro.html')
 
 
 # Pass in a name and return a dictionary of potential matches names to Wiki IDs

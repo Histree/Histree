@@ -1,7 +1,8 @@
 from typing import Dict
-from wikitree.tree import WikiSeed, WikiTree
-from wikitree_instance.familytree.seed import FamilySeed
 from qwikidata.sparql import return_sparql_query_results
+from histree_backend.data_retrieval.wikitree import tree
+
+from histree_backend.data_retrieval.wikitree_instance.familytree.seed import FamilySeed
 
 
 class HistreeQuery:
@@ -32,8 +33,8 @@ class HistreeQuery:
         return qid_label_map
 
     @staticmethod
-    def get_tree_from_id(qid: str, seed: WikiSeed=FamilySeed.instance()) -> Dict[str, any]:
-        tree = WikiTree(seed)
+    def get_tree_from_id(qid: str, seed: tree.WikiSeed=FamilySeed.instance()) -> Dict[str, any]:
+        tree = tree.WikiTree(seed)
         tree.grow(qid)
         return tree.to_json()
 
