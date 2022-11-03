@@ -15,14 +15,14 @@ interface HistreeState {
   renderContent: ServiceStatus<RenderContent | undefined>;
   selected?: SelectedPerson;
   searchTerm?: string;
-  searchSuggestions: string[];
+  searchSuggestions: Record<string, string>;
   depth: number;
 }
 
 const initialState: HistreeState = {
   selected: undefined,
   renderContent: { status: "Initial" },
-  searchSuggestions: [],
+  searchSuggestions: {},
   depth: 0,
 };
 
@@ -83,3 +83,5 @@ export const { setSelected, setDepth, setSearchTerm, setRenderContent } =
 export const store = configureStore({
   reducer: histreeState.reducer,
 });
+
+export type AppDispatch = typeof store.dispatch;

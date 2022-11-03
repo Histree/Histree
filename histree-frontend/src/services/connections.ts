@@ -10,16 +10,21 @@ export interface ServiceStatus<T> {
 
 export const fetchSearchSuggestions = createAsyncThunk(
   "search/fetchSuggestions",
-  async () => {
-    const response = await axios.get("url");
-    return response.data as string[];
+  async (search: string) => {
+    const response = await axios.get<Record<string, string>>(
+      `http://localhost:8010/proxy/find_matches/${search}`
+    );
+    return response.data;
   }
 );
 
 export const fetchSearchResults = createAsyncThunk(
   "search/fetchResults",
-  async (): Promise<ServiceStatus<RenderContent>> => {
-    const response = await axios.get<RenderContent>("url");
+  async (qid: string): Promise<ServiceStatus<RenderContent>> => {
+    // const response = await axios.get<RenderContent>(`https://histree.fly.dev/person_info/${qid}`);
+    const response = await axios.get<RenderContent>(
+      `http://localhost:8010/proxy/person_info/${qid}`
+    );
     return {
       status: "Success",
       content: response.data,
