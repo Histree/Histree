@@ -2,7 +2,7 @@ from typing import Dict, List
 import unittest
 from unittest.mock import patch, MagicMock
 from qwikidata.entity import WikidataItem
-from wikitree.flower import WikiFlower, WikiPair
+from wikitree.flower import WikiFlower
 from wikitree.tree import WikiTree
 
 
@@ -22,9 +22,10 @@ class TestWikiTreeMethods(unittest.TestCase):
         father.petals = params["father"]["petals"]
         mother.petals = params["mother"]["petals"]
 
-        pair = WikiPair(father, mother)
-        tree.flowers[item.entity_id].pair = pair.id
-        tree.pairs[pair.id] = pair
+        for parent in (father, mother):
+            if parent not in tree.branches:
+                tree.branches[parent.id] = []
+            tree.branches[parent.id].append(item.entity_id)
 
     def _create_dummy_children(self, item: WikidataItem, tree: WikiTree, params: List[Dict[str, any]]) -> None:
         for child in params:
@@ -34,12 +35,12 @@ class TestWikiTreeMethods(unittest.TestCase):
                       branch_up=False, branch_down=False)
             self.assertTrue(child["other_parent"] in tree.flowers,
                             msg="Spouse is not stored in WikiTree.")
-            pair = WikiPair(
-                tree.flowers[item.entity_id], tree.flowers[child["other_parent"]])
-            if pair.id not in tree.pairs:
-                tree.pairs[pair.id] = pair
-            child_flower.pair = pair.id
             tree.flowers[child_flower.id] = child_flower
+
+            if item.entity_id not in tree.branches:
+                tree.branches[item.entity_id] = []
+            tree.branches[item.entity_id].append(
+                child_flower.id)
 
     @patch("wikitree.tree.WikidataAPI")
     @patch("wikitree.tree.WikiSeed")
@@ -102,19 +103,14 @@ class TestWikiTreeMethods(unittest.TestCase):
 
         # Parents are correctly stored in the WikiTree
         MockSeedClass.branch_up.assert_called_once()
-        expected_pair_id = WikiPair(WikiFlower(
-            "Q0", dict()), WikiFlower("Q1", dict())).id
-        self.assertTrue(expected_pair_id in tree.pairs,
+        self.assertTrue("Q1" in tree.branches and "Q2" in tree.branches,
                         msg="Parents are not stored in the WikiTree.")
 
-        pair = tree.pairs[expected_pair_id]
-        father, mother = pair.flowers
-
-        self.assertTrue(father.id == "Q0" and "Q0" in tree.flowers,
+        self.assertTrue("Q0" in tree.flowers,
                         msg="Father is not stored in the WikiTree")
-        self.assertTrue(mother.id == "Q1" and "Q1" in tree.flowers,
+        self.assertTrue("Q1" in tree.flowers,
                         msg="Mother is not stored in the WikiTree.")
-        self.assertTrue(flower.pair == pair.id,
+        self.assertTrue(flower.id in tree.branches["Q0"] and flower.id in tree.branches["Q1"],
                         msg="Incorrect parents assigned to flower.")
 
         # Children are correctly stored in the WikiTree
@@ -122,7 +118,7 @@ class TestWikiTreeMethods(unittest.TestCase):
         for child_id in ("Q10", "Q11"):
             self.assertTrue(child_id in tree.flowers,
                             msg="Child is not stored in the WikiTree.")
-            self.assertTrue(flower in tree.pairs[tree.flowers[child_id].pair].flowers,
+            self.assertTrue(child_id in tree.branches[flower.id],
                             msg="Flower is not assigned as parent of child.")
 
         # Spouses are correctly stored in the WikiTree
@@ -146,16 +142,15 @@ class TestWikiTreeMethods(unittest.TestCase):
         mother_flower = WikiFlower("Q1", mother_petals)
         mother_flower.name = "mother"
 
-        pair = WikiPair(father_flower, mother_flower)
         child_petals = {"dob": "2000-01-02",
                         "metadata": "child_data"}
         child_flower = WikiFlower("Q2", child_petals)
         child_flower.name = "child"
-        child_flower.pair = pair.id
 
         tree.flowers = {flower.id: flower for flower in (
             father_flower, mother_flower, child_flower)}
-        tree.pairs = {pair.id: pair}
+        tree.branches = {flower.id: [child_flower.id] for flower in (
+            father_flower, mother_flower)}
 
         self.assertEqual(tree.to_json(), {
             "flowers": [
@@ -178,17 +173,14 @@ class TestWikiTreeMethods(unittest.TestCase):
                 {
                     "id": "Q2",
                     "name": "child",
-                    "pair": pair._hash_id_pair("Q0", "Q1"),
                     "petals": {
                         "dob": "2000-01-02",
                         "metadata": "child_data"
                     }
                 },
             ],
-            "pairs": [
-                {
-                    "id": pair._hash_id_pair("Q0", "Q1"),
-                    "flowers": ["Q0", "Q1"]
-                }
-            ]
+            "branches": {
+                "Q0": ["Q2"],
+                "Q1": ["Q2"]
+            }
         }, msg="JSON representation of WikiTree does not meet expected.")
