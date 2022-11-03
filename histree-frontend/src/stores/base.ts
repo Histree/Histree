@@ -4,10 +4,10 @@ import {
   configureStore,
   createSelector,
 } from "@reduxjs/toolkit";
-import { SelectedPerson } from "../models";
+import { Selected } from "../models";
 
 interface HistreeState {
-  selected?: SelectedPerson;
+  selected?: Selected;
   searchTerm?: string;
   depth: number;
 }
@@ -24,7 +24,7 @@ export const histreeState = createSlice({
     setSearchTerm: (state, action: PayloadAction<string>) => {
       state.searchTerm = action.payload;
     },
-    setSelected: (state, action: PayloadAction<SelectedPerson | undefined>) => {
+    setSelected: (state, action: PayloadAction<Selected | undefined>) => {
       state.selected = action.payload;
     },
     setDepth: (state, action: PayloadAction<number>) => {
