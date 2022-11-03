@@ -1,11 +1,15 @@
 import CloseIcon from "@mui/icons-material/Close";
 import React from "react";
 import {
+  Box,
+  Button,
   Card,
+  CardActions,
   CardContent,
   CardHeader,
   CardMedia,
   IconButton,
+  Typography,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelected, getSelected } from "../../stores/base";
@@ -14,6 +18,8 @@ import "./DescriptorCard.scss";
 
 export const DescriptorCard = (props: { selectedItem: Selected }) => {
   const { selectedItem } = props;
+
+  console.log(selectedItem);
 
   const dispatch = useDispatch();
   const selected = useSelector(getSelected);
@@ -24,8 +30,12 @@ export const DescriptorCard = (props: { selectedItem: Selected }) => {
   };
 
   return (
-    <div className="descriptor_container">
-      <Card style={{ height: "100%" }} variant="outlined">
+    <div className="descriptor-container">
+      <Card
+        className="descriptor-card"
+        style={{ height: "100%", overflowY: "scroll" }}
+        variant="outlined"
+      >
         {selectedItem.image && (
           <CardMedia
             component="img"
@@ -45,7 +55,36 @@ export const DescriptorCard = (props: { selectedItem: Selected }) => {
           title={selectedItem.name}
         />
 
-        <CardContent>This person is {selectedItem.name}</CardContent>
+        <CardContent>
+          <Box className="descriptor-container-body">
+            {selectedItem.attributes &&
+              Object.keys(selectedItem.attributes).map((att) => {
+                return (
+                  <Typography variant="body2">
+                    {`${att}: ${selectedItem.attributes![att]}`}
+                  </Typography>
+                );
+              })}
+            <br />
+            {selectedItem.description && (
+              <Typography variant="body2">
+                {selectedItem.description}
+              </Typography>
+            )}
+          </Box>
+        </CardContent>
+        <CardActions>
+          <>
+            {selectedItem.links &&
+              Object.keys(selectedItem.links).map((linkName) => {
+                return (
+                  <Button size="small" href={selectedItem.links![linkName]}>
+                    {linkName}
+                  </Button>
+                );
+              })}
+          </>
+        </CardActions>
       </Card>
     </div>
   );
