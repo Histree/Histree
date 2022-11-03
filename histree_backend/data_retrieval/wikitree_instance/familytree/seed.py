@@ -1,6 +1,8 @@
-from wikitree.tree import WikiSeed, WikiTree
-from wikitree_instance.familytree.petals import *
-from wikitree_instance.familytree.stems import *
+
+from data_retrieval.wikitree.tree import WikiSeed, WikiTree
+from data_retrieval.wikitree_instance.familytree.petals import *
+from data_retrieval.wikitree_instance.familytree.stems import *
+
 
 
 class FamilySeed(WikiSeed):

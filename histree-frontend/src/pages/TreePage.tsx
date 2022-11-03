@@ -25,9 +25,7 @@ const TreePage = () => {
 
 			<DepthBox />
 			<SearchBar />
-			{selected !== undefined && (
-				<DescriptorCard selectedPerson={selected} />
-			)}
+			{selected !== undefined && <DescriptorCard selectedItem={selected} />}
 		</div>
 	);
 };
