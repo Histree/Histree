@@ -1,10 +1,7 @@
 from flask import Flask, render_template
 from typing import Dict
 
-from histree_backend.histree_query import HistreeQuery
-
-
-
+from histree_query import HistreeQuery
 
 app = Flask(__name__)
 

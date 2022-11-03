@@ -1,8 +1,8 @@
 from typing import Dict, List
 
-from histree_backend.data_retrieval.wikitree.flower import WikiFlower, WikiStem
+from data_retrieval.wikitree.flower import WikiFlower, WikiStem
 from qwikidata.entity import WikidataItem
-from histree_backend.data_retrieval.wikitree_instance.familytree.property import PROPERTY_MAP
+from data_retrieval.wikitree_instance.familytree.property import PROPERTY_MAP
 
 
 
