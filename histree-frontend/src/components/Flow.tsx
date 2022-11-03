@@ -1,5 +1,11 @@
 import React from "react";
-import ReactFlow, { Controls, Background, Node, Edge, useReactFlow } from "reactflow";
+import ReactFlow, {
+  Controls,
+  Background,
+  Node,
+  Edge,
+  useReactFlow,
+} from "reactflow";
 import "reactflow/dist/style.css";
 import {
   NodeInfo,
@@ -56,6 +62,9 @@ const dagreToFlowNodes = (graph: graphlib.Graph): Node[] => {
           label: <TreeNodeCard displayName={`${nodeObj.label}`} />,
         },
         position: { x: nodeObj.x, y: nodeObj.y },
+        draggable: false,
+        connectable: false,
+        deletable: false,
       };
       ns.push(flowNode);
     }
@@ -145,21 +154,21 @@ const nodesToDisplay = (
 
 // Converts adjacency list to list of Edges for React Flow rendering.
 const layoutEdges = (adjList: AdjList): Edge[] => {
-	const completeEdges: Edge[] = [];
+  const completeEdges: Edge[] = [];
 
-	Object.keys(adjList).forEach((source) => {
-		adjList[source].forEach((target) => {
-			const edge: Edge = {
-				id: `${source}-${target}`,
-				source: source,
-				target: target,
-				type: "step",
-			};
-			completeEdges.push(edge);
-		});
-	});
+  Object.keys(adjList).forEach((source) => {
+    adjList[source].forEach((target) => {
+      const edge: Edge = {
+        id: `${source}-${target}`,
+        source: source,
+        target: target,
+        type: "step",
+      };
+      completeEdges.push(edge);
+    });
+  });
 
-	return completeEdges;
+  return completeEdges;
 };
 
 const Flow = () => {
