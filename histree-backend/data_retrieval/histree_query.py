@@ -11,7 +11,7 @@ class HistreeQuery:
 
         # Otherwise, query wikidata directly
         query = f'''
-            SELECT distinct ?item ?itemLabel WHERE{{  
+            SELECT distinct ?item ?itemLabel ?itemAltLabel WHERE{{  
                 ?item ?label "{name}"@{language}.  
                 ?item wdt:P31 wd:{instance_of} .
                 ?article schema:about ?item .
@@ -24,10 +24,27 @@ class HistreeQuery:
         res = return_sparql_query_results(query)
         
         qid_label_map = dict()
+        unique_labels = set()
+
         for row in res["results"]["bindings"]:
             qid = row["item"]["value"].split('/')[-1]
             label = row["itemLabel"]["value"]
-            qid_label_map[qid] = label
+            unique_label = True
+
+            if label in unique_labels:
+                unique_label = False
+                if row.get("itemAltLabel") != None:
+                    for l in [s.strip() for s in row["itemAltLabel"]["value"].split(',')]:
+                        if l not in unique_labels:
+                            unique_labels.add(l)
+                            unique_label = True
+                            label = l
+                            break
+            else:
+                unique_labels.add(label)
+
+            if (unique_label) :
+                qid_label_map[qid] = label
 
         return qid_label_map
 
