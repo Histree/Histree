@@ -13,7 +13,7 @@ const TreeNodeCard = (props: { displayName: string }) => {
     dispatch(
       setSelected({
         name: displayName,
-        image: `https://cataas.com/cat?random=${Math.random()}`,
+        image: "",
       })
     );
     console.log(selected);
