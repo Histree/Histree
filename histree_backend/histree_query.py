@@ -1,7 +1,8 @@
 from typing import Dict
-from wikitree.tree import WikiSeed, WikiTree
-from wikitree_instance.familytree.seed import FamilySeed
 from qwikidata.sparql import return_sparql_query_results
+from data_retrieval.wikitree.tree import WikiTree, WikiSeed
+
+from data_retrieval.wikitree_instance.familytree.seed import FamilySeed
 
 
 class HistreeQuery:

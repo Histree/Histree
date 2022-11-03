@@ -1,3 +1,4 @@
-export * from "./selectedPerson";
+export * from "./renderContent";
+export * from "./selected";
 export * from "./graphInfo";
 export * from "./mock";

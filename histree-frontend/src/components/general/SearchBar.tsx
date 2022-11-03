@@ -2,27 +2,27 @@ import React, { SyntheticEvent } from "react";
 import { Search } from '@mui/icons-material';
 import { InputAdornment, TextField, MenuItem, Autocomplete } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { setSearchTerm, getSearchTerm, getSearchSuggestions } from "../../stores";
 import "./SearchBar.scss";
+import { AppDispatch, getSearchSuggestions } from "../../stores";
+import { fetchSearchSuggestions } from "../../services";
 
 export const SearchBar = () => {
 	const dispatch = useDispatch();
-	const searchTerm = useSelector(getSearchTerm);
 	const searchSuggestions = useSelector(getSearchSuggestions);
+	const appDispatch = useDispatch<AppDispatch>();
 
 	const handleAutocomplete = (e: SyntheticEvent) => {
 		console.log('autocomplete event')
 		console.log((e.target as HTMLInputElement).value);
-		dispatch(setSearchTerm((e.target as HTMLInputElement).value))
+		appDispatch(fetchSearchSuggestions((e.target as HTMLInputElement).value))
 	};
 
 	const handleSearch = (e: SyntheticEvent, value: string) => {
+		console.log(value)
 		// if ((e as React.KeyboardEvent<HTMLDivElement>).key !== 'Enter') {
 		// 	return;
 		// }
-		dispatch(setSearchTerm(value));
-		// console.log('search event')
-		console.log(searchTerm);
+		// dispatch(setSearchTerm(value));
 	};
 
 	return (
@@ -31,7 +31,7 @@ export const SearchBar = () => {
 				onChange={(e, v) => v ? handleSearch(e, v) : () => { }}
 				style={{
 					height: '100%'
-				}} freeSolo options={searchSuggestions} renderInput={(params) =>
+				}} freeSolo options={searchSuggestions.map(s => s[0])} renderInput={(params) =>
 					<TextField
 						onChange={(e) => handleAutocomplete(e)}
 						label="Search Someone!"
@@ -44,4 +44,3 @@ export const SearchBar = () => {
 		</div >
 	);
 };
-
