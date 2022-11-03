@@ -5,18 +5,24 @@ import {
   createSelector,
 } from "@reduxjs/toolkit";
 import { RenderContent, SelectedPerson } from "../models";
-import { ServiceStatus } from "../services";
+import {
+  fetchSearchResults,
+  fetchSearchSuggestions,
+  ServiceStatus,
+} from "../services";
 
 interface HistreeState {
   renderContent: ServiceStatus<RenderContent | undefined>;
   selected?: SelectedPerson;
   searchTerm?: string;
+  searchSuggestions: string[];
   depth: number;
 }
 
 const initialState: HistreeState = {
   selected: undefined,
   renderContent: { status: "Initial" },
+  searchSuggestions: [],
   depth: 0,
 };
 
@@ -39,6 +45,14 @@ export const histreeState = createSlice({
     setDepth: (state, action: PayloadAction<number>) => {
       state.depth = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchSearchSuggestions.fulfilled, (state, action) => {
+      state.searchSuggestions = action.payload;
+    });
+    builder.addCase(fetchSearchResults.fulfilled, (state, action) => {
+      state.renderContent = action.payload;
+    });
   },
 });
 
