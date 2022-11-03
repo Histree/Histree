@@ -1,4 +1,5 @@
 .depth-box-container {
+  background-color: white;
   max-width: 5%;
   width: 5%;
   height: 5%;
@@ -8,4 +9,8 @@
   z-index: 99;
   left: 80%;
   top: 80%;
+
+  .depth-box-text {
+    background-color: white;
+  }
 }

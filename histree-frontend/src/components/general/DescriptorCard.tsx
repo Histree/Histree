@@ -1,6 +1,12 @@
 import CloseIcon from "@mui/icons-material/Close";
 import React from "react";
-import { Card, CardContent, CardHeader, IconButton } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardMedia,
+  IconButton,
+} from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelected, getSelected } from "../../stores/base";
 import { Selected } from "../../models";
@@ -20,6 +26,15 @@ export const DescriptorCard = (props: { selectedItem: Selected }) => {
   return (
     <div className="descriptor_container">
       <Card style={{ height: "100%" }} variant="outlined">
+        {selectedItem.image && (
+          <CardMedia
+            component="img"
+            height="200"
+            image={selectedItem.image}
+            alt={selectedItem.name}
+          />
+        )}
+
         <CardHeader
           onClick={closeWindow}
           action={
@@ -29,8 +44,8 @@ export const DescriptorCard = (props: { selectedItem: Selected }) => {
           }
           title={selectedItem.name}
         />
+
         <CardContent>This person is {selectedItem.name}</CardContent>
-        {selectedItem.image && <p>This should be an image</p>}
       </Card>
     </div>
   );

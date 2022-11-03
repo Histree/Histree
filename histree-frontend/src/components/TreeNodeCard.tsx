@@ -5,20 +5,25 @@ import { setSelected, getSelected } from "../stores/base";
 import "./TreeNodeCard.scss";
 
 const TreeNodeCard = (props: { displayName: string }) => {
-	const dispatch = useDispatch();
-	const selected = useSelector(getSelected);
-	const { displayName } = props;
+  const dispatch = useDispatch();
+  const selected = useSelector(getSelected);
+  const { displayName } = props;
 
-	const expandWindow = () => {
-		dispatch(setSelected({ name: displayName, }));
-		console.log(selected);
-	};
+  const expandWindow = () => {
+    dispatch(
+      setSelected({
+        name: displayName,
+        image: `https://cataas.com/cat?random=${Math.random()}`,
+      })
+    );
+    console.log(selected);
+  };
 
-	return (
-		<div className="treenodecard" onClick={expandWindow}>
-			<Typography variant="body1">{displayName}</Typography>
-		</div>
-	);
+  return (
+    <div className="treenodecard" onClick={expandWindow}>
+      <Typography variant="body1">{displayName}</Typography>
+    </div>
+  );
 };
 
 export default TreeNodeCard;
