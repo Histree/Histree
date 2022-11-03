@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Dict, List
 from qwikidata.entity import WikidataItem
 from qwikidata.linked_data_interface import get_entity_dict_from_api
-from .flower import WikiFlower, WikiPair, WikiPetal, WikiStem
+from .flower import WikiFlower, WikiPetal, WikiStem
 
 
 class WikiSeed:
@@ -14,65 +14,55 @@ class WikiSeed:
     def branch_up(self, item: WikidataItem, tree: "WikiTree") -> None:
         parent_flowers = self.up_stem.parse(
             item, tree.flowers)
+
         for parent_flower in parent_flowers:
             tree.grow(parent_flower.id,
                       branch_up=False, branch_down=False)
-
-        if len(parent_flowers) < 2:
-            # If missing parents, then pad until enough
-            parent_flowers.extend(
-                [tree.flowers.get('')] * (2 - len(parent_flowers)))
-
-        # Store item/flower's parents as a WikiPair
-        parent_pair = WikiPair(
-            parent_flowers[0], parent_flowers[1])
-        tree.pairs[parent_pair.id] = parent_pair
-
-        # Keep track of parents from the origin flower
-        tree.flowers[item.entity_id].pair = parent_pair.id
+            if parent_flower.id not in tree.branches:
+                tree.branches[parent_flower.id] = []
+            tree.branches[parent_flower.id].append(
+                item.entity_id)
 
     def branch_down(self, item: WikidataItem, tree: "WikiTree") -> None:
-        # # May not be necessary if we don't consider spouse without children
-        # # Store item/flower and its partner as a WikiPair
-        # partner_flowers = self.partner_stem.parse(
-        #     item, tree.flowers)
-        # for partner_flower in partner_flowers:
-        #     if not partner_flower:
-        #         continue
-        #     flower_pair = WikiPair(tree.flowers[item.entity_id], partner_flower)
-        #     tree.pairs[flower_pair.id] = flower_pair
-
         # Add children flowers to collection
         children_flowers = self.down_stem.parse(
             item, tree.flowers)
+
+        if children_flowers and item.entity_id not in tree.branches:
+            tree.branches[item.entity_id] = []
 
         # Find petals and parents of each child flower
         for child_flower in children_flowers:
             tree.grow(child_flower.id,
                       branch_up=True, branch_down=False)
+            tree.branches[item.entity_id].append(
+                child_flower.id)
+
 
 class WikiAPI:
     @abstractmethod
     def get_wikidata_item(id: str) -> WikidataItem:
         pass
 
+
 class WikidataAPI(WikiAPI):
     _instance = None
 
     def get_wikidata_item(self, id: str) -> WikidataItem:
         return WikidataItem(get_entity_dict_from_api(id))
-    
+
     @classmethod
     def instance(cls):
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
 
+
 class WikiTree:
-    def __init__(self, seed: WikiSeed, api: WikiAPI=WikidataAPI.instance()):
+    def __init__(self, seed: WikiSeed, api: WikiAPI = WikidataAPI.instance()):
         self.seed = seed
-        self.flowers = {'': WikiFlower('', dict())}
-        self.pairs = dict()
+        self.flowers = dict()
+        self.branches = dict()
         self.api = api
 
     def grow(self, id: str, branch_up: bool = True, branch_down: bool = True) -> None:
@@ -101,5 +91,5 @@ class WikiTree:
     def to_json(self) -> Dict[str, any]:
         return {
             'flowers': [flower.to_json() for flower in self.flowers.values()],
-            'pairs': [pair.to_json() for pair in self.pairs.values()]
+            'branches': self.branches
         }

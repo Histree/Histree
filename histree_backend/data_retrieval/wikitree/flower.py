@@ -10,7 +10,6 @@ class WikiFlower:
         self.petals = petals
         self.branched_up = False
         self.branched_down = False
-        self.pair = None
 
     def to_json(self) -> Dict[str, any]:
         json_dict = {
@@ -18,11 +17,10 @@ class WikiFlower:
             "name": self.name,
             "petals": self.petals
         }
-        if self.pair:
-            json_dict["pair"] = self.pair
         return json_dict
 
 
+# Currently unused
 class WikiPair:
     def __init__(self, parent: WikiFlower, other: WikiFlower):
         self.id = self._hash_id_pair(parent.id, other.id)
@@ -31,7 +29,7 @@ class WikiPair:
 
     def _hash_id_pair(self, id: str, other_id: str) -> str:
         return ''.join(sorted((id, other_id)))
-    
+
     def to_json(self) -> Dict[str, any]:
         return {
             "id": self.id,
