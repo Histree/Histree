@@ -1,3 +1,4 @@
+import { Url } from ".";
 import { AdjList, NodesList } from "./graphInfo";
 
 const mockAdjList: AdjList = {
@@ -45,4 +46,32 @@ const mockNodeInfo: NodesList = {
   31: { name: "Prince Alexander John", id: "31" },
 };
 
-export { mockAdjList, mockNodeInfo };
+const mockAttributes: Record<string, string> = {
+  Born: "24 May 1819",
+  Died: "22 January 1901",
+  "Place of Birth": "Kensington Palace, London, England",
+  Coronation: "28 June 1838",
+  House: "Hanover",
+};
+
+const mockLinks: Record<string, Url> = {
+  Wikipedia: "https://en.wikipedia.org/wiki/Queen_Victoria",
+  "Royal.uk": "https://www.royal.uk/queen-victoria",
+  Britannica:
+    "https://www.britannica.com/biography/Victoria-queen-of-United-Kingdom",
+};
+
+const mockDescription =
+  "Victoria (Alexandrina Victoria; 24 May 1819 – 22 January 1901) was Queen of the United Kingdom of Great Britain and Ireland from 20 June 1837 until her death in 1901. Her reign of 63 years and seven months was longer than that of any previous British monarch and is known as the Victorian era. It was a period of industrial, political, scientific, and military change within the United Kingdom, and was marked by a great expansion of the British Empire. In 1876, the British Parliament voted to grant her the additional title of Empress of India. ";
+
+const mockImg: Url =
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Queen_Victoria_by_Bassano.jpg/220px-Queen_Victoria_by_Bassano.jpg";
+
+export {
+  mockAdjList,
+  mockNodeInfo,
+  mockAttributes,
+  mockLinks,
+  mockDescription,
+  mockImg,
+};

@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Dict, List
 from qwikidata.entity import WikidataItem
 from qwikidata.linked_data_interface import get_entity_dict_from_api
-from wikitree.flower import WikiFlower, WikiPetal, WikiStem
+from .flower import WikiFlower, WikiPetal, WikiStem
 
 
 class WikiSeed:

@@ -5,22 +5,23 @@ import { setDepth, getDepth } from "../../stores/base";
 import "./DepthBox.scss";
 
 export const DepthBox = () => {
-	const dispatch = useDispatch();
-	const depth = useSelector(getDepth);
+  const dispatch = useDispatch();
+  const depth = useSelector(getDepth);
 
-	const handleSetDepth = (e: SyntheticEvent) => {
-		dispatch(setDepth(+(e.target as HTMLInputElement).value));
-	};
+  const handleSetDepth = (e: SyntheticEvent) => {
+    dispatch(setDepth(+(e.target as HTMLInputElement).value));
+  };
 
-	return (
-		<div className="depth-box-container">
-			<TextField
-				defaultValue={depth}
-				variant="outlined"
-				type="number"
-				fullWidth
-				onChange={(e) => handleSetDepth(e)}
-			/>
-		</div>
-	);
+  return (
+    <div className="depth-box-container">
+      <TextField
+        className="depth-box-text"
+        defaultValue={depth}
+        variant="outlined"
+        type="number"
+        fullWidth
+        onChange={(e) => handleSetDepth(e)}
+      />
+    </div>
+  );
 };
