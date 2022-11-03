@@ -72,4 +72,5 @@ jobs:
             pip install -e .
         - uses: superfly/flyctl-actions/setup-flyctl@master
         - run: |
+            cd histree_backend
             flyctl deploy --remote-only
