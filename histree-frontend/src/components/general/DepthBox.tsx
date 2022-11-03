@@ -19,6 +19,7 @@ export const DepthBox = () => {
         defaultValue={depth}
         variant="outlined"
         type="number"
+        label="Tree Depth"
         fullWidth
         onChange={(e) => handleSetDepth(e)}
       />
