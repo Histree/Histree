@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 
 @app.route('/')
-@cross_origin()
+@cross_origin() 
 def greet():
     return render_template('intro.html')
 
