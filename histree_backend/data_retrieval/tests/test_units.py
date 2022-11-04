@@ -24,8 +24,8 @@ class TestWikiTreeMethods(unittest.TestCase):
 
         for parent in (father, mother):
             if parent not in tree.branches:
-                tree.branches[parent.id] = []
-            tree.branches[parent.id].append(item.entity_id)
+                tree.branches[parent.id] = set()
+            tree.branches[parent.id].add(item.entity_id)
 
     def _create_dummy_children(self, item: WikidataItem, tree: WikiTree, params: List[Dict[str, any]]) -> None:
         for child in params:
@@ -38,8 +38,8 @@ class TestWikiTreeMethods(unittest.TestCase):
             tree.flowers[child_flower.id] = child_flower
 
             if item.entity_id not in tree.branches:
-                tree.branches[item.entity_id] = []
-            tree.branches[item.entity_id].append(
+                tree.branches[item.entity_id] = set()
+            tree.branches[item.entity_id].add(
                 child_flower.id)
 
     @patch("wikitree.tree.WikidataAPI")

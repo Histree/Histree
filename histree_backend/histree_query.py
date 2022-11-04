@@ -33,9 +33,9 @@ class HistreeQuery:
         return qid_label_map
 
     @staticmethod
-    def get_tree_from_id(qid: str, seed: WikiSeed=FamilySeed.instance()) -> Dict[str, any]:
+    def get_tree_from_id(qid: str, seed: WikiSeed=FamilySeed.instance(), branch_up_levels: int = 2, branch_down_levels: int = 2) -> Dict[str, any]:
         tree = WikiTree(seed)
-        tree.grow(qid)
+        tree.grow_levels(qid, branch_up_levels, branch_down_levels)
         return tree.to_json()
 
 
