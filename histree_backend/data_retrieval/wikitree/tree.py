@@ -111,5 +111,5 @@ class WikiTree:
     def to_json(self) -> Dict[str, any]:
         return {
             'flowers': [flower.to_json() for flower in self.flowers.values()],
-            'branches': self.branches
+            'branches': {id: list(adj_set) for (id, adj_set) in self.branches.items()}
         }
