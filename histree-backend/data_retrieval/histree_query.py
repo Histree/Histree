@@ -1,3 +1,4 @@
+import re
 from typing import Dict
 from wikitree.tree import WikiSeed, WikiTree
 from wikitree_instance.familytree.seed import FamilySeed
@@ -6,13 +7,31 @@ from qwikidata.sparql import return_sparql_query_results
 
 class HistreeQuery:
     @staticmethod
+    def processQueryString(name: str) -> str:
+        # standardises the capitalisation of query string to be consistent with Wikidata expectations
+        
+        prepos = {"the", "of", "in", "and"}
+        isRomanNumeral = lambda w : bool(re.search(r"^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$",w))
+
+        words = name.split()
+        for i in range (0, len(words)):
+            word = words[i]
+            if (word not in prepos):
+                if (not isRomanNumeral(word.upper())):
+                    words[i] = word.capitalize()
+                else:
+                    words[i] = word.upper()
+        
+        return " ".join(words)
+
+    @staticmethod
     def search_matching_names(name: str, instance_of: str = "Q5", language: str = "en") -> Dict[str, str]:
         # Check if name has been queried before in db and return if so
-
+        input = HistreeQuery.processQueryString(name)
         # Otherwise, query wikidata directly
         query = f'''
             SELECT distinct ?item ?itemLabel ?itemAltLabel WHERE{{  
-                ?item ?label "{name}"@{language}.  
+                ?item ?label "{input}"@{language}.  
                 ?item wdt:P31 wd:{instance_of} .
                 ?article schema:about ?item .
                 ?article schema:inLanguage "{language}" .
@@ -31,6 +50,10 @@ class HistreeQuery:
             label = row["itemLabel"]["value"]
             unique_label = True
 
+            
+            # Generate a unique label for each query item by looking at list of
+            # alternate names. If no unique alternative labels exist for the item,
+            # it is not included in the results dictionary.
             if label in unique_labels:
                 unique_label = False
                 if row.get("itemAltLabel") != None:
