@@ -226,21 +226,6 @@ const Flow = (props: { content: RenderContent }) => {
 				nodes={dagreToFlowNodes(graph)}
 				edges={layoutEdges(content.branches)}
 				fitView
-				onSelectionChange={(e) => {
-					console.log(e);
-					if (e.nodes.length > 0) {
-						const selectedNode = e.nodes[0].id;
-						// dispatch(
-						// 	setSelected({
-						// 		name: displayName,
-						// 		image: mockImg,
-						// 		attributes: mockAttributes,
-						// 		description: mockDescription,
-						// 		links: mockLinks,
-						// 	})
-						// )
-					}
-				}}
 			>
 				<Background />
 				<Controls />
