@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import ReactFlow, {
 	Controls,
 	Background,
@@ -14,9 +14,11 @@ import {
 	mockNodeInfo,
 	mockAdjList,
 	NodeId,
+	RenderContent,
+	NodePositions,
 } from "../models";
-import { getDepth } from "../stores/base";
-import { useSelector } from "react-redux";
+import { getDepth, getSelected, setSelected } from "../stores/base";
+import { useDispatch, useSelector } from "react-redux";
 import TreeNodeCard from "./TreeNodeCard";
 import dagre, { graphlib } from "dagre";
 
@@ -30,14 +32,18 @@ const populateGraph = (
 	nodes: NodesList,
 	adjList: AdjList,
 	graph: graphlib.Graph
-): void => {
+): NodePositions => {
+	const positions: NodePositions = {}
 	Object.keys(nodes).forEach((node) => {
-		const { id, name } = nodes[node];
+		const { id, name, petals } = nodes[node];
 		graph.setNode(id, {
 			label: name,
+			qid: id,
+			petals: petals,
 			width: NODE_BOX_WIDTH,
 			height: NODE_BOX_HEIGHT,
 		});
+		positions[id] = graph.node(id);
 	});
 
 	Object.keys(adjList).forEach((sourceId) => {
@@ -45,6 +51,7 @@ const populateGraph = (
 			graph.setEdge(sourceId, targetId);
 		});
 	});
+	return positions;
 };
 
 // Convert dagre graph to list of Nodes for React Flow rendering.
@@ -52,14 +59,18 @@ const dagreToFlowNodes = (graph: graphlib.Graph): Node[] => {
 	const ns: Node[] = [];
 
 	const dagreNodes = graph.nodes();
+	console.log(dagreNodes);
 	/* eslint-disable  @typescript-eslint/no-explicit-any */
 	dagreNodes.forEach((n: any) => {
-		const nodeObj = graph.node(n);
+		const nodeObj: any = graph.node(n);
+		console.log(nodeObj);
 		if (nodeObj) {
 			const flowNode: Node = {
 				id: n,
 				data: {
-					label: <TreeNodeCard displayName={`${nodeObj.label}`} />,
+					label: <TreeNodeCard details={{
+						name: nodeObj.label, id: n, petals: nodeObj.petals
+					}} />,
 				},
 				position: { x: nodeObj.x, y: nodeObj.y },
 				draggable: false,
@@ -171,8 +182,21 @@ const layoutEdges = (adjList: AdjList): Edge[] => {
 	return completeEdges;
 };
 
-const Flow = () => {
+const flowersToNodes = (flowers: NodeInfo[]): NodesList => {
+	const result: NodesList = {};
+	flowers.forEach((f) => {
+		result[f.id] = f;
+	});
+	return result;
+};
+
+const Flow = (props: { content: RenderContent }) => {
+	const { setCenter, getZoom } = useReactFlow();
 	const depth = useSelector(getDepth);
+
+	const dispatch = useDispatch();
+	const selected = useSelector(getSelected);
+	const { content } = props;
 
 	const graph: graphlib.Graph = new graphlib.Graph();
 	graph.setGraph({});
@@ -181,25 +205,32 @@ const Flow = () => {
 	});
 
 	const nodes = nodesToDisplay(
-		mockNodeInfo["2"],
-		mockNodeInfo,
-		mockAdjList,
+		content.flowers[0],
+		flowersToNodes(content.flowers),
+		content.branches,
 		depth
 	);
-	populateGraph(nodes, mockAdjList, graph);
+	const positions = populateGraph(nodes, content.branches, graph);
 	dagre.layout(graph);
+
+	useEffect(() => {
+		setCenter(
+			positions[content.searchedQid].x,
+			positions[content.searchedQid].y,
+			{ duration: 800, zoom: getZoom() })
+	}, []);
 
 	return (
 		<div style={{ height: "100%" }}>
 			<ReactFlow
 				nodes={dagreToFlowNodes(graph)}
-				edges={layoutEdges(mockAdjList)}
-				onNodeClick={(e) => console.log(e.target)}
+				edges={layoutEdges(content.branches)}
+				fitView
 			>
 				<Background />
 				<Controls />
 			</ReactFlow>
-		</div>
+		</div >
 	);
 };
 

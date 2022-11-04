@@ -1,4 +1,7 @@
+import { AdjList, NodeId, NodeInfo } from "./graphInfo";
+
 export interface RenderContent {
-  nodes: any[];
-  edges: any[];
+  searchedQid: NodeId;
+  branches: AdjList;
+  flowers: NodeInfo[];
 }
