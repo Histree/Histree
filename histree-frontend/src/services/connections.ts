@@ -29,7 +29,7 @@ export const fetchSearchResults = createAsyncThunk(
       console.log(response.data);
       return {
         status: "Success",
-        content: response.data,
+        content: { ...response.data, searchedQid: qid },
       };
     } catch (e) {
       return {

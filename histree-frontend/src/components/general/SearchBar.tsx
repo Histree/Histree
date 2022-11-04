@@ -1,7 +1,7 @@
-import React, { SyntheticEvent } from "react";
-import { Search } from '@mui/icons-material';
-import { InputAdornment, TextField, MenuItem, Autocomplete } from "@mui/material";
+import React, { SyntheticEvent, useEffect, useMemo } from "react";
+import { TextField, Autocomplete } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
+import { debounce } from 'lodash';
 import "./SearchBar.scss";
 import { AppDispatch, getSearchSuggestions, resetSearch, setResultServiceState } from "../../stores";
 import { fetchSearchResults, fetchSearchSuggestions } from "../../services";
@@ -23,22 +23,28 @@ export const SearchBar = () => {
 		}
 	};
 
+	const debouncedResults = useMemo(() => {
+		return debounce(handleAutocomplete, 300);
+	}, []);
+
 	const handleSearch = (e: SyntheticEvent, value?: string) => {
 		console.log('handleSearch');
 		console.log(value)
 		if (value && searchSuggestions[value]) {
+			dispatch(setResultServiceState({ status: 'Loading' }));
 			console.log(searchSuggestions[value])
 			appDispatch(fetchSearchResults(searchSuggestions[value]));
 		}
 		else {
+			console.log('Resetting')
 			dispatch(resetSearch);
 		}
-		// if ((e as React.KeyboardEvent<HTMLDivElement>).key !== 'Enter') {
-		// 	return;
-		// }
-		// dispatch(setSearchTerm(value));
 	};
-
+	useEffect(() => {
+		return () => {
+			debouncedResults.cancel();
+		};
+	});
 	return (
 		<div className="search_container">
 			<Autocomplete
