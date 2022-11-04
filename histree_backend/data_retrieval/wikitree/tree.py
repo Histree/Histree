@@ -19,8 +19,8 @@ class WikiSeed:
             tree.grow(parent_flower.id,
                       branch_up=False, branch_down=False)
             if parent_flower.id not in tree.branches:
-                tree.branches[parent_flower.id] = []
-            tree.branches[parent_flower.id].append(
+                tree.branches[parent_flower.id] = set()
+            tree.branches[parent_flower.id].add(
                 item.entity_id)
 
     def branch_down(self, item: WikidataItem, tree: "WikiTree") -> None:
@@ -29,13 +29,13 @@ class WikiSeed:
             item, tree.flowers)
 
         if children_flowers and item.entity_id not in tree.branches:
-            tree.branches[item.entity_id] = []
+            tree.branches[item.entity_id] = set()
 
         # Find petals and parents of each child flower
         for child_flower in children_flowers:
             tree.grow(child_flower.id,
                       branch_up=True, branch_down=False)
-            tree.branches[item.entity_id].append(
+            tree.branches[item.entity_id].add(
                 child_flower.id)
 
 
