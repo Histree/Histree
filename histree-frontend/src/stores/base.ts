@@ -30,6 +30,15 @@ export const histreeState = createSlice({
   name: "histreeState",
   initialState,
   reducers: {
+    resetSearch: (state) => {
+      state.searchSuggestions = {};
+    },
+    setResultServiceState: (
+      state,
+      action: PayloadAction<ServiceStatus<RenderContent>>
+    ) => {
+      state.renderContent = action.payload;
+    },
     setSelected: (state, action: PayloadAction<Selected | undefined>) => {
       state.selected = action.payload;
     },
@@ -57,7 +66,8 @@ export const getSearchSuggestions = createSelector(
   (state: HistreeState) => {
     return state.searchSuggestions;
   },
-  (x) => Object.values(x)
+  (x) =>
+    Object.fromEntries(Object.entries(x).map(([key, value]) => [value, key]))
 );
 
 export const getRenderContent = createSelector(
@@ -81,7 +91,13 @@ export const getDepth = createSelector(
   (x) => x
 );
 
-export const { setSelected, setDepth, setRenderContent } = histreeState.actions;
+export const {
+  setSelected,
+  setDepth,
+  setRenderContent,
+  resetSearch,
+  setResultServiceState,
+} = histreeState.actions;
 
 export const store = configureStore({
   reducer: histreeState.reducer,
