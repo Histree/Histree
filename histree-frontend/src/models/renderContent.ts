@@ -1,6 +1,6 @@
-import { AdjList, NodesList } from "./graphInfo";
+import { AdjList, NodeInfo } from "./graphInfo";
 
 export interface RenderContent {
-  adjList: AdjList;
-  nodes: NodesList;
+  branches: AdjList;
+  flowers: NodeInfo[];
 }
