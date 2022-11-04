@@ -63,7 +63,12 @@ jobs:
 
     steps:
         - uses: actions/checkout@v3
+        - uses: actions/setup-python@v4
+          with:
+            python-version: '3.9'
+            cache: 'pip'
         - uses: superfly/flyctl-actions/setup-flyctl@master
         - run: |
             cd histree_backend
+            pip install flask_cors
             flyctl deploy --remote-only
