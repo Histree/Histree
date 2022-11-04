@@ -23,7 +23,7 @@ const initialState: HistreeState = {
   selected: undefined,
   renderContent: { status: "Initial" },
   searchSuggestions: {},
-  depth: 0,
+  depth: 1,
 };
 
 export const histreeState = createSlice({

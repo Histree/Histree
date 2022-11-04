@@ -24,7 +24,7 @@ export const SearchBar = () => {
 	};
 
 	const debouncedResults = useMemo(() => {
-		return debounce(handleAutocomplete, 300);
+		return debounce(handleAutocomplete, 700);
 	}, []);
 
 	const handleSearch = (e: SyntheticEvent, value?: string) => {

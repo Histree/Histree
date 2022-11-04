@@ -17,8 +17,8 @@ import {
 	RenderContent,
 	NodePositions,
 } from "../models";
-import { getDepth } from "../stores/base";
-import { useSelector } from "react-redux";
+import { getDepth, getSelected, setSelected } from "../stores/base";
+import { useDispatch, useSelector } from "react-redux";
 import TreeNodeCard from "./TreeNodeCard";
 import dagre, { graphlib } from "dagre";
 
@@ -35,10 +35,11 @@ const populateGraph = (
 ): NodePositions => {
 	const positions: NodePositions = {}
 	Object.keys(nodes).forEach((node) => {
-		const { id, name } = nodes[node];
+		const { id, name, petals } = nodes[node];
 		graph.setNode(id, {
 			label: name,
 			qid: id,
+			petals: petals,
 			width: NODE_BOX_WIDTH,
 			height: NODE_BOX_HEIGHT,
 		});
@@ -58,14 +59,18 @@ const dagreToFlowNodes = (graph: graphlib.Graph): Node[] => {
 	const ns: Node[] = [];
 
 	const dagreNodes = graph.nodes();
+	console.log(dagreNodes);
 	/* eslint-disable  @typescript-eslint/no-explicit-any */
 	dagreNodes.forEach((n: any) => {
-		const nodeObj = graph.node(n);
+		const nodeObj: any = graph.node(n);
+		console.log(nodeObj);
 		if (nodeObj) {
 			const flowNode: Node = {
 				id: n,
 				data: {
-					label: <TreeNodeCard displayName={`${nodeObj.label}`} />,
+					label: <TreeNodeCard details={{
+						name: nodeObj.label, id: n, petals: nodeObj.petals
+					}} />,
 				},
 				position: { x: nodeObj.x, y: nodeObj.y },
 				draggable: false,
@@ -188,6 +193,9 @@ const flowersToNodes = (flowers: NodeInfo[]): NodesList => {
 const Flow = (props: { content: RenderContent }) => {
 	const { setCenter, getZoom } = useReactFlow();
 	const depth = useSelector(getDepth);
+
+	const dispatch = useDispatch();
+	const selected = useSelector(getSelected);
 	const { content } = props;
 
 	const graph: graphlib.Graph = new graphlib.Graph();
@@ -206,9 +214,6 @@ const Flow = (props: { content: RenderContent }) => {
 	dagre.layout(graph);
 
 	useEffect(() => {
-		console.log("????");
-		console.log(positions[content.searchedQid].x);
-		console.log(positions[content.searchedQid].y);
 		setCenter(
 			positions[content.searchedQid].x,
 			positions[content.searchedQid].y,
@@ -221,6 +226,21 @@ const Flow = (props: { content: RenderContent }) => {
 				nodes={dagreToFlowNodes(graph)}
 				edges={layoutEdges(content.branches)}
 				fitView
+				onSelectionChange={(e) => {
+					console.log(e);
+					if (e.nodes.length > 0) {
+						const selectedNode = e.nodes[0].id;
+						// dispatch(
+						// 	setSelected({
+						// 		name: displayName,
+						// 		image: mockImg,
+						// 		attributes: mockAttributes,
+						// 		description: mockDescription,
+						// 		links: mockLinks,
+						// 	})
+						// )
+					}
+				}}
 			>
 				<Background />
 				<Controls />

@@ -2,22 +2,22 @@ import { Drawer, Box, Typography } from "@mui/material";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelected, getSelected } from "../stores/base";
-import { mockAttributes, mockDescription, mockImg, mockLinks } from "../models";
+import { mockAttributes, mockDescription, mockImg, mockLinks, NodeInfo } from "../models";
 import "./TreeNodeCard.scss";
 
-const TreeNodeCard = (props: { displayName: string }) => {
+const TreeNodeCard = (props: { details: NodeInfo }) => {
 	const dispatch = useDispatch();
 	const selected = useSelector(getSelected);
-	const { displayName } = props;
+	const { details } = props;
 
 	const expandWindow = () => {
 		dispatch(
 			setSelected({
-				name: displayName,
-				image: mockImg,
-				attributes: mockAttributes,
-				description: mockDescription,
-				links: mockLinks,
+				name: details.name,
+				image: details?.image,
+				attributes: details.petals,
+				description: details?.description,
+				// links: details?.links,
 			})
 		);
 		console.log(selected);
@@ -25,7 +25,7 @@ const TreeNodeCard = (props: { displayName: string }) => {
 
 	return (
 		<div className="treenodecard" onClick={expandWindow}>
-			{displayName}
+			{details.name}
 		</div>
 	);
 };
