@@ -13,9 +13,11 @@ const TreePage = () => {
 	const renderContent = useSelector(getRenderContent);
 	return (
 		<div className="treepage">
-			<ReactFlowProvider>
-				<Flow />
-			</ReactFlowProvider>
+			{renderContent.status === 'Success' &&
+				< ReactFlowProvider >
+					<Flow />
+				</ReactFlowProvider>
+			}
 			<Snackbar
 				anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
 				open={renderContent.status === 'Failure'}
@@ -25,7 +27,7 @@ const TreePage = () => {
 			<DepthBox />
 			<SearchBar />
 			{selected !== undefined && <DescriptorCard selectedItem={selected} />}
-		</div>
+		</div >
 	);
 };
 
