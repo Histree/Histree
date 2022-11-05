@@ -80,6 +80,7 @@ class WikiTree:
         if id not in self.flowers:
             self.flowers[id] = WikiFlower(id, dict())
             self.flowers[id].name = item.get_label()
+            self.flowers[id].description = item.get_description()
         flower = self.flowers[id]
 
         if not flower.petals:
