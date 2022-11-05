@@ -17,7 +17,8 @@ class FamilySeed(WikiSeed):
                 GenderPetal.instance(),
                 BirthDatePetal.instance(),
                 DeathDatePetal.instance(),
-                BirthNamePetal.instance()
+                BirthNamePetal.instance(),
+                ImagePetal.instance()
             ]
         )
 

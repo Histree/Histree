@@ -3,6 +3,7 @@ PROPERTY_MAP = {
         "birth name": "P1477",
         "date of birth": "P569",
         "date of death": "P570",
+        "image": "P18",
         "sex/gender": "P21"
     },
     "stems": {
