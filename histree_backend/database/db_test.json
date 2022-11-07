@@ -1,0 +1,168 @@
+{
+  "branches": {
+    "Q123371": [
+      "Q432375",
+      "Q824855"
+    ],
+    "Q1712755": [
+      "Q4357787"
+    ],
+    "Q30277523": [
+      "Q88665"
+    ],
+    "Q30278245": [
+      "Q88665"
+    ],
+    "Q30283429": [
+      "Q4357787"
+    ],
+    "Q4357787": [
+      "Q937"
+    ],
+    "Q76346": [
+      "Q118253",
+      "Q123371",
+      "Q468357"
+    ],
+    "Q88665": [
+      "Q937"
+    ],
+    "Q937": [
+      "Q118253",
+      "Q123371",
+      "Q468357"
+    ]
+  },
+  "flowers": [
+    {
+      "id": "Q937",
+      "name": "Albert Einstein",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1879-03-14",
+        "date of death": "1955-04-18",
+        "sex/gender": "male"
+      }
+    },
+    {
+      "id": "Q88665",
+      "name": "Hermann Einstein",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1847-08-30",
+        "date of death": "1902-10-10",
+        "sex/gender": "male"
+      }
+    },
+    {
+      "id": "Q4357787",
+      "name": "Pauline Koch",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1858-02-08",
+        "date of death": "1920-02-20",
+        "sex/gender": "female"
+      }
+    },
+    {
+      "id": "Q123371",
+      "name": "Hans Albert Einstein",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1904-05-14",
+        "date of death": "1973-07-26",
+        "sex/gender": "male"
+      }
+    },
+    {
+      "id": "Q76346",
+      "name": "Mileva Marić",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1875-12-19",
+        "date of death": "1948-08-04",
+        "sex/gender": "female"
+      }
+    },
+    {
+      "id": "Q118253",
+      "name": "Eduard Einstein",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1910-07-28",
+        "date of death": "1965-10-25",
+        "sex/gender": "male"
+      }
+    },
+    {
+      "id": "Q468357",
+      "name": "Lieserl (Einstein)",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1902-01-01",
+        "date of death": "1903-09-00",
+        "sex/gender": "female"
+      }
+    },
+    {
+      "id": "Q30277523",
+      "name": "Abraham Einstein",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1808-04-16",
+        "date of death": "1868-11-21",
+        "sex/gender": "male"
+      }
+    },
+    {
+      "id": "Q30278245",
+      "name": "Helen Einstein",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1814-07-03",
+        "date of death": "1887-08-20",
+        "sex/gender": "female"
+      }
+    },
+    {
+      "id": "Q1712755",
+      "name": "Julius Koch",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1816-02-19",
+        "date of death": "1895-01-01",
+        "sex/gender": "male"
+      }
+    },
+    {
+      "id": "Q30283429",
+      "name": "Annette Bernheimer",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1825-03-08",
+        "date of death": "1886-11-14",
+        "sex/gender": "female"
+      }
+    },
+    {
+      "id": "Q824855",
+      "name": "Bernhard Caesar Einstein",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1930-07-10",
+        "date of death": "2008-09-30",
+        "sex/gender": "male"
+      }
+    },
+    {
+      "id": "Q432375",
+      "name": "Evelyn Einstein",
+      "petals": {
+        "birth name": "undefined",
+        "date of birth": "1941-03-28",
+        "date of death": "2011-04-13",
+        "sex/gender": "female"
+      }
+    }
+  ]
+}
