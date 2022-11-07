@@ -4,7 +4,7 @@ import {
   configureStore,
   createSelector,
 } from "@reduxjs/toolkit";
-import { RenderContent, Selected } from "../models";
+import { RenderContent, Selected, VisibleContent } from "../models";
 import {
   fetchSearchResults,
   fetchSearchSuggestions,
@@ -16,14 +16,14 @@ interface HistreeState {
   selected?: Selected;
   searchTerm?: string;
   searchSuggestions: Record<string, string>;
-  depth: number;
+  visible: VisibleContent;
 }
 
 const initialState: HistreeState = {
   selected: undefined,
   renderContent: { status: "Initial" },
   searchSuggestions: {},
-  depth: 1,
+  visible: {},
 };
 
 export const histreeState = createSlice({
@@ -48,8 +48,8 @@ export const histreeState = createSlice({
     ) => {
       state.renderContent = action.payload;
     },
-    setDepth: (state, action: PayloadAction<number>) => {
-      state.depth = action.payload;
+    setVisible: (state, action: PayloadAction<VisibleContent>) => {
+      state.visible = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -84,16 +84,16 @@ export const getSelected = createSelector(
   (x) => x
 );
 
-export const getDepth = createSelector(
+export const getVisible = createSelector(
   (state: HistreeState) => {
-    return state.depth;
+    return state.visible;
   },
   (x) => x
 );
 
 export const {
   setSelected,
-  setDepth,
+  setVisible,
   setRenderContent,
   resetSearch,
   setResultServiceState,

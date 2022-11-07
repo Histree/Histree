@@ -5,3 +5,5 @@ export interface RenderContent {
   branches: AdjList;
   flowers: NodeInfo[];
 }
+
+export type VisibleContent = Record<NodeId, boolean>;
