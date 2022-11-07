@@ -1,0 +1,15 @@
+.treenodecard {
+	width: 100%;
+	height: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.react-flow__node-treeNode {
+	font-size: 12px;
+	background: #eee;
+	border: 1px solid #555;
+	border-radius: 5px;
+	text-align: center;
+}

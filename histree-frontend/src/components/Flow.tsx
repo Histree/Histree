@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import ReactFlow, {
 	Controls,
 	Background,
@@ -19,14 +19,13 @@ import {
 } from "../models";
 import { getDepth, getSelected, setSelected } from "../stores/base";
 import { useDispatch, useSelector } from "react-redux";
-import TreeNodeCard from "./TreeNodeCard";
+import TreeNode from "./TreeNode";
 import dagre, { graphlib } from "dagre";
 
 // const CENTER_X = 800;
 // const CENTER_Y = 400;
 const NODE_BOX_WIDTH = 155;
 const NODE_BOX_HEIGHT = 50;
-
 // Populate a Dagre graph with nodes and edges.
 const populateGraph = (
 	nodes: NodesList,
@@ -67,11 +66,8 @@ const dagreToFlowNodes = (graph: graphlib.Graph): Node[] => {
 		if (nodeObj) {
 			const flowNode: Node = {
 				id: n,
-				data: {
-					label: <TreeNodeCard details={{
-						name: nodeObj.label, id: n, petals: nodeObj.petals
-					}} />,
-				},
+				type: 'dataNode',
+				data: { name: nodeObj.label, id: n, petals: nodeObj.petals },
 				position: { x: nodeObj.x, y: nodeObj.y },
 				draggable: false,
 				connectable: false,
@@ -192,10 +188,11 @@ const flowersToNodes = (flowers: NodeInfo[]): NodesList => {
 
 const Flow = (props: { content: RenderContent }) => {
 	const { setCenter, getZoom } = useReactFlow();
+	const nodeTypes = useMemo(() => ({
+		dataNode: TreeNode
+	}), []);
 	const depth = useSelector(getDepth);
 
-	const dispatch = useDispatch();
-	const selected = useSelector(getSelected);
 	const { content } = props;
 
 	const graph: graphlib.Graph = new graphlib.Graph();
@@ -225,6 +222,7 @@ const Flow = (props: { content: RenderContent }) => {
 			<ReactFlow
 				nodes={dagreToFlowNodes(graph)}
 				edges={layoutEdges(content.branches)}
+				nodeTypes={nodeTypes}
 				fitView
 			>
 				<Background />

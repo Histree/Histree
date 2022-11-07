@@ -3,20 +3,20 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelected, getSelected } from "../stores/base";
 import { mockAttributes, mockDescription, mockImg, mockLinks, NodeInfo } from "../models";
-import "./TreeNodeCard.scss";
+import "./TreeNode.scss";
+import { Handle, Position } from "reactflow";
 
-const TreeNodeCard = (props: { details: NodeInfo }) => {
+const TreeNode = ({ data }: { data: NodeInfo }) => {
 	const dispatch = useDispatch();
 	const selected = useSelector(getSelected);
-	const { details } = props;
 
 	const expandWindow = () => {
 		dispatch(
 			setSelected({
-				name: details.name,
-				image: details?.image,
-				attributes: details.petals,
-				description: details?.description,
+				name: data.name,
+				image: data?.image,
+				attributes: data.petals,
+				description: data?.description,
 				// links: details?.links,
 			})
 		);
@@ -24,10 +24,20 @@ const TreeNodeCard = (props: { details: NodeInfo }) => {
 	};
 
 	return (
-		<div className="treenodecard" onClick={expandWindow}>
-			{details.name}
-		</div>
+		<>
+			<Handle
+				type="target"
+				position={Position.Top}
+			/>
+			<div className="treenodecard" onClick={expandWindow}>
+				{data.name}
+			</div>
+			<Handle
+				type="target"
+				position={Position.Bottom}
+			/>
+		</>
 	);
 };
 
-export default TreeNodeCard;
+export default TreeNode;
