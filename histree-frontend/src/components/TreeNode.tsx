@@ -25,17 +25,19 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 
 	return (
 		<>
-			<Handle
-				type="target"
-				position={Position.Top}
-			/>
 			<div className="treenodecard" onClick={expandWindow}>
-				{data.name}
+				<Handle
+					type="target"
+					position={Position.Top}
+				/>
+				<div className="treenodechild">
+					{data.name}
+				</div>
+				<Handle
+					type="source"
+					position={Position.Bottom}
+				/>
 			</div>
-			<Handle
-				type="source"
-				position={Position.Bottom}
-			/>
 		</>
 	);
 };
