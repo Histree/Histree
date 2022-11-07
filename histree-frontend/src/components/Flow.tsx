@@ -161,10 +161,12 @@ const nodesToDisplay = (
 
 // Converts adjacency list to list of Edges for React Flow rendering.
 const layoutEdges = (adjList: AdjList): Edge[] => {
+
 	const completeEdges: Edge[] = [];
 
 	Object.keys(adjList).forEach((source) => {
 		adjList[source].forEach((target) => {
+			console.log(`source: ${source}, target: ${target}`)
 			const edge: Edge = {
 				id: `${source}-${target}`,
 				source: source,

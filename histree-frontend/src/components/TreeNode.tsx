@@ -2,7 +2,7 @@ import { Drawer, Box, Typography } from "@mui/material";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelected, getSelected } from "../stores/base";
-import { mockAttributes, mockDescription, mockImg, mockLinks, NodeInfo } from "../models";
+import { NodeInfo } from "../models";
 import "./TreeNode.scss";
 import { Handle, Position } from "reactflow";
 
@@ -33,7 +33,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 				{data.name}
 			</div>
 			<Handle
-				type="target"
+				type="source"
 				position={Position.Bottom}
 			/>
 		</>
