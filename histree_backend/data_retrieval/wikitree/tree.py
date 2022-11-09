@@ -11,13 +11,14 @@ class WikiSeed:
         self.partner_stem = partner_stem
         self.petals = set(petals)
 
-    def branch_up(self, item: WikidataItem, tree: "WikiTree") -> List[WikiFlower]:
+    def branch_up(self, item: WikidataItem, tree: "WikiTree", grow_branched: bool = True) -> List[WikiFlower]:
         parent_flowers = self.up_stem.parse(
             item, tree.flowers)
 
         for parent_flower in parent_flowers:
-            tree.grow(parent_flower.id,
-                      branch_up=False, branch_down=False)
+            if grow_branched:
+                tree.grow(parent_flower.id,
+                          branch_up=False, branch_down=False)
             if parent_flower.id not in tree.branches:
                 tree.branches[parent_flower.id] = set()
             tree.branches[parent_flower.id].add(
@@ -25,7 +26,7 @@ class WikiSeed:
 
         return parent_flowers
 
-    def branch_down(self, item: WikidataItem, tree: "WikiTree") -> List[WikiFlower]:
+    def branch_down(self, item: WikidataItem, tree: "WikiTree", grow_branched: bool = True) -> List[WikiFlower]:
         # Add children flowers to collection
         children_flowers = self.down_stem.parse(
             item, tree.flowers)
@@ -35,8 +36,9 @@ class WikiSeed:
 
         # Find petals and parents of each child flower
         for child_flower in children_flowers:
-            tree.grow(child_flower.id,
-                      branch_up=True, branch_down=False)
+            if grow_branched:
+                tree.grow(child_flower.id,
+                          branch_up=True, branch_down=False)
             tree.branches[item.entity_id].add(
                 child_flower.id)
 
@@ -69,14 +71,16 @@ class WikiTree:
         self.branches = dict()
         self.api = api
 
-    def grow(self, id: str, branch_up: bool = True, branch_down: bool = True) -> Tuple[List[WikiFlower], List[WikiFlower]]:
-        if id in self.flowers and self.flowers[id].branched_up and self.flowers[id].branched_down:
-            return
+    def grow(self, id: str, branch_up: bool = True, branch_down: bool = True, grow_branched: bool = True) -> Tuple[List[WikiFlower], List[WikiFlower]]:
+        if id in self.flowers and (not branch_up or self.flowers[id].branched_up) and (not branch_down or self.flowers[id].branched_down):
+            return None, None
         item = self.api.get_wikidata_item(id)
+
         # Find petals of the flower
         if id not in self.flowers:
             self.flowers[id] = WikiFlower(id, dict())
             self.flowers[id].name = item.get_label()
+            self.flowers[id].description = item.get_description()
         flower = self.flowers[id]
 
         if not flower.petals:
@@ -87,26 +91,27 @@ class WikiTree:
         # Branch off from the flower to find immediate nearby flowers
         flowers_above, flowers_below = None, None
         if branch_up and not flower.branched_up:
-            flowers_above = self.seed.branch_up(item, self)
+            flowers_above = self.seed.branch_up(
+                item, self, grow_branched)
             flower.branched_up = True
         if branch_down and not flower.branched_down:
             flowers_below = self.seed.branch_down(
-                item, self)
+                item, self, grow_branched)
             flower.branched_down = True
-
         return flowers_above, flowers_below
 
     def grow_levels(self, id: str, branch_up_levels: int, branch_down_levels: int) -> None:
         above, below = self.grow(
-            id, branch_up_levels > 0, branch_down_levels > 0)
+            id, branch_up_levels > 0, branch_down_levels > 0, branch_up_levels == branch_down_levels == 0)
         if above:
             for flower in above:
                 self.grow_levels(
                     flower.id, branch_up_levels - 1, 0)
         if below:
             for flower in below:
+                # Grow upwards once to find other parent.
                 self.grow_levels(
-                    flower.id, 0, branch_down_levels - 1)
+                    flower.id, 1, branch_down_levels - 1)
 
     def to_json(self) -> Dict[str, any]:
         return {

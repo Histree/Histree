@@ -7,6 +7,7 @@ class WikiFlower:
     def __init__(self, id: str, petals: Dict[str, str]):
         self.id = id
         self.name = ""
+        self.description = ""
         self.petals = petals
         self.branched_up = False
         self.branched_down = False
@@ -17,6 +18,8 @@ class WikiFlower:
             "name": self.name,
             "petals": self.petals
         }
+        if self.description:
+            json_dict["description"] = self.description
         return json_dict
 
 

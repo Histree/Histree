@@ -46,7 +46,7 @@ class TestWikiTreeMethods(unittest.TestCase):
     @patch("wikitree.tree.WikiSeed")
     def test_grow(self, MockSeedClass, MockWikidataAPIClass):
         MockSeedClass.branch_up, MockSeedClass.branch_down = MagicMock(), MagicMock()
-        MockSeedClass.branch_up.side_effect = lambda it, tr: self._create_dummy_parents(it, tr, {
+        MockSeedClass.branch_up.side_effect = lambda it, tr, _: self._create_dummy_parents(it, tr, {
             "father": {
                 "id": "Q0",
                 "petals": dict(),
@@ -65,7 +65,7 @@ class TestWikiTreeMethods(unittest.TestCase):
             "sitelinks": [],
             "type": "item",
         }
-        MockSeedClass.branch_down.side_effect = lambda it, tr: self._create_dummy_children(it, tr, [
+        MockSeedClass.branch_down.side_effect = lambda it, tr, _: self._create_dummy_children(it, tr, [
             {
                 "id": "Q10",
                 "other_parent": "Q3",
