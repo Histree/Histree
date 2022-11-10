@@ -9,23 +9,37 @@ class App:
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
 
     def close(self):
-        # Don't forget to close the driver connection when you are finished with it
         self.driver.close()
 
-    def create_parentship(self, person1_name, person2_name):
+    @staticmethod
+    def create_app():
+        uri = "neo4j+ssc://c39e82cb.databases.neo4j.io"
+        # zaki uri = "neo4j+s://362c917f.databases.neo4j.io"
+        user = "neo4j"
+        password = "oG3jAqk-AjI2JIvtdUZe-E04bI8v3olKMtKSaOsyrCU"
+        # zaki password = "oG9pc276Dpl-rjlIRyu3Ri0wFOK-aGDhSWnLIVFGGho"
+        app = App(uri, user, password)
+        return app
+
+
+    # Create a parent relationship between person 1 and person 2
+    def create_parenthood(self, person1_name, person2_name):
         with self.driver.session(database="neo4j") as session:
-            # Write transactions allow the driver to handle retries and transient errors
             result = session.execute_write(
-                self._create_and_return_parentship, person1_name, person2_name)
+                self._create_and_return_parenthood, person1_name, person2_name)
             for row in result:
-                print("Created parentship between: {p1}, {p2}".format(p1=row['p1'], p2=row['p2']))
+                print("Created parenthood between: {p1}, {p2}".format(p1=row['p1'], p2=row['p2']))
 
-    def find_person(self, person_name):
+
+
+    # Return a list of all
+    def find_person(self, person_id):
         with self.driver.session(database="neo4j") as session:
-            result = session.execute_read(self._find_and_return_person, person_name)
-            for row in result:
-                print("Found person: {row}".format(row=row))
+            result = session.execute_read(self._find_and_return_person, person_id)
+            return result
 
+
+    # Return a list of all the names of People in the database with this ID
     @staticmethod
     def _find_and_return_person(tx, person_id):
         query = (
@@ -33,8 +47,10 @@ class App:
             "WHERE p.id = $person_id "
             "RETURN p.name AS name"
         )
-        result = tx.run(query, person_id=person_id)
-        return [row["name"] for row in result]
+        matches = tx.run(query, person_id=person_id)
+        return [person["name"] for person in matches]
+
+
 
     def merge_people(self, data):
         with self.driver.session(database="neo4j") as session:
@@ -68,7 +84,7 @@ class App:
                 self._merge_relation, data)
             for row in result:
                 print(row)
-                # print("Created parentship between: {p1}, {p2}".format(p1=row[0], p2=row[1]))
+                # print("Created parenthood between: {p1}, {p2}".format(p1=row[0], p2=row[1]))
 
     @staticmethod
     def _merge_relation(tx, data):
@@ -88,8 +104,10 @@ class App:
 if __name__ == "__main__":
     # Aura queries use an encrypted connection using the "neo4j+s" URI scheme
     uri = "neo4j+ssc://c39e82cb.databases.neo4j.io"
+    # zaki uri = "neo4j+s://362c917f.databases.neo4j.io"
     user = "neo4j"
     password = "oG3jAqk-AjI2JIvtdUZe-E04bI8v3olKMtKSaOsyrCU"
+    # zaki password = "oG9pc276Dpl-rjlIRyu3Ri0wFOK-aGDhSWnLIVFGGho"
     app = App(uri, user, password)
     with open("db_test.json") as f:
         data = json.load(f)
