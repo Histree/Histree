@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -11,19 +11,17 @@ import {
   NodeInfo,
   NodesList,
   AdjList,
-  NodeId,
   RenderContent,
   NodePositions,
   VisibleContent
 } from '../models';
-import { getVisible, getSelected, setSelected } from '../stores/base';
-import { useDispatch, useSelector } from 'react-redux';
-import TreeNodeCard from './TreeNodeCard';
+import TreeNode from './TreeNode';
 import dagre, { graphlib } from 'dagre';
 
+// const CENTER_X = 800;
+// const CENTER_Y = 400;
 const NODE_BOX_WIDTH = 155;
 const NODE_BOX_HEIGHT = 50;
-
 // Populate a Dagre graph with nodes and edges.
 const populateGraph = (
   nodes: NodesList,
@@ -64,17 +62,8 @@ const dagreToFlowNodes = (graph: graphlib.Graph): Node[] => {
     if (nodeObj) {
       const flowNode: Node = {
         id: n,
-        data: {
-          label: (
-            <TreeNodeCard
-              details={{
-                name: nodeObj.label,
-                id: n,
-                petals: nodeObj.petals
-              }}
-            />
-          )
-        },
+        type: 'dataNode',
+        data: { name: nodeObj.label, id: n, petals: nodeObj.petals },
         position: { x: nodeObj.x, y: nodeObj.y },
         draggable: false,
         connectable: false,
@@ -118,6 +107,7 @@ const layoutEdges = (adjList: AdjList): Edge[] => {
 
   Object.keys(adjList).forEach((source) => {
     adjList[source].forEach((target) => {
+      console.log(`source: ${source}, target: ${target}`);
       const edge: Edge = {
         id: `${source}-${target}`,
         source: source,
@@ -141,10 +131,13 @@ const flowersToNodes = (flowers: NodeInfo[]): NodesList => {
 
 const Flow = (props: { content: RenderContent }) => {
   const { setCenter, getZoom } = useReactFlow();
-  const visible = useSelector(getVisible);
+  const nodeTypes = useMemo(
+    () => ({
+      dataNode: TreeNode
+    }),
+    []
+  );
 
-  const dispatch = useDispatch();
-  const selected = useSelector(getSelected);
   const { content } = props;
 
   const graph: graphlib.Graph = new graphlib.Graph();
@@ -153,7 +146,7 @@ const Flow = (props: { content: RenderContent }) => {
     return {};
   });
 
-  const nodes = nodesToDisplay(flowersToNodes(content.flowers), visible);
+  const nodes = nodesToDisplay(flowersToNodes(content.flowers), {}); // TODO change to real visible content obj
   const positions = populateGraph(nodes, content.branches, graph);
   dagre.layout(graph);
 
@@ -164,12 +157,13 @@ const Flow = (props: { content: RenderContent }) => {
       { duration: 800, zoom: getZoom() }
     );
   }, []);
-
   return (
     <div style={{ height: '100%' }}>
       <ReactFlow
         nodes={dagreToFlowNodes(graph)}
         edges={layoutEdges(content.branches)}
+        nodeTypes={nodeTypes}
+        nodeOrigin={[0.5, 0.5]}
         fitView
       >
         <Background />

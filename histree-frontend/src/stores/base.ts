@@ -4,7 +4,12 @@ import {
   configureStore,
   createSelector,
 } from "@reduxjs/toolkit";
-import { RenderContent, Selected, VisibleContent } from "../models";
+import {
+  AutoCompleteData,
+  RenderContent,
+  Selected,
+  VisibleContent,
+} from "../models";
 import {
   fetchSearchResults,
   fetchSearchSuggestions,
@@ -15,7 +20,7 @@ interface HistreeState {
   renderContent: ServiceStatus<RenderContent | undefined>;
   selected?: Selected;
   searchTerm?: string;
-  searchSuggestions: Record<string, string>;
+  searchSuggestions: Record<string, AutoCompleteData>;
   visible: VisibleContent;
 }
 
@@ -67,7 +72,7 @@ export const getSearchSuggestions = createSelector(
     return state.searchSuggestions;
   },
   (x) =>
-    Object.fromEntries(Object.entries(x).map(([key, value]) => [value, key]))
+    Object.fromEntries(Object.values(x).map((value) => [value.label, value]))
 );
 
 export const getRenderContent = createSelector(

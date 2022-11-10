@@ -7,3 +7,8 @@ export interface RenderContent {
 }
 
 export type VisibleContent = Record<NodeId, boolean>;
+export interface AutoCompleteData {
+  description: string;
+  id: NodeId;
+  label: string;
+}
