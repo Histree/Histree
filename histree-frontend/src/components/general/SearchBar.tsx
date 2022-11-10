@@ -21,7 +21,7 @@ export const SearchBar = () => {
 			appDispatch(fetchSearchSuggestions((e.target as HTMLInputElement).value))
 		}
 		else {
-			dispatch(resetSearch);
+			dispatch(resetSearch());
 		}
 	};
 
@@ -31,12 +31,11 @@ export const SearchBar = () => {
 		if (value && searchSuggestions[value]) {
 			dispatch(setResultServiceState({ status: 'Loading' }));
 			console.log(searchSuggestions[value])
-			appDispatch(fetchSearchResults(searchSuggestions[value]));
+			appDispatch(fetchSearchResults(searchSuggestions[value].id));
 		}
-		else {
-			console.log('Resetting')
-			dispatch(resetSearch);
-		}
+		console.log('Resetting')
+		dispatch(resetSearch());
+
 	};
 	return (
 		<div className="search_container">

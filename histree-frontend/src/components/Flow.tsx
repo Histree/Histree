@@ -218,13 +218,13 @@ const Flow = (props: { content: RenderContent }) => {
 			positions[content.searchedQid].y,
 			{ duration: 800, zoom: getZoom() })
 	}, []);
-
 	return (
 		<div style={{ height: "100%" }}>
 			<ReactFlow
 				nodes={dagreToFlowNodes(graph)}
 				edges={layoutEdges(content.branches)}
 				nodeTypes={nodeTypes}
+				nodeOrigin={[0.5, 0.5]}
 				fitView
 			>
 				<Background />

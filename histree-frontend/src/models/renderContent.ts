@@ -5,3 +5,9 @@ export interface RenderContent {
   branches: AdjList;
   flowers: NodeInfo[];
 }
+
+export interface AutoCompleteData {
+  description: string;
+  id: NodeId;
+  label: string;
+}
