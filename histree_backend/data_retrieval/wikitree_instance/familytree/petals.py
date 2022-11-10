@@ -75,3 +75,22 @@ class BirthNamePetal(WikiPetal):
         if not birth_names:
             return self.undefined
         return birth_names[0]
+
+
+class ImagePetal(WikiPetal):
+    URL_PREFIX = "https://en.wikipedia.org/wiki/Special:FilePath/"
+
+    def __init__(self):
+        label = "image"
+        super().__init__(
+            PROPERTY_MAP["petals"][label], label)
+
+    def to_wikimedia_url(self, image: str) -> str:
+        return self.URL_PREFIX + image.replace(' ', '_')
+
+    def parse(self, item: WikidataItem) -> str:
+        images = [claim.mainsnak.datavalue.value
+                  for claim in item.get_claim_group(self.id)._claims if claim.mainsnak.datavalue]
+        if not images:
+            return self.undefined
+        return self.to_wikimedia_url(images[0])
