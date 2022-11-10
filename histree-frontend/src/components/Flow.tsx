@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import ReactFlow, {
 	Controls,
 	Background,
@@ -19,14 +19,13 @@ import {
 } from "../models";
 import { getDepth, getSelected, setSelected } from "../stores/base";
 import { useDispatch, useSelector } from "react-redux";
-import TreeNodeCard from "./TreeNodeCard";
+import TreeNode from "./TreeNode";
 import dagre, { graphlib } from "dagre";
 
 // const CENTER_X = 800;
 // const CENTER_Y = 400;
 const NODE_BOX_WIDTH = 155;
 const NODE_BOX_HEIGHT = 50;
-
 // Populate a Dagre graph with nodes and edges.
 const populateGraph = (
 	nodes: NodesList,
@@ -67,11 +66,8 @@ const dagreToFlowNodes = (graph: graphlib.Graph): Node[] => {
 		if (nodeObj) {
 			const flowNode: Node = {
 				id: n,
-				data: {
-					label: <TreeNodeCard details={{
-						name: nodeObj.label, id: n, petals: nodeObj.petals
-					}} />,
-				},
+				type: 'dataNode',
+				data: { name: nodeObj.label, id: n, petals: nodeObj.petals },
 				position: { x: nodeObj.x, y: nodeObj.y },
 				draggable: false,
 				connectable: false,
@@ -165,10 +161,12 @@ const nodesToDisplay = (
 
 // Converts adjacency list to list of Edges for React Flow rendering.
 const layoutEdges = (adjList: AdjList): Edge[] => {
+
 	const completeEdges: Edge[] = [];
 
 	Object.keys(adjList).forEach((source) => {
 		adjList[source].forEach((target) => {
+			console.log(`source: ${source}, target: ${target}`)
 			const edge: Edge = {
 				id: `${source}-${target}`,
 				source: source,
@@ -192,10 +190,11 @@ const flowersToNodes = (flowers: NodeInfo[]): NodesList => {
 
 const Flow = (props: { content: RenderContent }) => {
 	const { setCenter, getZoom } = useReactFlow();
+	const nodeTypes = useMemo(() => ({
+		dataNode: TreeNode
+	}), []);
 	const depth = useSelector(getDepth);
 
-	const dispatch = useDispatch();
-	const selected = useSelector(getSelected);
 	const { content } = props;
 
 	const graph: graphlib.Graph = new graphlib.Graph();
@@ -219,12 +218,13 @@ const Flow = (props: { content: RenderContent }) => {
 			positions[content.searchedQid].y,
 			{ duration: 800, zoom: getZoom() })
 	}, []);
-
 	return (
 		<div style={{ height: "100%" }}>
 			<ReactFlow
 				nodes={dagreToFlowNodes(graph)}
 				edges={layoutEdges(content.branches)}
+				nodeTypes={nodeTypes}
+				nodeOrigin={[0.5, 0.5]}
 				fitView
 			>
 				<Background />
