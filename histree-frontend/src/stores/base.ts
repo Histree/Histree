@@ -6,13 +6,14 @@ import {
 } from "@reduxjs/toolkit";
 import {
   AutoCompleteData,
+  NodeLookup,
   RenderContent,
   Selected,
-  VisibleContent,
 } from "../models";
 import {
   fetchSearchResults,
   fetchSearchSuggestions,
+  fetchSelectedExpansion,
   ServiceStatus,
 } from "../services";
 
@@ -21,14 +22,14 @@ interface HistreeState {
   selected?: Selected;
   searchTerm?: string;
   searchSuggestions: Record<string, AutoCompleteData>;
-  visible: VisibleContent;
+  nodeLookup: NodeLookup;
 }
 
 const initialState: HistreeState = {
   selected: undefined,
   renderContent: { status: "Initial" },
   searchSuggestions: {},
-  visible: {},
+  nodeLookup: {},
 };
 
 export const histreeState = createSlice({
@@ -53,21 +54,69 @@ export const histreeState = createSlice({
     ) => {
       state.renderContent = action.payload;
     },
-    setVisible: (state, action: PayloadAction<VisibleContent>) => {
-      state.visible = action.payload;
+    setNodeLookup: (state, action: PayloadAction<NodeLookup>) => {
+      state.nodeLookup = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchSearchSuggestions.fulfilled, (state, action) => {
       state.searchSuggestions = action.payload;
     });
+
     builder.addCase(fetchSearchResults.fulfilled, (state, action) => {
       state.renderContent = action.payload;
-      const vis: VisibleContent = {};
+      const lookup: NodeLookup = {};
+
       if (action.payload.status === "Success") {
-        vis[action.payload.content!.searchedQid] = true;
+        state.renderContent.content!.flowers.forEach((f) => {
+          lookup[f.id] = f;
+          lookup[f.id].visible = f.id === action.payload.content!.searchedQid;
+          lookup[f.id].searched = f.id === action.payload.content!.searchedQid;
+        });
       }
-      state.visible = vis;
+      state.nodeLookup = lookup;
+    });
+
+    builder.addCase(fetchSelectedExpansion.fulfilled, (state, action) => {
+      const response = action.payload;
+      const renderContent = { ...state.renderContent };
+      const lookup = { ...state.nodeLookup };
+
+      if (response.status === "Success") {
+        const { branches, flowers, direction, searchedQid } = response.content!;
+
+        flowers.forEach((f) => {
+          lookup[f.id] = f;
+          lookup[f.id].visible = f.id === searchedQid;
+          lookup[f.id].searched = f.id === searchedQid;
+        });
+
+        const render = renderContent.content!;
+        flowers.forEach((x) => {
+          if (!render.flowers.includes(x)) {
+            render.flowers.push(x);
+          }
+        });
+
+        Object.keys(branches).forEach((b) => {
+          render.branches[b] = branches[b];
+        });
+
+        if (direction === "up") {
+          Object.keys(render.branches).forEach((parentId) => {
+            if (render.branches[parentId].includes(searchedQid)) {
+              lookup[parentId].visible = true;
+            }
+          });
+        } else {
+          render.branches[searchedQid].forEach((childId) => {
+            lookup[childId].visible = true;
+          });
+        }
+        state.nodeLookup = lookup;
+      }
+
+      state.renderContent = renderContent;
     });
   },
 });
@@ -94,16 +143,16 @@ export const getSelected = createSelector(
   (x) => x
 );
 
-export const getVisible = createSelector(
+export const getNodeLookup = createSelector(
   (state: HistreeState) => {
-    return state.visible;
+    return state.nodeLookup;
   },
   (x) => x
 );
 
 export const {
   setSelected,
-  setVisible,
+  setNodeLookup,
   setRenderContent,
   resetSearch,
   setResultServiceState,

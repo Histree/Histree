@@ -6,7 +6,6 @@ export interface RenderContent {
   flowers: NodeInfo[];
 }
 
-export type VisibleContent = Record<NodeId, boolean>;
 export interface AutoCompleteData {
   description: string;
   id: NodeId;

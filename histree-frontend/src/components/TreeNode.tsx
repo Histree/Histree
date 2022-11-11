@@ -4,18 +4,21 @@ import {
   setSelected,
   getSelected,
   getRenderContent,
-  getVisible,
-  setVisible
+  getNodeLookup,
+  setNodeLookup,
+  AppDispatch
 } from '../stores/base';
 import { NodeInfo } from '../models';
 import './TreeNode.scss';
 import { Handle, Position } from 'reactflow';
+import { fetchSelectedExpansion } from '../services';
 
 const TreeNode = ({ data }: { data: NodeInfo }) => {
   const dispatch = useDispatch();
   const selected = useSelector(getSelected);
   const renderContent = useSelector(getRenderContent);
-  const visible = useSelector(getVisible);
+  const nodeLookup = useSelector(getNodeLookup);
+  const appDispatch = useDispatch<AppDispatch>();
 
   const expandWindow = () => {
     dispatch(
@@ -32,29 +35,45 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 
   const handleExpandParents = (): void => {
     if (renderContent.status === 'Success') {
-      const adjList = renderContent.content!.branches;
-      const newVis = { ...visible };
+      const { branches } = renderContent.content!;
+      const nodes = { ...nodeLookup };
 
-      Object.keys(adjList).forEach((parentId) => {
-        if (adjList[parentId].includes(data.id)) {
-          newVis[parentId] = true;
-        }
-      });
+      if (!nodes[data.id].searched) {
+        appDispatch(
+          fetchSelectedExpansion({ searchedQid: data.id, direction: 'up' })
+        );
+      } else {
+        Object.keys(branches).forEach((parentId) => {
+          if (branches[parentId].includes(data.id)) {
+            const parent = { ...nodes[parentId] };
+            parent.visible = true;
+            nodes[parentId] = parent;
+          }
+        });
 
-      dispatch(setVisible(newVis));
+        dispatch(setNodeLookup(nodes));
+      }
     }
   };
 
   const handleExpandChildren = (): void => {
     if (renderContent.status === 'Success') {
-      const adjList = renderContent.content!.branches;
-      const newVis = { ...visible };
+      const { branches } = renderContent.content!;
+      const nodes = { ...nodeLookup };
 
-      adjList[data.id].forEach((childId) => {
-        newVis[childId] = true;
-      });
-
-      dispatch(setVisible(newVis));
+      if (!nodes[data.id].searched) {
+        appDispatch(
+          fetchSelectedExpansion({ searchedQid: data.id, direction: 'down' })
+        );
+      } else {
+        branches[data.id].forEach((childId) => {
+          console.log(nodes[childId]);
+          const child = { ...nodes[childId] };
+          child.visible = true;
+          nodes[childId] = child;
+        });
+        dispatch(setNodeLookup(nodes));
+      }
     }
   };
 

@@ -7,18 +7,11 @@ import ReactFlow, {
   useReactFlow
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import {
-  NodeInfo,
-  NodesList,
-  AdjList,
-  RenderContent,
-  NodePositions,
-  VisibleContent
-} from '../models';
+import { NodeLookup, AdjList, RenderContent, NodePositions } from '../models';
 import TreeNode from './TreeNode';
 import dagre, { graphlib } from 'dagre';
 import { useSelector } from 'react-redux';
-import { getVisible } from '../stores';
+import { getNodeLookup } from '../stores';
 import InvisibleConnectionLine from './general/InvisibleConnectionLine';
 
 // const CENTER_X = 800;
@@ -27,21 +20,23 @@ const NODE_BOX_WIDTH = 155;
 const NODE_BOX_HEIGHT = 50;
 // Populate a Dagre graph with nodes and edges.
 const populateGraph = (
-  nodes: NodesList,
+  nodes: NodeLookup,
   adjList: AdjList,
   graph: graphlib.Graph
 ): NodePositions => {
   const positions: NodePositions = {};
   Object.keys(nodes).forEach((node) => {
-    const { id, name, petals } = nodes[node];
-    graph.setNode(id, {
-      label: name,
-      qid: id,
-      petals: petals,
-      width: NODE_BOX_WIDTH,
-      height: NODE_BOX_HEIGHT
-    });
-    positions[id] = graph.node(id);
+    if (nodes[node].visible) {
+      const { id, name, petals } = nodes[node];
+      graph.setNode(id, {
+        label: name,
+        qid: id,
+        petals: petals,
+        width: NODE_BOX_WIDTH,
+        height: NODE_BOX_HEIGHT
+      });
+      positions[id] = graph.node(id);
+    }
   });
 
   Object.keys(adjList).forEach((sourceId) => {
@@ -78,22 +73,6 @@ const dagreToFlowNodes = (graph: graphlib.Graph): Node[] => {
   return ns;
 };
 
-// Returns nodes to be displayed on the graph.
-const nodesToDisplay = (
-  nodesInfo: NodesList,
-  visible: VisibleContent
-): NodesList => {
-  const nodeVisibility = Object.keys(visible);
-
-  const result: NodesList = {};
-  for (const nodeId of nodeVisibility) {
-    if (visible[nodeId]) {
-      result[nodeId] = nodesInfo[nodeId];
-    }
-  }
-  return result;
-};
-
 // Converts adjacency list to list of Edges for React Flow rendering.
 const layoutEdges = (adjList: AdjList): Edge[] => {
   const completeEdges: Edge[] = [];
@@ -113,14 +92,6 @@ const layoutEdges = (adjList: AdjList): Edge[] => {
   return completeEdges;
 };
 
-const flowersToNodes = (flowers: NodeInfo[]): NodesList => {
-  const result: NodesList = {};
-  flowers.forEach((f) => {
-    result[f.id] = f;
-  });
-  return result;
-};
-
 const Flow = (props: { content: RenderContent }) => {
   const { content } = props;
 
@@ -131,7 +102,8 @@ const Flow = (props: { content: RenderContent }) => {
     }),
     []
   );
-  const visible = useSelector(getVisible);
+
+  const nodeLookup = useSelector(getNodeLookup);
 
   const graph: graphlib.Graph = new graphlib.Graph();
   graph.setGraph({});
@@ -139,8 +111,7 @@ const Flow = (props: { content: RenderContent }) => {
     return {};
   });
 
-  const nodes = nodesToDisplay(flowersToNodes(content.flowers), visible);
-  const positions = populateGraph(nodes, content.branches, graph);
+  const positions = populateGraph(nodeLookup, content.branches, graph);
   dagre.layout(graph);
 
   useEffect(() => {
