@@ -24,21 +24,22 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 
   return (
     <>
+      <Handle
+        type="target"
+        position={Position.Top}
+        isConnectable
+        onClick={() => console.log('clicked top handle')}
+      />
       <div className="treenodecard" onClick={expandWindow}>
-        <Handle
-          type="target"
-          position={Position.Top}
-          isConnectable={false}
-          onClick={() => console.log('clicked top handle')}
-        />
         <div className="treenodechild">{data.name}</div>
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          isConnectable={false}
-          onClick={() => console.log('clicked bottom handle')}
-        />
       </div>
+
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        isConnectable
+        onClick={() => console.log('clicked bottom handle')}
+      />
     </>
   );
 };

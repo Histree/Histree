@@ -19,6 +19,7 @@ import TreeNode from './TreeNode';
 import dagre, { graphlib } from 'dagre';
 import { useSelector } from 'react-redux';
 import { getVisible } from '../stores';
+import InvisibleConnectionLine from './general/InvisibleConnectionLine';
 
 // const CENTER_X = 800;
 // const CENTER_Y = 400;
@@ -153,10 +154,12 @@ const Flow = (props: { content: RenderContent }) => {
   return (
     <div style={{ height: '100%' }}>
       <ReactFlow
+        className="flow"
         nodes={dagreToFlowNodes(graph)}
         edges={layoutEdges(content.branches)}
         nodeTypes={nodeTypes}
         nodeOrigin={[0.5, 0.5]}
+        connectionLineComponent={InvisibleConnectionLine}
         fitView
       >
         <Background />
