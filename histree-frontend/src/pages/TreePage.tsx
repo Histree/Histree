@@ -1,15 +1,22 @@
 import React from 'react';
 import Flow from '../components/Flow';
-import { getSelected, getRenderContent } from '../stores/base';
-import { useSelector } from 'react-redux';
+import {
+  getSelected,
+  getRenderContent,
+  setVisible,
+  getVisible
+} from '../stores/base';
+import { useDispatch, useSelector } from 'react-redux';
 import './TreePage.scss';
 import { DescriptorCard, SearchBar } from '../components';
 import { ReactFlowProvider } from 'reactflow';
 import { Alert, Box, CircularProgress, Snackbar } from '@mui/material';
+import { VisibleContent } from '../models';
 
 const TreePage = () => {
   const selected = useSelector(getSelected);
   const renderContent = useSelector(getRenderContent);
+
   return (
     <div className="treepage">
       {renderContent.status === 'Success' && (

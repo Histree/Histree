@@ -63,6 +63,11 @@ export const histreeState = createSlice({
     });
     builder.addCase(fetchSearchResults.fulfilled, (state, action) => {
       state.renderContent = action.payload;
+      const vis: VisibleContent = {};
+      if (action.payload.status === "Success") {
+        vis[action.payload.content!.searchedQid] = true;
+      }
+      state.visible = vis;
     });
   },
 });

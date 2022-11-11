@@ -1,6 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios, { AxiosError } from "axios";
-import { AutoCompleteData, RenderContent } from "../models";
+import { useDispatch, useSelector } from "react-redux";
+import { AutoCompleteData, RenderContent, VisibleContent } from "../models";
+import { getVisible, setVisible } from "../stores";
 
 export interface ServiceStatus<T> {
   status: "Initial" | "Loading" | "Success" | "Failure";
@@ -26,6 +28,7 @@ export const fetchSearchResults = createAsyncThunk(
         `https://histree.fly.dev/person_info/${qid}`
       );
       console.log(response.data);
+
       return {
         status: "Success",
         content: { ...response.data, searchedQid: qid },

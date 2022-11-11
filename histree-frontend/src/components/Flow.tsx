@@ -17,6 +17,8 @@ import {
 } from '../models';
 import TreeNode from './TreeNode';
 import dagre, { graphlib } from 'dagre';
+import { useSelector } from 'react-redux';
+import { getVisible } from '../stores';
 
 // const CENTER_X = 800;
 // const CENTER_Y = 400;
@@ -82,16 +84,6 @@ const nodesToDisplay = (
 ): NodesList => {
   const nodeVisibility = Object.keys(visible);
 
-  // Check if any visible nodes exist
-  if (
-    Object.keys(visible).length === 0 ||
-    !nodeVisibility.reduce((x, y) => {
-      return x && visible[y];
-    }, false)
-  ) {
-    return {};
-  }
-
   const result: NodesList = {};
   for (const nodeId of nodeVisibility) {
     if (visible[nodeId]) {
@@ -107,7 +99,6 @@ const layoutEdges = (adjList: AdjList): Edge[] => {
 
   Object.keys(adjList).forEach((source) => {
     adjList[source].forEach((target) => {
-      console.log(`source: ${source}, target: ${target}`);
       const edge: Edge = {
         id: `${source}-${target}`,
         source: source,
@@ -130,6 +121,8 @@ const flowersToNodes = (flowers: NodeInfo[]): NodesList => {
 };
 
 const Flow = (props: { content: RenderContent }) => {
+  const { content } = props;
+
   const { setCenter, getZoom } = useReactFlow();
   const nodeTypes = useMemo(
     () => ({
@@ -137,8 +130,7 @@ const Flow = (props: { content: RenderContent }) => {
     }),
     []
   );
-
-  const { content } = props;
+  const visible = useSelector(getVisible);
 
   const graph: graphlib.Graph = new graphlib.Graph();
   graph.setGraph({});
@@ -146,7 +138,7 @@ const Flow = (props: { content: RenderContent }) => {
     return {};
   });
 
-  const nodes = nodesToDisplay(flowersToNodes(content.flowers), {}); // TODO change to real visible content obj
+  const nodes = nodesToDisplay(flowersToNodes(content.flowers), visible);
   const positions = populateGraph(nodes, content.branches, graph);
   dagre.layout(graph);
 
@@ -157,6 +149,7 @@ const Flow = (props: { content: RenderContent }) => {
       { duration: 800, zoom: getZoom() }
     );
   }, []);
+
   return (
     <div style={{ height: '100%' }}>
       <ReactFlow
