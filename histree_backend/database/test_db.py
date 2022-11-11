@@ -52,6 +52,24 @@ class App:
 
 
 
+    # Return all the IDs of the parents of this person
+    def find_parents(self, person_id):
+        with self.driver.session(database="neo4j") as session:
+            result = session.execute_read(self._find_and_return_parents, person_id)
+            return result
+
+
+    @staticmethod
+    def _find_and_return_parents(tx, person_id):
+        query = (
+            "MATCH (parent:Person)-[:PARENT_OF]->(:Person {id: '$person_id'}) "
+            "RETURN parent.id AS id "
+        )
+        matches = tx.run(query, person_id=person_id)
+        return [match["id"] for match in matches]
+
+
+
     def merge_people(self, data):
         with self.driver.session(database="neo4j") as session:
             # Write transactions allow the driver to handle retries and transient errors
