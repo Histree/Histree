@@ -3,7 +3,7 @@ import logging
 import json
 from neo4j.exceptions import ServiceUnavailable
 import pytest
-from test_db import App
+from people_db import App
 
 
 @pytest.fixture

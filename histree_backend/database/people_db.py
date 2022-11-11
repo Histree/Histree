@@ -3,8 +3,8 @@ import logging
 import json
 from neo4j.exceptions import ServiceUnavailable
 
-class App:
 
+class App:
     def __init__(self, uri, user, password):
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
 
