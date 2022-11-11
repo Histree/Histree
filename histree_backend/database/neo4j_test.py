@@ -17,3 +17,9 @@ def test_find_person(make_connection):
     assert names[0] == "Albert Einstein"
 
 
+def test_find_parents(make_connection):
+    parents = make_connection.find_parents("Q937")
+    assert "Q88665" in parents # Hermann Einstein is the father
+
+
+

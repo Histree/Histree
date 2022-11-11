@@ -62,7 +62,7 @@ class App:
     @staticmethod
     def _find_and_return_parents(tx, person_id):
         query = (
-            "MATCH (parent:Person)-[:PARENT_OF]->(:Person {id: '$person_id'}) "
+            "MATCH (parent:Person)-[:PARENT_OF]->(:Person {id: \'" + person_id + "\'}) "
             "RETURN parent.id AS id "
         )
         matches = tx.run(query, person_id=person_id)
