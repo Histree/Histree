@@ -70,6 +70,52 @@ class App:
 
 
 
+    def common_ancestor(self, person_id1, person_id2):
+        with self.driver.session(database="neo4j") as session:
+            result = session.execute_read(self._common_ancestor, person_id1, person_id2)
+            return result
+    
+
+    @staticmethod
+    def _common_ancestor(tx, person_id1, person_id2):
+        query = (
+            "MATCH (p1: Person {id: \'" + person_id1 + "\'})-[:PARENT_OF*]->(a1: Person) "
+            "MATCH (p2: Person {id: \'" + person_id1 + "\'})-[:PARENT_OF*]->(a2: Person) "
+            "WHERE p1.id = p2.id "
+            "MATCH path = (c1)-[:PARENT_OF]->(a1) "
+
+        )
+
+#         MATCH (c1:Concept {conceptID: 35104066})-[:Relation*{type: "Is a"}]->(p1:Concept)
+# MATCH (:Concept {conceptID: 35808913})-[:Relation*{type: "Is a"}]->(p2:Concept)
+# WHERE p1.conceptID = p2.conceptID
+# MATCH path = (c1)-[:Relation*{type: "Is a"}]->(p1)
+# RETURN p1
+# ORDER BY length(path)
+# LIMIT 1
+
+
+    def shortest_path(self, person_id1, person_id2):
+        with self.driver.session(database="neo4j") as session:
+            result = session.execute_read(self._shortest_path, person_id1, person_id2)
+            return result
+
+    @staticmethod
+    def _shortest_path(tx, person_id1, person_id2):
+        query = (
+            "MATCH (p1:Person {id: \'" + person_id1 + "\'}), "
+            "(p2: Person {id: \'" + person_id2 + "\'}), "
+            "p = shortestPath((p1)-[*]-(p2)) "
+            "RETURN p"
+        )
+
+        path = tx.run(query, person_id1=person_id1, person_id2 = person_id2)
+        return path
+
+
+
+
+
     def merge_people(self, data):
         with self.driver.session(database="neo4j") as session:
             # Write transactions allow the driver to handle retries and transient errors
