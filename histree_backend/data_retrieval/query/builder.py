@@ -1,10 +1,13 @@
-class QueryBuilder:
+class SPARQLBuilder:
     def __init__(self):
         self.language = "en"
         self.predicate = ""
         self.limit = None
+        self.order_by = ""
+        self.other = ""
         self.headers = dict()
         self.filters = dict()
+        self.other_filters = ""
 
     def build(self) -> str:
         header_selections = " ".join(
@@ -30,37 +33,44 @@ class QueryBuilder:
         return f"""
             SELECT ?item ?label ?description {header_selections}
             WHERE {{
+              {self.other}
               ?item {self.predicate}
                 rdfs:label ?label;
                 schema:description ?description.
               {header_bindings}
               {filtering}
+              {self.other_filters}
               FILTER(lang(?label) = "{self.language}" && lang(?description) = "{self.language}")
             }}
             GROUP BY ?item ?label ?description {header_access}
+            {self.order_by}
             {f"LIMIT {self.limit}" if self.limit is not None else ""}
         """
 
-    def with_limit(self, limit: int) -> "QueryBuilder":
+    def with_limit(self, limit: int) -> "SPARQLBuilder":
         self.limit = limit
         return self
 
-    def with_property(self, property: str, value: str) -> "QueryBuilder":
-        self.predicate += f"wdt:{property} wd:{value};"
+    def ordered_by(self, value: str, ascending: bool = True) -> "SPARQLBuilder":
+        self.order_by = f"ORDER BY {'ASC' if ascending else 'DSC'}({value})"
         return self
 
-    def with_instance(self, instance: str) -> "QueryBuilder":
-        return self.with_property("P31", instance)
-
-    def under_class(self, cls: str) -> "QueryBuilder":
+    def under_class(self, cls: str) -> "SPARQLBuilder":
         self.predicate += f"p:P31/ps:P31/wdt:P279* wd:{cls};"
         return self
 
-    def without_property(self, property: str, value: str) -> "QueryBuilder":
+    def with_property(self, property: str, value: str) -> "SPARQLBuilder":
+        self.predicate += f"wdt:{property} wd:{value};"
+        return self
+
+    def with_instance(self, instance: str) -> "SPARQLBuilder":
+        return self.with_property("P31", instance)
+
+    def without_property(self, property: str, value: str) -> "SPARQLBuilder":
         if property not in self.filters:
             self.filters[property] = []
         self.filters[property].append(value)
         return self
 
-    def without_instance(self, instance: str) -> "QueryBuilder":
+    def without_instance(self, instance: str) -> "SPARQLBuilder":
         return self.without_property("P31", instance)
