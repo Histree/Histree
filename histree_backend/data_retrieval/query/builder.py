@@ -1,11 +1,16 @@
+from typing import Dict
+
+
 class SPARQLBuilder:
-    def __init__(self):
-        self.language = "en"
+    def __init__(
+        self, headers: Dict[str, Dict[str, any]] = dict(), language: str = "en"
+    ):
+        self.language = language
         self.predicate = ""
         self.limit = None
         self.order_by = ""
         self.other = ""
-        self.headers = dict()
+        self.headers = headers
         self.filters = dict()
         self.other_filters = ""
 
@@ -33,14 +38,14 @@ class SPARQLBuilder:
         return f"""
             SELECT ?item ?label ?description {header_selections}
             WHERE {{
-              {self.other}
-              ?item {self.predicate}
-                rdfs:label ?label;
-                schema:description ?description.
-              {header_bindings}
-              {filtering}
-              {self.other_filters}
-              FILTER(lang(?label) = "{self.language}" && lang(?description) = "{self.language}")
+                {self.other}
+                ?item {self.predicate}
+                    rdfs:label ?label;
+                    schema:description ?description.
+                {header_bindings}
+                {filtering}
+                {self.other_filters}
+                FILTER(lang(?label) = "{self.language}" && lang(?description) = "{self.language}")
             }}
             GROUP BY ?item ?label ?description {header_access}
             {self.order_by}
