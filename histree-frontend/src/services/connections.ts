@@ -1,6 +1,5 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios, { AxiosError } from "axios";
-import { useDispatch, useSelector } from "react-redux";
 import { AutoCompleteData, ExpandInfo, RenderContent } from "../models";
 
 export interface ServiceStatus<T> {
@@ -50,7 +49,7 @@ export const fetchSelectedExpansion = createAsyncThunk(
       const response = await axios.get<RenderContent>(
         `https://histree.fly.dev/person_info/${info.searchedQid}`
       );
-
+      console.log(response.data);
       return {
         status: "Success",
         content: {

@@ -6,6 +6,7 @@ import {
 } from "@reduxjs/toolkit";
 import {
   AutoCompleteData,
+  ExpandInfo,
   NodeLookup,
   RenderContent,
   Selected,
@@ -68,56 +69,80 @@ export const histreeState = createSlice({
       const lookup: NodeLookup = {};
 
       if (action.payload.status === "Success") {
-        state.renderContent.content!.flowers.forEach((f) => {
+        state.renderContent.content?.flowers.forEach((f) => {
           lookup[f.id] = f;
-          lookup[f.id].visible = f.id === action.payload.content!.searchedQid;
-          lookup[f.id].searched = f.id === action.payload.content!.searchedQid;
+          lookup[f.id].visible = f.id === action.payload.content?.searchedQid;
+          lookup[f.id].searched = f.id === action.payload.content?.searchedQid;
         });
       }
       state.nodeLookup = lookup;
     });
 
-    builder.addCase(fetchSelectedExpansion.fulfilled, (state, action) => {
-      const response = action.payload;
-      const renderContent = { ...state.renderContent };
-      const lookup = { ...state.nodeLookup };
+    builder.addCase(
+      fetchSelectedExpansion.fulfilled,
+      (state: HistreeState, action) => {
+        const response = action.payload;
+        const lookup = { ...state.nodeLookup };
+        // const renderFlowers: NodeInfo[] = { ...state.renderContent.content!.flowers };
+        // const renderBranches: AdjList = { ...state.renderContent.content!.branches };
+        // console.log(renderFlowers);
+        if (response.status === "Success") {
+          const { branches, flowers, direction, searchedQid } =
+            response.content as RenderContent & ExpandInfo;
 
-      if (response.status === "Success") {
-        const { branches, flowers, direction, searchedQid } = response.content!;
-
-        flowers.forEach((f) => {
-          lookup[f.id] = f;
-          lookup[f.id].visible = f.id === searchedQid;
-          lookup[f.id].searched = f.id === searchedQid;
-        });
-
-        const render = renderContent.content!;
-        flowers.forEach((x) => {
-          if (!render.flowers.includes(x)) {
-            render.flowers.push(x);
-          }
-        });
-
-        Object.keys(branches).forEach((b) => {
-          render.branches[b] = branches[b];
-        });
-
-        if (direction === "up") {
-          Object.keys(render.branches).forEach((parentId) => {
-            if (render.branches[parentId].includes(searchedQid)) {
-              lookup[parentId].visible = true;
+          flowers.forEach((f) => {
+            if (lookup[f.id] !== undefined) {
+              lookup[f.id] = f;
+              lookup[f.id].visible = f.id === searchedQid;
+              lookup[f.id].searched = f.id === searchedQid;
             }
           });
-        } else {
-          render.branches[searchedQid].forEach((childId) => {
-            lookup[childId].visible = true;
-          });
-        }
-        state.nodeLookup = lookup;
-      }
 
-      state.renderContent = renderContent;
-    });
+          flowers.forEach((x) => {
+            if (
+              state.renderContent.content != null &&
+              !state.renderContent.content.flowers.includes(x)
+            ) {
+              state.renderContent.content.flowers.push(x);
+            }
+          });
+
+          Object.keys(branches).forEach((b) => {
+            const individualBranch = state.renderContent.content?.branches[b];
+            const newBranch =
+              individualBranch != null
+                ? [...individualBranch, ...branches[b]]
+                : branches[b];
+            console.log(b, branches[b]);
+            if (state.renderContent.content != null) {
+              state.renderContent.content.branches[b] = newBranch;
+            }
+          });
+
+          if (direction === "up") {
+            Object.keys(branches).forEach((parentId) => {
+              if (branches[parentId].includes(searchedQid)) {
+                lookup[parentId].visible = true;
+              }
+            });
+          } else {
+            console.log("lmao");
+            console.log(branches);
+            if (branches[searchedQid] !== undefined) {
+              branches[searchedQid].forEach((childId) => {
+                lookup[childId].visible = true;
+              });
+            }
+          }
+          state.nodeLookup = lookup;
+          // state.renderContent.content = {
+          // 	searchedQid: state.renderContent.content!.searchedQid,
+          // 	branches: { ...state.renderContent.content!.branches, ...branches },
+          // 	flowers: { ...state.renderContent.content!.flowers, ...flowers }
+          // };
+        }
+      }
+    );
   },
 });
 
