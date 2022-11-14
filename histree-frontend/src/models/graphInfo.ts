@@ -5,6 +5,7 @@ export type HandleStatus = "None" | "Loading" | "Complete" | "NoData";
 export type NodeInfo = {
   name: string;
   id: NodeId;
+  description?: string;
   petals?: Record<string, string>;
   searched?: boolean;
   visible?: boolean;

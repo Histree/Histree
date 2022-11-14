@@ -27,11 +27,12 @@ const populateGraph = (
   const positions: NodePositions = {};
   Object.keys(nodes).forEach((node) => {
     if (nodes[node].visible) {
-      const { id, name, petals } = nodes[node];
+      const { id, name, petals, description } = nodes[node];
       graph.setNode(id, {
         label: name,
         qid: id,
         petals: petals,
+        description: description,
         width: NODE_BOX_WIDTH,
         height: NODE_BOX_HEIGHT
       });
@@ -56,12 +57,17 @@ const dagreToFlowNodes = (graph: graphlib.Graph): Node[] => {
   /* eslint-disable  @typescript-eslint/no-explicit-any */
   dagreNodes.forEach((n: any) => {
     const nodeObj: any = graph.node(n);
-    console.log(nodeObj);
+
     if (nodeObj) {
       const flowNode: Node = {
         id: n,
         type: 'dataNode',
-        data: { name: nodeObj.label, id: n, petals: nodeObj.petals },
+        data: {
+          name: nodeObj.label,
+          description: nodeObj.description,
+          id: n,
+          petals: nodeObj.petals
+        },
         position: { x: nodeObj.x, y: nodeObj.y },
         draggable: false,
         connectable: false,

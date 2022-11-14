@@ -2,7 +2,6 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
 	setSelected,
-	getSelected,
 	getRenderContent,
 	getNodeLookup,
 	setNodeLookup,
@@ -24,7 +23,6 @@ const nodeClassMap: Record<HandleStatus, string> = {
 
 const TreeNode = ({ data }: { data: NodeInfo }) => {
 	const dispatch = useDispatch();
-	const selected = useSelector(getSelected);
 	const renderContent = useSelector(getRenderContent);
 	const nodeLookup = useSelector(getNodeLookup);
 	const appDispatch = useDispatch<AppDispatch>();
@@ -39,7 +37,6 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 				// links: details?.links,
 			})
 		);
-		console.log(selected);
 	};
 
 	const handleExpandParents = (): void => {

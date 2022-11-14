@@ -19,14 +19,10 @@ import './DescriptorCard.scss';
 export const DescriptorCard = (props: { selectedItem: Selected }) => {
   const { selectedItem } = props;
 
-  console.log(selectedItem);
-
   const dispatch = useDispatch();
-  const selected = useSelector(getSelected);
 
   const closeWindow = () => {
     dispatch(setSelected(undefined));
-    console.log(selected);
   };
 
   return (
@@ -36,14 +32,17 @@ export const DescriptorCard = (props: { selectedItem: Selected }) => {
         style={{ height: '100%', overflowY: 'scroll' }}
         variant="outlined"
       >
-        {selectedItem.image && (
-          <CardMedia
-            component="img"
-            height="200"
-            image={selectedItem.image}
-            alt={selectedItem.name}
-          />
-        )}
+        {selectedItem.attributes &&
+          selectedItem.attributes!['image'] &&
+          selectedItem.attributes!['image'] !== 'undefined' && (
+            <CardMedia
+              className="descriptor-card-media"
+              component="img"
+              height="350"
+              image={selectedItem.attributes!['image']}
+              alt={selectedItem.attributes!['image']}
+            />
+          )}
 
         <CardHeader
           onClick={closeWindow}
@@ -58,17 +57,37 @@ export const DescriptorCard = (props: { selectedItem: Selected }) => {
         <CardContent>
           <Box className="descriptor-container-body">
             {selectedItem.attributes &&
-              Object.keys(selectedItem.attributes).map((att) => {
-                return (
-                  <Typography key={att} variant="body2">
-                    {`${att}: ${selectedItem.attributes![att]}`}
-                  </Typography>
-                );
-              })}
+              Object.keys(selectedItem.attributes)
+                .filter((att) => {
+                  return (
+                    selectedItem.attributes![att] !== 'undefined' &&
+                    att !== 'image'
+                  );
+                })
+                .map((att) => {
+                  const attrName = att.charAt(0).toUpperCase() + att.slice(1);
+                  const attrVal = selectedItem.attributes![att];
+                  const attrDesc =
+                    attrVal === 'undefined'
+                      ? 'Unknown'
+                      : attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
+
+                  return (
+                    <Typography key={att} variant="body2">
+                      {`${attrName}: ${attrDesc}`}
+                    </Typography>
+                  );
+                })}
             <br />
-            {selectedItem.description && (
+            {selectedItem.description &&
+            selectedItem.description !== 'undefined' ? (
               <Typography variant="body2">
-                {selectedItem.description}
+                {selectedItem.description.charAt(0).toUpperCase() +
+                  selectedItem.description.slice(1)}
+              </Typography>
+            ) : (
+              <Typography variant="body2">
+                Description not available.
               </Typography>
             )}
           </Box>
