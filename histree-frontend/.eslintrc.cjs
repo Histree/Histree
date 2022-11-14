@@ -28,5 +28,10 @@ module.exports = {
 		"quotes": ["error", "single"],
 		"no-duplicate-imports": "error",
 		"no-tabs": 0
+	},
+	"settings": {
+		"react": {
+			"version": "detect"
+		}
 	}
 }

@@ -21,3 +21,15 @@
 	border-radius: 5px;
 	text-align: center;
 }
+
+.handle_loading {
+	background-color: orange;
+}
+
+.handle_complete {
+	background-color: green;
+}
+
+.handle_nodata {
+	background-color: red;
+}
