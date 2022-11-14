@@ -20,8 +20,6 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
   const appDispatch = useDispatch<AppDispatch>();
 
   const expandWindow = () => {
-    console.log(`%c Description: ${data.description}`, 'background: #FF6961');
-
     dispatch(
       setSelected({
         name: data.name,
