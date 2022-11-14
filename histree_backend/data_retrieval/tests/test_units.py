@@ -215,12 +215,14 @@ class TestQueryBuilder(unittest.TestCase):
                 """
                 SELECT ?item ?label ?description 
                 WHERE {
-                    ?item wdt:P31 wd:Q5;
+                    SELECT * WHERE {
+                        ?item wdt:P31 wd:Q5;
                         rdfs:label ?label;
                         schema:description ?description.
-                    FILTER(lang(?label) = "en" && lang(?description) = "en")
+                        FILTER(lang(?label) = "en" && lang(?description) = "en")
+                    }
+                    GROUP BY ?item ?label ?description ?num
                 }
-                GROUP BY ?item ?label ?description
                 LIMIT 10
                 """
             ),
@@ -242,20 +244,22 @@ class TestQueryBuilder(unittest.TestCase):
                 """
                 SELECT ?item ?label ?description 
                 WHERE {
-                    SERVICE wikibase:mwapi {
-                        bd:serviceParam wikibase:api "EntitySearch" .
-                        bd:serviceParam wikibase:endpoint "www.wikidata.org" .
-                        bd:serviceParam mwapi:search "Zeus" .
-                        bd:serviceParam mwapi:language "es" .
-                        ?item wikibase:apiOutputItem mwapi:item .
-                        ?num wikibase:apiOrdinal true .
+                    SELECT * WHERE {
+                        SERVICE wikibase:mwapi {
+                            bd:serviceParam wikibase:api "EntitySearch" .
+                            bd:serviceParam wikibase:endpoint "www.wikidata.org" .
+                            bd:serviceParam mwapi:search "Zeus" .
+                            bd:serviceParam mwapi:language "es" .
+                            ?item wikibase:apiOutputItem mwapi:item .
+                            ?num wikibase:apiOrdinal true .
+                        }
+                        ?item p:P31/ps:P31/wdt:P279* wd:Q178885;
+                            rdfs:label ?label;
+                            schema:description ?description.
+                        FILTER(lang(?label) = "es" && lang(?description) = "es")
                     }
-                    ?item p:P31/ps:P31/wdt:P279* wd:Q178885;
-                        rdfs:label ?label;
-                        schema:description ?description.
-                    FILTER(lang(?label) = "es" && lang(?description) = "es")
+                    GROUP BY ?item ?label ?description ?num
                 }
-                GROUP BY ?item ?label ?description
                 ORDER BY ASC(?num)
                 """
             ),

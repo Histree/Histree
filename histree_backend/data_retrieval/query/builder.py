@@ -51,7 +51,7 @@ class SPARQLBuilder:
                     {self.other_filters}
                     FILTER(lang(?label) = "{self.language}" && lang(?description) = "{self.language}")
                 }}
-                GROUP BY ?item ?label ?description {header_access} ?num
+                GROUP BY ?item ?label ?description ?num {header_access}
             }}
             {self.order_by}
             {f"LIMIT {self.limit}" if self.limit is not None else ""}
