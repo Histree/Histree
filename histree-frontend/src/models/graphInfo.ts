@@ -1,5 +1,7 @@
 export type NodeId = string;
 
+export type HandleStatus = "None" | "Loading" | "Complete" | "NoData";
+
 export type NodeInfo = {
   name: string;
   id: NodeId;
@@ -7,6 +9,8 @@ export type NodeInfo = {
   petals?: Record<string, string>;
   searched?: boolean;
   visible?: boolean;
+  upExpanded: HandleStatus;
+  downExpanded: HandleStatus;
 } & Record<string, string>;
 
 export type AdjList = Record<NodeId, NodeId[]>;
