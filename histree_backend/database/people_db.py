@@ -90,22 +90,6 @@ class App:
         matches = tx.run(query, person_id1=person_id1, person_id2=person_id2)
         return [match["id"] for match in matches]
 
-# MATCH (p1: Person {id: 'Q1712755'})-[:PARENT_OF*]->(a1: Person)
-# MATCH (p2: Person {id: 'Q1712755'})-[:PARENT_OF*]->(a2: Person) 
-# WHERE a1.id = a2.id
-# MATCH path = (p1)-[:PARENT_OF*]->(a1)
-# RETURN a1
-# ORDER BY length(path)
-# LIMIT 1
-
-#         MATCH (c1:Concept {conceptID: 35104066})-[:Relation*{type: "Is a"}]->(p1:Concept)
-# MATCH (:Concept {conceptID: 35808913})-[:Relation*{type: "Is a"}]->(p2:Concept)
-# WHERE p1.conceptID = p2.conceptID
-# MATCH path = (c1)-[:Relation*{type: "Is a"}]->(p1)
-# RETURN p1
-# ORDER BY length(path)
-# LIMIT 1
-
 
     def shortest_path(self, person_id1, person_id2):
         with self.driver.session(database="neo4j") as session:
