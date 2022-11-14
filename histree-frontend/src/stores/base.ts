@@ -7,6 +7,8 @@ import {
 import {
   AutoCompleteData,
   ExpandInfo,
+  HandleStatus,
+  NodeId,
   NodeLookup,
   RenderContent,
   Selected,
@@ -38,6 +40,20 @@ export const histreeState = createSlice({
   name: "histreeState",
   initialState,
   reducers: {
+    setNodeLookupDown: (
+      state,
+      action: PayloadAction<{ searchedQid: NodeId; status: HandleStatus }>
+    ) => {
+      state.nodeLookup[action.payload.searchedQid].downExpanded =
+        action.payload.status;
+    },
+    setNodeLookupUp: (
+      state,
+      action: PayloadAction<{ searchedQid: NodeId; status: HandleStatus }>
+    ) => {
+      state.nodeLookup[action.payload.searchedQid].upExpanded =
+        action.payload.status;
+    },
     resetSearch: (state) => {
       state.searchSuggestions = {};
     },
@@ -108,7 +124,7 @@ export const histreeState = createSlice({
           Object.keys(branches).forEach((b) => {
             const individualBranch = state.renderContent.content?.branches[b];
             const newBranch =
-              individualBranch != null
+              individualBranch !== undefined
                 ? uniq([...individualBranch, ...branches[b]])
                 : branches[b];
             if (state.renderContent.content != null) {
@@ -122,16 +138,16 @@ export const histreeState = createSlice({
                 lookup[parentId].visible = true;
               }
             });
+            lookup[searchedQid].upExpanded = "Complete";
           } else {
             if (branches[searchedQid] !== undefined) {
               branches[searchedQid].forEach((childId) => {
-                console.log("lololol");
-                console.log(branches[searchedQid], lookup, childId);
                 if (lookup[childId] !== undefined) {
                   lookup[childId].visible = true;
                 }
               });
             }
+            lookup[searchedQid].downExpanded = "Complete";
           }
           state.nodeLookup = lookup;
         }
@@ -175,6 +191,8 @@ export const {
   setRenderContent,
   resetSearch,
   setResultServiceState,
+  setNodeLookupDown,
+  setNodeLookupUp,
 } = histreeState.actions;
 
 export const store = configureStore({

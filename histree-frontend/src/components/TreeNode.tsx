@@ -6,12 +6,21 @@ import {
 	getRenderContent,
 	getNodeLookup,
 	setNodeLookup,
-	AppDispatch
+	AppDispatch,
+	setNodeLookupDown,
+	setNodeLookupUp
 } from '../stores/base';
-import { NodeInfo } from '../models';
+import { HandleStatus, NodeInfo } from '../models';
 import './TreeNode.scss';
 import { Handle, Position } from 'reactflow';
 import { fetchSelectedExpansion } from '../services';
+
+const nodeClassMap: Record<HandleStatus, string> = {
+	Loading: 'handle_loading',
+	Complete: 'handle_complete',
+	NoData: 'handle_nodata',
+	None: 'handle'
+}
 
 const TreeNode = ({ data }: { data: NodeInfo }) => {
 	const dispatch = useDispatch();
@@ -34,6 +43,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 	};
 
 	const handleExpandParents = (): void => {
+		dispatch(setNodeLookupUp({ searchedQid: data.id, status: 'Loading' }))
 		if (renderContent.status === 'Success') {
 			const { branches } = renderContent.content!;
 			const nodes = { ...nodeLookup };
@@ -52,6 +62,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 				});
 
 				dispatch(setNodeLookup(nodes));
+				dispatch(setNodeLookupUp({ searchedQid: data.id, status: 'Complete' }))
 			} else {
 				// TODO: Do something if no parent data exists
 			}
@@ -59,6 +70,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 	};
 
 	const handleExpandChildren = (): void => {
+		dispatch(setNodeLookupDown({ searchedQid: data.id, status: 'Loading' }))
 		if (renderContent.status === 'Success') {
 			const { branches } = renderContent.content!;
 			const nodes = { ...nodeLookup };
@@ -75,6 +87,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 					nodes[childId] = child;
 				});
 				dispatch(setNodeLookup(nodes));
+				dispatch(setNodeLookupDown({ searchedQid: data.id, status: 'Complete' }))
 			} else {
 				// TODO: Do something if no children data exists
 			}
@@ -84,6 +97,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 	return (
 		<>
 			<Handle
+				className={nodeClassMap[nodeLookup[data.id].upExpanded]}
 				type="target"
 				position={Position.Top}
 				isConnectable
@@ -94,6 +108,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 			</div>
 
 			<Handle
+				className={nodeClassMap[nodeLookup[data.id].downExpanded]}
 				type="source"
 				position={Position.Bottom}
 				isConnectable
