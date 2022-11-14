@@ -10,8 +10,8 @@ import 'reactflow/dist/style.css';
 import { NodeLookup, AdjList, RenderContent, NodePositions } from '../models';
 import TreeNode from './TreeNode';
 import dagre, { graphlib } from 'dagre';
-import { useSelector } from 'react-redux';
-import { getNodeLookup } from '../stores';
+import { useDispatch, useSelector } from 'react-redux';
+import { getNodeLookup, setSelected } from '../stores';
 import InvisibleConnectionLine from './general/InvisibleConnectionLine';
 
 // const CENTER_X = 800;
@@ -128,9 +128,16 @@ const Flow = (props: { content: RenderContent }) => {
     );
   }, []);
 
+  const dispatch = useDispatch();
+
+  const closeWindow = () => {
+    dispatch(setSelected(undefined));
+  };
+
   return (
     <div style={{ height: '100%' }}>
       <ReactFlow
+        onPaneClick={closeWindow}
         className="flow"
         nodes={dagreToFlowNodes(graph)}
         edges={layoutEdges(content.branches)}

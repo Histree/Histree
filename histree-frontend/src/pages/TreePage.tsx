@@ -1,15 +1,24 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Flow from '../components/Flow';
-import { getSelected, getRenderContent, getNodeLookup } from '../stores/base';
+import { getSelected, getRenderContent, setSelected } from '../stores/base';
 import { useDispatch, useSelector } from 'react-redux';
 import './TreePage.scss';
 import { DescriptorCard, SearchBar } from '../components';
 import { ReactFlowProvider } from 'reactflow';
 import { Alert, Box, CircularProgress, Snackbar } from '@mui/material';
+import { useOnClickOutside } from 'usehooks-ts';
 
 const TreePage = () => {
   const selected = useSelector(getSelected);
   const renderContent = useSelector(getRenderContent);
+  const expandedRef = useRef<HTMLDivElement>(null);
+  const dispatch = useDispatch();
+
+  const handleClickOutside = () => {
+    dispatch(setSelected(undefined));
+  };
+
+  useOnClickOutside(expandedRef, handleClickOutside);
 
   return (
     <div className="treepage">
@@ -41,7 +50,9 @@ const TreePage = () => {
         </Alert>
       </Snackbar>
       <SearchBar />
-      {selected !== undefined && <DescriptorCard selectedItem={selected} />}
+      {selected !== undefined && (
+        <DescriptorCard ref={expandedRef} selectedItem={selected} />
+      )}
     </div>
   );
 };
