@@ -25,8 +25,6 @@ export const fetchSearchResults = createAsyncThunk(
       const response = await axios.get<RenderContent>(
         `https://histree.fly.dev/person_info/${qid}`
       );
-      console.log(response.data);
-
       return {
         status: "Success",
         content: { ...response.data, searchedQid: qid },
@@ -49,7 +47,6 @@ export const fetchSelectedExpansion = createAsyncThunk(
       const response = await axios.get<RenderContent>(
         `https://histree.fly.dev/person_info/${info.searchedQid}`
       );
-      console.log(response.data);
       return {
         status: "Success",
         content: {

@@ -3,6 +3,7 @@ export type NodeId = string;
 export type NodeInfo = {
   name: string;
   id: NodeId;
+  description?: string;
   petals?: Record<string, string>;
   searched?: boolean;
   visible?: boolean;

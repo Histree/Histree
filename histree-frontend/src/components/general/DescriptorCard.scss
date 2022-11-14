@@ -3,6 +3,10 @@
     display: none;
   }
   scrollbar-width: none;
+
+  &-media {
+    object-position: 25% 10%;
+  }
 }
 
 .descriptor-container {
