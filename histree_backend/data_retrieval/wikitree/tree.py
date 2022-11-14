@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from json import JSONDecodeError
 from typing import Dict, List, Tuple
 from qwikidata.sparql import return_sparql_query_results
 from data_retrieval.query.builder import SPARQLBuilder
@@ -11,13 +12,13 @@ class WikiSeed:
         self.petal_map = {petal.label: petal for petal in petals}
         self.up_stem, self.down_stem = up_stem, down_stem
 
-        _headers = dict(map(WikiPetal.to_dict_pair, petals))
+        _headers = dict(petal.to_dict_pair() for petal in petals)
         self.up_stem.set_query_template(_headers)
         self.down_stem.set_query_template(_headers)
 
-        _TEMPLATE_STR = "%"
+        _TEMPLATE_STR = "%s"
         self.info_query_template = (
-            SPARQLBuilder(_headers).bounded_to(_TEMPLATE_STR).build()
+            SPARQLBuilder(_headers).bounded_to("?item", f"wd:{_TEMPLATE_STR}").build()
         )
 
     def branch_up(self, id: str, tree: "WikiTree") -> List[WikiFlower]:
@@ -58,7 +59,7 @@ class WikiSeed:
         flower = flowers[0]
         tree.flowers[flower.id] = flower
 
-        return flowers[0]
+        return flower
 
 
 class WikiAPI:
@@ -71,7 +72,11 @@ class WikidataAPI(WikiAPI):
     _instance = None
 
     def query(self, query_string: str) -> Dict[str, any]:
-        return return_sparql_query_results(query_string)
+        try:
+            response = return_sparql_query_results(query_string)
+        except JSONDecodeError:
+            response = dict()
+        return response
 
     @classmethod
     def instance(cls):
@@ -101,7 +106,7 @@ class WikiTree:
             return None, None
 
         if id not in self.flowers:
-            self.seed.sprout(id)
+            self.seed.sprout(id, self)
         flower = self.flowers[id]
 
         # Branch off from the flower to find immediate nearby flowers

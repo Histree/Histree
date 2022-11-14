@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 
 class SPARQLBuilder:
@@ -40,7 +40,7 @@ class SPARQLBuilder:
         return f"""
             SELECT ?item ?label ?description {header_selections}
             WHERE {{
-                SELECT * WHERE {{
+                {"SELECT * WHERE {" if self.order_by else ""}
                     {bounds}
                     {self.other}
                     ?item {self.predicate}
@@ -52,7 +52,7 @@ class SPARQLBuilder:
                     FILTER(lang(?label) = "{self.language}" && lang(?description) = "{self.language}")
                 }}
                 GROUP BY ?item ?label ?description ?num {header_access}
-            }}
+            {"}" if self.order_by else ""}
             {self.order_by}
             {f"LIMIT {self.limit}" if self.limit is not None else ""}
         """
@@ -71,6 +71,11 @@ class SPARQLBuilder:
 
     def with_property(self, property: str, value: str) -> "SPARQLBuilder":
         self.predicate += f"wdt:{property} wd:{value};"
+        return self
+    
+    def with_any_property(self, properties: List[str], value: str) -> "SPARQLBuilder":
+        property = '|'.join(f"wdt:{prop}" for prop in properties)
+        self.predicate += f"{property} wd:{value};"
         return self
 
     def with_instance(self, instance: str) -> "SPARQLBuilder":

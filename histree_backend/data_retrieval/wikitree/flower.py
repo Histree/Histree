@@ -44,17 +44,16 @@ class WikiPetal:
         self.optional = optional
         self.sample = sample
 
-    @abstractmethod
-    def parse(self, value: str) -> str:
-        pass
-
-    @classmethod
     def to_dict_pair(self) -> Tuple[str, Dict[str, any]]:
         return self.label, {
             "id": self.id,
             "optional": self.optional,
             "sample": self.sample,
         }
+
+    @abstractmethod
+    def parse(self, value: str) -> str:
+        pass
 
     @classmethod
     def instance(cls):
@@ -65,6 +64,7 @@ class WikiPetal:
 
 class WikiStem:
     _instance = None
+    _TEMPLATE_STR = "%s"
 
     def __init__(self, id: str):
         self.id = id
