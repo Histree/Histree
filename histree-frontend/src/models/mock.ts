@@ -1,5 +1,5 @@
 import { Url } from ".";
-import { AdjList, NodesList } from "./graphInfo";
+import { AdjList, NodeLookup } from "./graphInfo";
 
 const mockAdjList: AdjList = {
   2: ["10", "11", "5", "6", "7", "12", "13", "14", "15"],
@@ -13,7 +13,7 @@ const mockAdjList: AdjList = {
   17: ["4"],
 };
 
-const mockNodeInfo: NodesList = {
+const mockNodeInfo: NodeLookup = {
   2: { name: "Queen Victoria", id: "2" },
   3: { name: "Prince Edward", id: "3" },
   4: { name: "Princess Victoria", id: "4" },

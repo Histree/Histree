@@ -4,26 +4,34 @@ import {
   configureStore,
   createSelector,
 } from "@reduxjs/toolkit";
-import { AutoCompleteData, RenderContent, Selected } from "../models";
+import {
+  AutoCompleteData,
+  ExpandInfo,
+  NodeLookup,
+  RenderContent,
+  Selected,
+} from "../models";
 import {
   fetchSearchResults,
   fetchSearchSuggestions,
+  fetchSelectedExpansion,
   ServiceStatus,
 } from "../services";
+import { uniq } from "lodash";
 
 interface HistreeState {
   renderContent: ServiceStatus<RenderContent | undefined>;
   selected?: Selected;
   searchTerm?: string;
   searchSuggestions: Record<string, AutoCompleteData>;
-  depth: number;
+  nodeLookup: NodeLookup;
 }
 
 const initialState: HistreeState = {
   selected: undefined,
   renderContent: { status: "Initial" },
   searchSuggestions: {},
-  depth: 1,
+  nodeLookup: {},
 };
 
 export const histreeState = createSlice({
@@ -48,17 +56,87 @@ export const histreeState = createSlice({
     ) => {
       state.renderContent = action.payload;
     },
-    setDepth: (state, action: PayloadAction<number>) => {
-      state.depth = action.payload;
+    setNodeLookup: (state, action: PayloadAction<NodeLookup>) => {
+      state.nodeLookup = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchSearchSuggestions.fulfilled, (state, action) => {
       state.searchSuggestions = action.payload;
     });
+
     builder.addCase(fetchSearchResults.fulfilled, (state, action) => {
       state.renderContent = action.payload;
+      const lookup: NodeLookup = {};
+
+      if (action.payload.status === "Success") {
+        state.renderContent.content?.flowers.forEach((f) => {
+          lookup[f.id] = f;
+          lookup[f.id].visible = f.id === action.payload.content?.searchedQid;
+          lookup[f.id].searched = f.id === action.payload.content?.searchedQid;
+        });
+      }
+      state.nodeLookup = lookup;
     });
+
+    builder.addCase(
+      fetchSelectedExpansion.fulfilled,
+      (state: HistreeState, action) => {
+        const response = action.payload;
+        const lookup = { ...state.nodeLookup };
+        if (response.status === "Success") {
+          const { branches, flowers, direction, searchedQid } =
+            response.content as RenderContent & ExpandInfo;
+
+          flowers.forEach((f) => {
+            if (lookup[f.id] === undefined) {
+              lookup[f.id] = f;
+              lookup[f.id].visible = f.id === searchedQid;
+              lookup[f.id].searched = f.id === searchedQid;
+            }
+          });
+
+          flowers.forEach((x) => {
+            if (
+              state.renderContent.content !== undefined &&
+              !state.renderContent.content.flowers.includes(x)
+            ) {
+              state.renderContent.content.flowers.push(x);
+            }
+          });
+
+          Object.keys(branches).forEach((b) => {
+            const individualBranch = state.renderContent.content?.branches[b];
+            const newBranch =
+              individualBranch != null
+                ? uniq([...individualBranch, ...branches[b]])
+                : branches[b];
+            if (state.renderContent.content != null) {
+              state.renderContent.content.branches[b] = newBranch;
+            }
+          });
+
+          if (direction === "up") {
+            Object.keys(branches).forEach((parentId) => {
+              if (branches[parentId].includes(searchedQid)) {
+                lookup[parentId].visible = true;
+              }
+            });
+          } else {
+            if (branches[searchedQid] !== undefined) {
+              branches[searchedQid].forEach((childId) => {
+                console.log("lololol");
+                console.log(branches[searchedQid], lookup, childId);
+                if (lookup[childId] !== undefined) {
+                  lookup[childId].visible = true;
+                }
+              });
+            }
+          }
+          state.nodeLookup = lookup;
+        }
+      }
+    );
   },
 });
 
@@ -84,16 +162,16 @@ export const getSelected = createSelector(
   (x) => x
 );
 
-export const getDepth = createSelector(
+export const getNodeLookup = createSelector(
   (state: HistreeState) => {
-    return state.depth;
+    return state.nodeLookup;
   },
   (x) => x
 );
 
 export const {
   setSelected,
-  setDepth,
+  setNodeLookup,
   setRenderContent,
   resetSearch,
   setResultServiceState,

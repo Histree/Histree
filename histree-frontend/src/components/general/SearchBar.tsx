@@ -2,9 +2,14 @@ import React, { SyntheticEvent, useEffect, useMemo, useState } from "react";
 import { TextField, Autocomplete } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import { debounce } from 'lodash';
-import "./SearchBar.scss";
-import { AppDispatch, getSearchSuggestions, resetSearch, setResultServiceState } from "../../stores";
-import { fetchSearchResults, fetchSearchSuggestions } from "../../services";
+import './SearchBar.scss';
+import {
+  AppDispatch,
+  getSearchSuggestions,
+  resetSearch,
+  setResultServiceState
+} from '../../stores';
+import { fetchSearchResults, fetchSearchSuggestions } from '../../services';
 
 export const SearchBar = () => {
 	const dispatch = useDispatch();
