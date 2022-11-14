@@ -17,6 +17,7 @@ import {
   fetchSelectedExpansion,
   ServiceStatus,
 } from "../services";
+import { uniq } from "lodash";
 
 interface HistreeState {
   renderContent: ServiceStatus<RenderContent | undefined>;
@@ -83,15 +84,12 @@ export const histreeState = createSlice({
       (state: HistreeState, action) => {
         const response = action.payload;
         const lookup = { ...state.nodeLookup };
-        // const renderFlowers: NodeInfo[] = { ...state.renderContent.content!.flowers };
-        // const renderBranches: AdjList = { ...state.renderContent.content!.branches };
-        // console.log(renderFlowers);
         if (response.status === "Success") {
           const { branches, flowers, direction, searchedQid } =
             response.content as RenderContent & ExpandInfo;
 
           flowers.forEach((f) => {
-            if (lookup[f.id] !== undefined) {
+            if (lookup[f.id] === undefined) {
               lookup[f.id] = f;
               lookup[f.id].visible = f.id === searchedQid;
               lookup[f.id].searched = f.id === searchedQid;
@@ -100,7 +98,7 @@ export const histreeState = createSlice({
 
           flowers.forEach((x) => {
             if (
-              state.renderContent.content != null &&
+              state.renderContent.content !== undefined &&
               !state.renderContent.content.flowers.includes(x)
             ) {
               state.renderContent.content.flowers.push(x);
@@ -111,9 +109,8 @@ export const histreeState = createSlice({
             const individualBranch = state.renderContent.content?.branches[b];
             const newBranch =
               individualBranch != null
-                ? [...individualBranch, ...branches[b]]
+                ? uniq([...individualBranch, ...branches[b]])
                 : branches[b];
-            console.log(b, branches[b]);
             if (state.renderContent.content != null) {
               state.renderContent.content.branches[b] = newBranch;
             }
@@ -126,20 +123,17 @@ export const histreeState = createSlice({
               }
             });
           } else {
-            console.log("lmao");
-            console.log(branches);
             if (branches[searchedQid] !== undefined) {
               branches[searchedQid].forEach((childId) => {
-                lookup[childId].visible = true;
+                console.log("lololol");
+                console.log(branches[searchedQid], lookup, childId);
+                if (lookup[childId] !== undefined) {
+                  lookup[childId].visible = true;
+                }
               });
             }
           }
           state.nodeLookup = lookup;
-          // state.renderContent.content = {
-          // 	searchedQid: state.renderContent.content!.searchedQid,
-          // 	branches: { ...state.renderContent.content!.branches, ...branches },
-          // 	flowers: { ...state.renderContent.content!.flowers, ...flowers }
-          // };
         }
       }
     );
