@@ -32,11 +32,11 @@ class App:
 
 
 
-    # Return a list of all
+    # Return the name of the person with this ID
     def find_person(self, person_id):
         with self.driver.session(database="neo4j") as session:
             result = session.execute_read(self._find_and_return_person, person_id)
-            return result
+            return result[0]
 
 
     # Return a list of all the names of People in the database with this ID
@@ -67,6 +67,49 @@ class App:
         )
         matches = tx.run(query, person_id=person_id)
         return [match["id"] for match in matches]
+
+
+    # Return the ID of the common ancestor of two people, represented by their ID
+    def common_ancestor(self, person_id1, person_id2):
+        with self.driver.session(database="neo4j") as session:
+            result = session.execute_read(self._common_ancestor, person_id1, person_id2)
+            return result[0]
+    
+
+    @staticmethod
+    def _common_ancestor(tx, person_id1, person_id2):
+        query = (
+            "MATCH (p1: Person {id: \'" + person_id1 + "\'})-[:PARENT_OF*]->(a1: Person) "
+            "MATCH (p2: Person {id: \'" + person_id2 + "\'})-[:PARENT_OF*]->(a2: Person) "
+            "WHERE a1.id = a2.id "
+            "MATCH path = (p1)-[:PARENT_OF*]->(a1) "
+            "RETURN a1.id AS id "
+            "ORDER BY length(path) "
+            "LIMIT 1"
+        )
+        matches = tx.run(query, person_id1=person_id1, person_id2=person_id2)
+        return [match["id"] for match in matches]
+
+
+    def shortest_path(self, person_id1, person_id2):
+        with self.driver.session(database="neo4j") as session:
+            result = session.execute_read(self._shortest_path, person_id1, person_id2)
+            return result
+
+    @staticmethod
+    def _shortest_path(tx, person_id1, person_id2):
+        query = (
+            "MATCH (p1:Person {id: \'" + person_id1 + "\'}), "
+            "(p2: Person {id: \'" + person_id2 + "\'}), "
+            "p = shortestPath((p1)-[*]-(p2)) "
+            "WHERE length(p) > 1"
+            "RETURN p"
+        )
+
+        path = tx.run(query, person_id1=person_id1, person_id2=person_id2)
+        return path["id"]
+
+
 
 
 
