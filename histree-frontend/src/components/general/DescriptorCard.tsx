@@ -82,7 +82,8 @@ export const DescriptorCard = (props: { selectedItem: Selected }) => {
             {selectedItem.description &&
             selectedItem.description !== 'undefined' ? (
               <Typography variant="body2">
-                {selectedItem.description}
+                {selectedItem.description.charAt(0).toUpperCase() +
+                  selectedItem.description.slice(1)}
               </Typography>
             ) : (
               <Typography variant="body2">
