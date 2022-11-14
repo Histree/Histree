@@ -1,5 +1,6 @@
 from neo4j import GraphDatabase
 import logging
+import time
 import json
 from neo4j.exceptions import ServiceUnavailable
 
@@ -12,29 +13,25 @@ class App:
         # Don't forget to close the driver connection when you are finished with it
         self.driver.close()
 
-    def create_parentship(self, person1_name, person2_name):
-        with self.driver.session(database="neo4j") as session:
-            # Write transactions allow the driver to handle retries and transient errors
-            result = session.execute_write(
-                self._create_and_return_parentship, person1_name, person2_name)
-            for row in result:
-                print("Created parentship between: {p1}, {p2}".format(p1=row['p1'], p2=row['p2']))
+    # @staticmethod
+    # def _
 
-    def find_person(self, person_name):
+    def find_person(self, person_id):
         with self.driver.session(database="neo4j") as session:
-            result = session.execute_read(self._find_and_return_person, person_name)
-            for row in result:
-                print("Found person: {row}".format(row=row))
+            result = session.execute_read(self._find_and_return_person, person_id)
+            # print(result)
+            # for row in result:
+                # print("Found person: {row}".format(row=row))
 
     @staticmethod
     def _find_and_return_person(tx, person_id):
         query = (
             "MATCH (p:Person) "
             "WHERE p.id = $person_id "
-            "RETURN p.name AS name"
+            "RETURN p"
         )
         result = tx.run(query, person_id=person_id)
-        return [row["name"] for row in result]
+        return [row for row in result]
 
     def merge_people(self, data):
         with self.driver.session(database="neo4j") as session:
@@ -44,7 +41,7 @@ class App:
             for row in result:
                 print("Updated person: {row}".format(row=row))
 
-
+    # TODO integrate the setting into Petal class
     @staticmethod
     def _merge_people(tx, data):
         query = (
@@ -52,9 +49,13 @@ class App:
             "UNWIND document.flowers AS p "
             "UNWIND p.petals AS pt "
             "MERGE (ps:Person { id: p.id }) "
-            "ON MATCH SET ps.name = p.name, \
+            "ON CREATE SET \
+                ps.name = p.name, \
+                ps.description = p.description, \
                 ps.birth_name = pt['birth name'], \
-                ps.date_of_birth = pt['date of birth'], ps.date_of_death = pt['date of death'], \
+                ps.date_of_birth = pt['date of birth'], \
+                ps.date_of_death = pt['date of death'], \
+                ps.image = pt.image, \
                 ps.sex = pt['sex/gender'] "
             "RETURN ps.name AS name, ps.date_of_birth AS bd"
         )
@@ -91,9 +92,39 @@ if __name__ == "__main__":
     user = "neo4j"
     password = "oG3jAqk-AjI2JIvtdUZe-E04bI8v3olKMtKSaOsyrCU"
     app = App(uri, user, password)
-    with open("db_test.json") as f:
+    with open("db_test2.json") as f:
         data = json.load(f)
-    # app.merge_people(data)
+    # start = time.time()
+    app.merge_people(data)
     app.merge_realtion(data)
-    # app.find_person("Alice")
+    # end = time.time()
+    # print(end - start)
+    start = time.time()
+    app.find_person("Q937")
+    end = time.time()
+    print(end - start)
+    start = time.time()
+    app.find_person("Q4357787")
+    end = time.time()
+    print(end - start)
+    start = time.time()
+    app.find_person("Q76346")
+    end = time.time()
+    print(end - start)
+    start = time.time()
+    app.find_person("Q468357")
+    end = time.time()
+    print(end - start)
+    start = time.time()
+    app.find_person("Q123371")
+    end = time.time()
+    print(end - start)
+    start = time.time()
+    app.find_person("Q118253")
+    end = time.time()
+    print(end - start)
+    start = time.time()
+    app.find_person("Q88665")
+    end = time.time()
+    print(end - start)
     app.close()
