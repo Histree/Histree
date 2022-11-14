@@ -10,7 +10,7 @@ from wikitree.tree import WikiTree
 
 class TestWikiTreeMethods(unittest.TestCase):
     def _create_dummy_parents(
-        self, item: WikidataItem, tree: WikiTree, params: Dict[str, any]
+        self, id: str, tree: WikiTree, params: Dict[str, any]
     ) -> None:
         tree.grow(params["father"]["id"], branch_up=False, branch_down=False)
         tree.grow(params["mother"]["id"], branch_up=False, branch_down=False)
@@ -31,10 +31,10 @@ class TestWikiTreeMethods(unittest.TestCase):
         for parent in (father, mother):
             if parent not in tree.branches:
                 tree.branches[parent.id] = set()
-            tree.branches[parent.id].add(item.entity_id)
+            tree.branches[parent.id].add(id)
 
     def _create_dummy_children(
-        self, item: WikidataItem, tree: WikiTree, params: List[Dict[str, any]]
+        self, id: str, tree: WikiTree, params: List[Dict[str, any]]
     ) -> None:
         for child in params:
             child_flower = WikiFlower(child["id"], child["petals"])
@@ -45,29 +45,27 @@ class TestWikiTreeMethods(unittest.TestCase):
             )
             tree.flowers[child_flower.id] = child_flower
 
-            if item.entity_id not in tree.branches:
-                tree.branches[item.entity_id] = set()
-            tree.branches[item.entity_id].add(child_flower.id)
+            if id not in tree.branches:
+                tree.branches[id] = set()
+            tree.branches[id].add(child_flower.id)
 
     @patch("wikitree.tree.WikidataAPI")
     @patch("wikitree.tree.WikiSeed")
     def test_grow(self, MockSeedClass, MockWikidataAPIClass):
         MockSeedClass.branch_up, MockSeedClass.branch_down = MagicMock(), MagicMock()
-        MockSeedClass.branch_up.side_effect = (
-            lambda it, tr, _: self._create_dummy_parents(
-                it,
-                tr,
-                {
-                    "father": {
-                        "id": "Q0",
-                        "petals": dict(),
-                    },
-                    "mother": {
-                        "id": "Q1",
-                        "petals": dict(),
-                    },
+        MockSeedClass.branch_up.side_effect = lambda it, tr: self._create_dummy_parents(
+            it,
+            tr,
+            {
+                "father": {
+                    "id": "Q0",
+                    "petals": dict(),
                 },
-            )
+                "mother": {
+                    "id": "Q1",
+                    "petals": dict(),
+                },
+            },
         )
         mock_flower_data = {
             "aliases": [],
@@ -79,7 +77,7 @@ class TestWikiTreeMethods(unittest.TestCase):
             "type": "item",
         }
         MockSeedClass.branch_down.side_effect = (
-            lambda it, tr, _: self._create_dummy_children(
+            lambda it, tr: self._create_dummy_children(
                 it,
                 tr,
                 [
@@ -89,20 +87,13 @@ class TestWikiTreeMethods(unittest.TestCase):
             )
         )
 
-        def mock_flower_data(id: str) -> WikidataItem:
-            return WikidataItem(
-                {
-                    "aliases": [],
-                    "claims": [],
-                    "descriptions": "",
-                    "id": id,
-                    "labels": {"en": {"language": "en", "value": "name"}},
-                    "sitelinks": [],
-                    "type": "item",
-                }
-            )
+        def mock_flower(id: str, tree: any) -> WikidataItem:
+            flower = WikiFlower(id, dict())
+            flower.name = "name"
+            flower.description = "description"
+            return flower
 
-        MockWikidataAPIClass.get_wikidata_item.side_effect = mock_flower_data
+        MockSeedClass.sprout = mock_flower
 
         tree = WikiTree(MockSeedClass, MockWikidataAPIClass)
         tree.grow("Q2")
@@ -113,6 +104,10 @@ class TestWikiTreeMethods(unittest.TestCase):
         )
         self.assertTrue(
             tree.flowers["Q2"].name == "name", msg="Flower has unexpected name."
+        )
+        self.assertTrue(
+            tree.flowers["Q2"].description == "description",
+            msg="Flower has unexpected description.",
         )
         flower = tree.flowers["Q2"]
 
@@ -215,14 +210,12 @@ class TestQueryBuilder(unittest.TestCase):
                 """
                 SELECT ?item ?label ?description 
                 WHERE {
-                    SELECT * WHERE {
-                        ?item wdt:P31 wd:Q5;
-                        rdfs:label ?label;
-                        schema:description ?description.
-                        FILTER(lang(?label) = "en" && lang(?description) = "en")
-                    }
-                    GROUP BY ?item ?label ?description ?num
+                    ?item wdt:P31 wd:Q5;
+                    rdfs:label ?label;
+                    schema:description ?description.
+                    FILTER(lang(?label) = "en" && lang(?description) = "en")
                 }
+                GROUP BY ?item ?label ?description ?num
                 LIMIT 10
                 """
             ),

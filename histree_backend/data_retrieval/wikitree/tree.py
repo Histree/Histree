@@ -2,8 +2,8 @@ from abc import abstractmethod
 from json import JSONDecodeError
 from typing import Dict, List, Tuple
 from qwikidata.sparql import return_sparql_query_results
-from data_retrieval.query.builder import SPARQLBuilder
-from histree_backend.data_retrieval.query.parser import WikiResult
+from query.builder import SPARQLBuilder
+from query.parser import WikiResult
 from .flower import WikiFlower, WikiPetal, WikiStem
 
 
@@ -55,11 +55,7 @@ class WikiSeed:
 
         if not flowers:
             return None
-
-        flower = flowers[0]
-        tree.flowers[flower.id] = flower
-
-        return flower
+        return flowers[0]
 
 
 class WikiAPI:
@@ -106,8 +102,12 @@ class WikiTree:
             return None, None
 
         if id not in self.flowers:
-            self.seed.sprout(id, self)
-        flower = self.flowers[id]
+            flower = self.seed.sprout(id, self)
+            if not flower:
+                return None, None
+            self.flowers[id] = flower
+        else:
+            flower = self.flowers[id]
 
         # Branch off from the flower to find immediate nearby flowers
         flowers_above, flowers_below = None, None
