@@ -1,61 +1,77 @@
 from abc import abstractmethod
 from typing import Dict, List, Tuple
-from qwikidata.entity import WikidataItem
-from qwikidata.linked_data_interface import get_entity_dict_from_api
+from qwikidata.sparql import return_sparql_query_results
+from data_retrieval.query.builder import SPARQLBuilder
+from histree_backend.data_retrieval.query.parser import WikiResult
 from .flower import WikiFlower, WikiPetal, WikiStem
 
 
 class WikiSeed:
-    def __init__(self, up_stem: WikiStem, down_stem: WikiStem, partner_stem: WikiStem, petals: List[WikiPetal]):
+    def __init__(self, up_stem: WikiStem, down_stem: WikiStem, petals: List[WikiPetal]):
+        self.petal_map = {petal.label: petal for petal in petals}
         self.up_stem, self.down_stem = up_stem, down_stem
-        self.partner_stem = partner_stem
-        self.petals = set(petals)
 
-    def branch_up(self, item: WikidataItem, tree: "WikiTree", grow_branched: bool = True) -> List[WikiFlower]:
-        parent_flowers = self.up_stem.parse(
-            item, tree.flowers)
+        _headers = dict(map(WikiPetal.to_dict_pair, petals))
+        self.up_stem.set_query_template(_headers)
+        self.down_stem.set_query_template(_headers)
 
-        for parent_flower in parent_flowers:
-            if grow_branched:
-                tree.grow(parent_flower.id,
-                          branch_up=False, branch_down=False)
-            if parent_flower.id not in tree.branches:
-                tree.branches[parent_flower.id] = set()
-            tree.branches[parent_flower.id].add(
-                item.entity_id)
+        _TEMPLATE_STR = "%"
+        self.info_query_template = (
+            SPARQLBuilder(_headers).bounded_to(_TEMPLATE_STR).build()
+        )
 
-        return parent_flowers
+    def branch_up(self, id: str, tree: "WikiTree") -> List[WikiFlower]:
+        # Query for parents
+        result = tree.api.query(self.up_stem.get_query(id))
+        parents = WikiResult(result).parse(self.petal_map)
 
-    def branch_down(self, item: WikidataItem, tree: "WikiTree", grow_branched: bool = True) -> List[WikiFlower]:
-        # Add children flowers to collection
-        children_flowers = self.down_stem.parse(
-            item, tree.flowers)
+        # Store parents in tree
+        for parent in parents:
+            tree.flowers[parent.id] = parent
 
-        if children_flowers and item.entity_id not in tree.branches:
-            tree.branches[item.entity_id] = set()
+            if parent.id not in tree.branches:
+                tree.branches[parent.id] = set()
+            tree.branches[parent.id].add(id)
 
-        # Find petals and parents of each child flower
-        for child_flower in children_flowers:
-            if grow_branched:
-                tree.grow(child_flower.id,
-                          branch_up=True, branch_down=False)
-            tree.branches[item.entity_id].add(
-                child_flower.id)
+        return parents
 
-        return children_flowers
+    def branch_down(self, id: str, tree: "WikiTree") -> List[WikiFlower]:
+        result = tree.api.query(self.down_stem.get_query(id))
+        children = WikiResult(result).parse(self.petal_map)
+
+        if children and id not in tree.branches:
+            tree.branches[id] = set()
+
+        for child in children:
+            tree.flowers[child.id] = child
+            tree.branches[id].add(child.id)
+
+        return children
+
+    def sprout(self, id: str, tree: "WikiTree") -> WikiFlower:
+        result = tree.api.query(self.info_query_template % id)
+        flowers = WikiResult(result).parse(self.petal_map)
+
+        if not flowers:
+            return None
+
+        flower = flowers[0]
+        tree.flowers[flower.id] = flower
+
+        return flowers[0]
 
 
 class WikiAPI:
     @abstractmethod
-    def get_wikidata_item(id: str) -> WikidataItem:
+    def query(self, query_string: str) -> Dict[str, any]:
         pass
 
 
 class WikidataAPI(WikiAPI):
     _instance = None
 
-    def get_wikidata_item(self, id: str) -> WikidataItem:
-        return WikidataItem(get_entity_dict_from_api(id))
+    def query(self, query_string: str) -> Dict[str, any]:
+        return return_sparql_query_results(query_string)
 
     @classmethod
     def instance(cls):
@@ -71,50 +87,51 @@ class WikiTree:
         self.branches = dict()
         self.api = api
 
-    def grow(self, id: str, branch_up: bool = True, branch_down: bool = True, grow_branched: bool = True) -> Tuple[List[WikiFlower], List[WikiFlower]]:
-        if id in self.flowers and (not branch_up or self.flowers[id].branched_up) and (not branch_down or self.flowers[id].branched_down):
+    def grow(
+        self,
+        id: str,
+        branch_up: bool = True,
+        branch_down: bool = True,
+    ) -> Tuple[List[WikiFlower], List[WikiFlower]]:
+        if (
+            id in self.flowers
+            and (not branch_up or self.flowers[id].branched_up)
+            and (not branch_down or self.flowers[id].branched_down)
+        ):
             return None, None
-        item = self.api.get_wikidata_item(id)
 
-        # Find petals of the flower
         if id not in self.flowers:
-            self.flowers[id] = WikiFlower(id, dict())
-            self.flowers[id].name = item.get_label()
-            self.flowers[id].description = item.get_description()
+            self.seed.sprout(id)
         flower = self.flowers[id]
-
-        if not flower.petals:
-            flower_petals = {petal.label: petal.parse(
-                item) for petal in self.seed.petals}
-            flower.petals = flower_petals
 
         # Branch off from the flower to find immediate nearby flowers
         flowers_above, flowers_below = None, None
         if branch_up and not flower.branched_up:
-            flowers_above = self.seed.branch_up(
-                item, self, grow_branched)
+            flowers_above = self.seed.branch_up(id, self)
             flower.branched_up = True
         if branch_down and not flower.branched_down:
-            flowers_below = self.seed.branch_down(
-                item, self, grow_branched)
+            flowers_below = self.seed.branch_down(id, self)
             flower.branched_down = True
         return flowers_above, flowers_below
 
-    def grow_levels(self, id: str, branch_up_levels: int, branch_down_levels: int) -> None:
+    def grow_levels(
+        self, id: str, branch_up_levels: int, branch_down_levels: int
+    ) -> None:
         above, below = self.grow(
-            id, branch_up_levels > 0, branch_down_levels > 0, branch_up_levels == branch_down_levels == 0)
+            id,
+            branch_up_levels > 0,
+            branch_down_levels > 0,
+        )
         if above:
             for flower in above:
-                self.grow_levels(
-                    flower.id, branch_up_levels - 1, 0)
+                self.grow_levels(flower.id, branch_up_levels - 1, 0)
         if below:
             for flower in below:
                 # Grow upwards once to find other parent.
-                self.grow_levels(
-                    flower.id, 1, branch_down_levels - 1)
+                self.grow_levels(flower.id, 1, branch_down_levels - 1)
 
     def to_json(self) -> Dict[str, any]:
         return {
-            'flowers': [flower.to_json() for flower in self.flowers.values()],
-            'branches': {id: list(adj_set) for (id, adj_set) in self.branches.items()}
+            "flowers": [flower.to_json() for flower in self.flowers.values()],
+            "branches": {id: list(adj_set) for (id, adj_set) in self.branches.items()},
         }
