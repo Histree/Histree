@@ -2,8 +2,8 @@ from abc import abstractmethod
 from json import JSONDecodeError
 from typing import Dict, List, Tuple
 from qwikidata.sparql import return_sparql_query_results
-from query.builder import SPARQLBuilder
-from query.parser import WikiResult
+from data_retrieval.query.builder import SPARQLBuilder
+from data_retrieval.query.parser import WikiResult
 from .flower import WikiFlower, WikiPetal, WikiStem
 
 
