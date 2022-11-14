@@ -42,6 +42,7 @@ class HistreeQuery:
             NameQueryBuilder()
             .with_instance(instance)
             .with_name(name)
+            .matches_regex(name)
             .ordered_by("?num")
             .with_limit(10)
             .build()

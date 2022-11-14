@@ -10,13 +10,15 @@ class SPARQLBuilder:
         self.limit = None
         self.order_by = ""
         self.other = ""
+        self.bounds = dict()
         self.headers = headers
         self.filters = dict()
         self.other_filters = ""
 
     def build(self) -> str:
+        bounds = " ".join(f"BIND({value} as {variable})" for (variable, value) in self.bounds.items())
         header_selections = " ".join(
-            f"(SAMPLE(?{header} as ?{header}_))" if config["sample"] else f"?{header}"
+            f"(SAMPLE(?{header}) as ?{header}_)" if config["sample"] else f"?{header}"
             for (header, config) in self.headers.items()
         )
         header_bindings = " ".join(
@@ -38,16 +40,19 @@ class SPARQLBuilder:
         return f"""
             SELECT ?item ?label ?description {header_selections}
             WHERE {{
-                {self.other}
-                ?item {self.predicate}
-                    rdfs:label ?label;
-                    schema:description ?description.
-                {header_bindings}
-                {filtering}
-                {self.other_filters}
-                FILTER(lang(?label) = "{self.language}" && lang(?description) = "{self.language}")
+                SELECT * WHERE {{
+                    {bounds}
+                    {self.other}
+                    ?item {self.predicate}
+                        rdfs:label ?label;
+                        schema:description ?description.
+                    {header_bindings}
+                    {filtering}
+                    {self.other_filters}
+                    FILTER(lang(?label) = "{self.language}" && lang(?description) = "{self.language}")
+                }}
+                GROUP BY ?item ?label ?description {header_access} ?num
             }}
-            GROUP BY ?item ?label ?description {header_access}
             {self.order_by}
             {f"LIMIT {self.limit}" if self.limit is not None else ""}
         """
@@ -79,3 +84,7 @@ class SPARQLBuilder:
 
     def without_instance(self, instance: str) -> "SPARQLBuilder":
         return self.without_property("P31", instance)
+
+    def bounded_to(self, variable: str, value: str) -> "SPARQLBuilder":
+        self.bounds[variable] = value
+        return self
