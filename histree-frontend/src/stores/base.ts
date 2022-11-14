@@ -4,7 +4,7 @@ import {
   configureStore,
   createSelector,
 } from "@reduxjs/toolkit";
-import { RenderContent, Selected } from "../models";
+import { AutoCompleteData, RenderContent, Selected } from "../models";
 import {
   fetchSearchResults,
   fetchSearchSuggestions,
@@ -15,7 +15,7 @@ interface HistreeState {
   renderContent: ServiceStatus<RenderContent | undefined>;
   selected?: Selected;
   searchTerm?: string;
-  searchSuggestions: Record<string, string>;
+  searchSuggestions: Record<string, AutoCompleteData>;
   depth: number;
 }
 
@@ -23,15 +23,21 @@ const initialState: HistreeState = {
   selected: undefined,
   renderContent: { status: "Initial" },
   searchSuggestions: {},
-  depth: 0,
+  depth: 1,
 };
 
 export const histreeState = createSlice({
   name: "histreeState",
   initialState,
   reducers: {
-    setSearchTerm: (state, action: PayloadAction<string>) => {
-      state.searchTerm = action.payload;
+    resetSearch: (state) => {
+      state.searchSuggestions = {};
+    },
+    setResultServiceState: (
+      state,
+      action: PayloadAction<ServiceStatus<RenderContent>>
+    ) => {
+      state.renderContent = action.payload;
     },
     setSelected: (state, action: PayloadAction<Selected | undefined>) => {
       state.selected = action.payload;
@@ -56,6 +62,14 @@ export const histreeState = createSlice({
   },
 });
 
+export const getSearchSuggestions = createSelector(
+  (state: HistreeState) => {
+    return state.searchSuggestions;
+  },
+  (x) =>
+    Object.fromEntries(Object.values(x).map((value) => [value.label, value]))
+);
+
 export const getRenderContent = createSelector(
   (state: HistreeState) => {
     return state.renderContent;
@@ -77,8 +91,13 @@ export const getDepth = createSelector(
   (x) => x
 );
 
-export const { setSelected, setDepth, setSearchTerm, setRenderContent } =
-  histreeState.actions;
+export const {
+  setSelected,
+  setDepth,
+  setRenderContent,
+  resetSearch,
+  setResultServiceState,
+} = histreeState.actions;
 
 export const store = configureStore({
   reducer: histreeState.reducer,

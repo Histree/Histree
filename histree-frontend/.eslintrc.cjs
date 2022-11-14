@@ -26,6 +26,7 @@ module.exports = {
 		"camelcase": "error",
 		"spaced-comment": "error",
 		"quotes": ["error", "single"],
-		"no-duplicate-imports": "error"
+		"no-duplicate-imports": "error",
+		"no-tabs": 0
 	}
 }
