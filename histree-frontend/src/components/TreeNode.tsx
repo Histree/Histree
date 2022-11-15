@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
 	setSelected,
@@ -7,12 +7,17 @@ import {
 	setNodeLookup,
 	AppDispatch,
 	setNodeLookupDown,
-	setNodeLookupUp
+	setNodeLookupUp,
+	getRenderMode,
+	setComparisonNode,
+	setEdgeInfo,
+	getCompareNodes,
 } from '../stores/base';
-import { HandleStatus, NodeInfo } from '../models';
+import { AdjList, HandleStatus, NodeInfo } from '../models';
 import './TreeNode.scss';
 import { Handle, Position } from 'reactflow';
 import { fetchSelectedExpansion } from '../services';
+import { cleanseBranches, findPathBetweenTwoNodes } from '../utils/utils';
 
 const nodeClassMap: Record<HandleStatus, string> = {
 	Loading: 'handle_loading',
@@ -23,20 +28,27 @@ const nodeClassMap: Record<HandleStatus, string> = {
 
 const TreeNode = ({ data }: { data: NodeInfo }) => {
 	const dispatch = useDispatch();
+	const renderMode = useSelector(getRenderMode);
+	const comparisonNodes = useSelector(getCompareNodes);
 	const renderContent = useSelector(getRenderContent);
 	const nodeLookup = useSelector(getNodeLookup);
 	const appDispatch = useDispatch<AppDispatch>();
 
-	const expandWindow = () => {
-		dispatch(
-			setSelected({
-				name: data.name,
-				image: data?.image,
-				attributes: data.petals,
-				description: data?.description
-				// links: details?.links,
-			})
-		);
+	const handleNodeClick = () => {
+		if (renderMode === 'View') {
+			dispatch(
+				setSelected({
+					name: data.name,
+					image: data?.image,
+					attributes: data.petals,
+					description: data?.description
+					// links: details?.links,
+				})
+			);
+		} else if (renderMode === 'Compare') {
+			dispatch(setEdgeInfo({}));
+			dispatch(setComparisonNode(data));
+		}
 	};
 
 	const handleExpandParents = (): void => {
@@ -91,6 +103,17 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 		}
 	};
 
+	useEffect(() => {
+		if (comparisonNodes.first !== undefined && comparisonNodes.second !== undefined) {
+			const result = findPathBetweenTwoNodes(
+				comparisonNodes.first.id,
+				comparisonNodes.second.id,
+				cleanseBranches(renderContent.content?.branches, nodeLookup));
+			console.log(result);
+			dispatch(setEdgeInfo(result));
+		}
+	}, [comparisonNodes]);
+
 	return (
 		<>
 			<Handle
@@ -100,7 +123,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 				isConnectable
 				onClick={handleExpandParents}
 			/>
-			<div className="treenodecard" onClick={expandWindow}>
+			<div className="treenodecard" onClick={handleNodeClick}>
 				<div className="treenodechild">{data.name}</div>
 			</div>
 
