@@ -54,12 +54,9 @@ class BirthNamePetal(WikiPetal):
 
 
 class ImagePetal(WikiPetal):
-    URL_PREFIX = "https://en.wikipedia.org/wiki/Special:FilePath/"
-
     def __init__(self):
         label = "image"
         super().__init__(PROPERTY_MAP["petals"][label], label, True, True)
 
     def parse(self, value: str) -> str:
-        # Convert to use WikiMedia URL
-        return self.URL_PREFIX + value.replace(" ", "_")
+        return value

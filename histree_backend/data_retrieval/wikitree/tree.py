@@ -2,24 +2,19 @@ from abc import abstractmethod
 from json import JSONDecodeError
 from typing import Dict, List, Tuple
 from qwikidata.sparql import return_sparql_query_results
-from data_retrieval.query.builder import SPARQLBuilder
 from data_retrieval.query.parser import WikiResult
 from .flower import WikiFlower, WikiPetal, WikiStem
 
 
 class WikiSeed:
-    def __init__(self, up_stem: WikiStem, down_stem: WikiStem, petals: List[WikiPetal]):
+    def __init__(self, self_stem: WikiStem, up_stem: WikiStem, down_stem: WikiStem, petals: List[WikiPetal]):
         self.petal_map = {petal.label: petal for petal in petals}
         self.up_stem, self.down_stem = up_stem, down_stem
+        self.self_stem = self_stem
 
         _headers = dict(petal.to_dict_pair() for petal in petals)
-        self.up_stem.set_query_template(_headers)
-        self.down_stem.set_query_template(_headers)
-
-        _TEMPLATE_STR = "%s"
-        self.info_query_template = (
-            SPARQLBuilder(_headers).bounded_to("?item", f"wd:{_TEMPLATE_STR}").build()
-        )
+        for stem in (self.self_stem, self.up_stem, self.down_stem):
+            stem.set_query_template(_headers)
 
     def branch_up(self, id: str, tree: "WikiTree") -> List[WikiFlower]:
         # Query for parents
@@ -50,7 +45,7 @@ class WikiSeed:
         return children
 
     def sprout(self, id: str, tree: "WikiTree") -> WikiFlower:
-        result = tree.api.query(self.info_query_template % id)
+        result = tree.api.query(self.self_stem.get_query(id))
         flowers = WikiResult(result).parse(self.petal_map)
 
         if not flowers:

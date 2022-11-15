@@ -1,8 +1,19 @@
-from typing import Dict, List
+from typing import Dict
 from data_retrieval.query.builder import SPARQLBuilder
-from data_retrieval.wikitree.flower import WikiFlower, WikiStem
-from qwikidata.entity import WikidataItem
+from data_retrieval.wikitree.flower import WikiStem
 from data_retrieval.wikitree_instance.familytree.property import PROPERTY_MAP
+
+
+class SelfStem(WikiStem):
+    def __init__(self):
+        super().__init__(-1)
+
+    def set_query_template(self, headers: Dict[str, any]) -> None:
+        self.template = (
+            SPARQLBuilder(headers)
+            .bounded_to("?item", f"wd:{self._TEMPLATE_STR}")
+            .build()
+        )
 
 
 class HumanStem(WikiStem):
@@ -11,9 +22,7 @@ class HumanStem(WikiStem):
 
     def set_query_template(self, headers: Dict[str, any]) -> None:
         self.template = (
-            SPARQLBuilder(headers)
-            .with_property(self.id, self._TEMPLATE_STR)
-            .build()
+            SPARQLBuilder(headers).with_property(self.id, self._TEMPLATE_STR).build()
         )
 
 
