@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios, { AxiosError } from "axios";
-import { AutoCompleteData, RenderContent } from "../models";
+import { AutoCompleteData, ExpandInfo, RenderContent } from "../models";
 
 export interface ServiceStatus<T> {
   status: "Initial" | "Loading" | "Success" | "Failure";
@@ -25,10 +25,35 @@ export const fetchSearchResults = createAsyncThunk(
       const response = await axios.get<RenderContent>(
         `https://histree.fly.dev/person_info/${qid}`
       );
-      console.log(response.data);
       return {
         status: "Success",
         content: { ...response.data, searchedQid: qid },
+      };
+    } catch (e) {
+      return {
+        status: "Failure",
+        error: (e as AxiosError).message,
+      };
+    }
+  }
+);
+
+export const fetchSelectedExpansion = createAsyncThunk(
+  "search/fetchExpand",
+  async (
+    info: ExpandInfo
+  ): Promise<ServiceStatus<RenderContent & ExpandInfo>> => {
+    try {
+      const response = await axios.get<RenderContent>(
+        `https://histree.fly.dev/person_info/${info.searchedQid}`
+      );
+      return {
+        status: "Success",
+        content: {
+          ...response.data,
+          searchedQid: info.searchedQid,
+          direction: info.direction,
+        },
       };
     } catch (e) {
       return {

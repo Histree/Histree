@@ -12,7 +12,6 @@ class FamilySeed(WikiSeed):
         super().__init__(
             up_stem=ParentStem.instance(),
             down_stem=ChildStem.instance(),
-            partner_stem=SpouseStem.instance(),
             petals=[
                 GenderPetal.instance(),
                 BirthDatePetal.instance(),

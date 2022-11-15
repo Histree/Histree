@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 
 
 class SPARQLBuilder:
@@ -10,13 +10,15 @@ class SPARQLBuilder:
         self.limit = None
         self.order_by = ""
         self.other = ""
+        self.bounds = dict()
         self.headers = headers
         self.filters = dict()
         self.other_filters = ""
 
     def build(self) -> str:
+        bounds = " ".join(f"BIND({value} as {variable})" for (variable, value) in self.bounds.items())
         header_selections = " ".join(
-            f"(SAMPLE(?{header} as ?{header}_))" if config["sample"] else f"?{header}"
+            f"(SAMPLE(?{header}) as ?{header}_)" if config["sample"] else f"?{header}"
             for (header, config) in self.headers.items()
         )
         header_bindings = " ".join(
@@ -38,16 +40,19 @@ class SPARQLBuilder:
         return f"""
             SELECT ?item ?label ?description {header_selections}
             WHERE {{
-                {self.other}
-                ?item {self.predicate}
-                    rdfs:label ?label;
-                    schema:description ?description.
-                {header_bindings}
-                {filtering}
-                {self.other_filters}
-                FILTER(lang(?label) = "{self.language}" && lang(?description) = "{self.language}")
-            }}
-            GROUP BY ?item ?label ?description {header_access}
+                {"SELECT * WHERE {" if self.order_by else ""}
+                    {bounds}
+                    {self.other}
+                    ?item {self.predicate}
+                        rdfs:label ?label;
+                        schema:description ?description.
+                    {header_bindings}
+                    {filtering}
+                    {self.other_filters}
+                    FILTER(lang(?label) = "{self.language}" && lang(?description) = "{self.language}")
+                }}
+                GROUP BY ?item ?label ?description ?num {header_access}
+            {"}" if self.order_by else ""}
             {self.order_by}
             {f"LIMIT {self.limit}" if self.limit is not None else ""}
         """
@@ -67,6 +72,11 @@ class SPARQLBuilder:
     def with_property(self, property: str, value: str) -> "SPARQLBuilder":
         self.predicate += f"wdt:{property} wd:{value};"
         return self
+    
+    def with_any_property(self, properties: List[str], value: str) -> "SPARQLBuilder":
+        property = '|'.join(f"wdt:{prop}" for prop in properties)
+        self.predicate += f"{property} wd:{value};"
+        return self
 
     def with_instance(self, instance: str) -> "SPARQLBuilder":
         return self.with_property("P31", instance)
@@ -79,3 +89,7 @@ class SPARQLBuilder:
 
     def without_instance(self, instance: str) -> "SPARQLBuilder":
         return self.without_property("P31", instance)
+
+    def bounded_to(self, variable: str, value: str) -> "SPARQLBuilder":
+        self.bounds[variable] = value
+        return self
