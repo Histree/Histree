@@ -102,13 +102,15 @@ class App:
             "MATCH (p1:Person {id: \'" + person_id1 + "\'}), "
             "(p2: Person {id: \'" + person_id2 + "\'}), "
             "p = shortestPath((p1)-[*]-(p2)) "
-            "WHERE length(p) > 1"
-            "RETURN p"
+            "WHERE length(p) > 1 "
+            "RETURN nodes(p)"
         )
 
         path = tx.run(query, person_id1=person_id1, person_id2=person_id2)
-        return path["id"]
+        return [node["id"] for node in path]
 
+
+    
 
 
 
