@@ -27,6 +27,10 @@ def test_find_common_ancestor(make_connection):
     common_ancestor_id = make_connection.common_ancestor("Q1712755", "Q1712755")
     assert common_ancestor_id == "Q4357787"
 
+def test_relationship_table(make_connection):
+    table = make_connection.relationship_table()
+    assert table[2][0]["male"] == "grandson"
+
 
 # def test_find_shortest_path(make_connection):
 #     # Shortest path between Eduard Einstein and Evelyn Einstein goes through Hans Albert Einstein

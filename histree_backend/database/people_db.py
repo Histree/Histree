@@ -73,7 +73,7 @@ class App:
     def common_ancestor(self, person_id1, person_id2):
         with self.driver.session(database="neo4j") as session:
             result = session.execute_read(self._common_ancestor, person_id1, person_id2)
-            return result[0]
+            return result
     
 
     @staticmethod
@@ -88,7 +88,7 @@ class App:
             "LIMIT 1"
         )
         matches = tx.run(query, person_id1=person_id1, person_id2=person_id2)
-        return [match["id"] for match in matches]
+        return [match["id"] for match in matches][0]
 
 
     def shortest_path(self, person_id1, person_id2):
@@ -111,9 +111,82 @@ class App:
 
 
     
+    def relationship_calculator(self, person_id1, person_id2):
+        '''Works out the relationship where person1 is the _ of person2'''
+        
+        with self.driver.session(database="neo4j") as session:
+            sex = session.execute_read(self._return_sex, person_id1)
+            ca_id = session.execute_read(self._common_ancestor, person_id1, person_id2)
+            distance1, distance2 = session.execute_read(self._distances_to_ca, ca_id, person_id1, person_id2)
+            return self._relationship_table[distance1][distance2][sex]
+
+
+    @staticmethod
+    def relationship_table():
+        table = [[{} for i in range(5)] for j in range(5)]
+
+        # index 1 is person 1's distance from ca, index 2 is person 2's distance from ca
+        # index 3 is person 1's sex
+        table[0][1]["male"] = "father"
+        table[0][1]["female"] = "mother"
+        table[1][0]["male"] = "son"
+        table[1][0]["female"] = "daughter"
+
+        table[0][2]["male"] = "grandfather"
+        table[0][2]["female"] = "grandmother"
+        table[2][0]["male"] = "grandson"
+        table[2][0]["female"] = "granddaughter"
+
+        table[1][1]["male"] = "brother"
+        table[1][1]["female"] = "sister"
+
+        table[1][2]["male"] = "uncle"
+        table[1][2]["female"] = "aunt"
+        table[2][1]["male"] = "nephew"
+        table[2][1]["female"] = "niece"
+
+        table[2][2]["male"] = "cousin"
+        table[2][2]["female"] = "cousin"
+        
+        return table
+
+    
+    @staticmethod
+    def _distances_to_ca(tx, ca_id, person_id1, person_id2):
+        query1 = (
+            "MATCH (p1: Person {id: \'" + person_id1 + "\'}), "
+            "MATCH (p2: Person {id: \'" + ca_id + "\'}), "
+            "path = shortestPath((p1)-[*]-(p2)) "
+            "RETURN length(path) AS length"
+        )
+        distances = tx.run(query1, person_id1=person_id1, ca_id=ca_id)
+        distance1 = [distance["length"] for distance in distances][0]
+
+        query2 = (
+            "MATCH (p1: Person {id: \'" + person_id2 + "\'}), "
+            "MATCH (p2: Person {id: \'" + ca_id + "\'}), "
+            "path = shortestPath((p1)-[*]-(p2)) "
+            "RETURN length(path) AS length"
+        )
+        distances = tx.run(query2, person_id2=person_id2, ca_id=ca_id)
+        distance2 = [distance["length"] for distance in distances][0]
+
+        return distance1, distance2
 
 
 
+    @staticmethod
+    def _return_sex(tx, person_id):
+        query = (
+            "MATCH (p:Person) "
+            "WHERE p.id = $person_id "
+            "RETURN p.sex AS sex"
+        )
+        matches = tx.run(query, person_id=person_id)
+        return [person["sex"] for person in matches][0]
+    
+
+        
 
     def merge_people(self, data):
         with self.driver.session(database="neo4j") as session:
