@@ -5,6 +5,8 @@ from qwikidata.sparql import return_sparql_query_results
 from data_retrieval.query.builder import SPARQLBuilder
 from data_retrieval.query.parser import WikiResult
 from .flower import WikiFlower, WikiPetal, WikiStem
+from database.neo4j_db import Neo4jDB
+from database.cypher_runner import find_person
 
 
 class WikiSeed:
@@ -87,6 +89,7 @@ class WikiTree:
         self.flowers = dict()
         self.branches = dict()
         self.api = api
+        self.db = Neo4jDB.get_instance()
 
     def grow(
         self,
@@ -134,6 +137,11 @@ class WikiTree:
             for flower in below:
                 # Grow upwards once to find other parent.
                 self.grow_levels(flower.id, 1, branch_down_levels - 1)
+
+    def watering(self, id):
+        result = self.db.read_db(find_person, id)
+        #TODO parse the result to list of flowers
+        children = WikiResult(result).parse(self.petal_map)
 
     def to_json(self) -> Dict[str, any]:
         return {
