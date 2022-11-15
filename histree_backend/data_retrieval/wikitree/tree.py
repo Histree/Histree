@@ -3,7 +3,7 @@ from json import JSONDecodeError
 from typing import Dict, List, Tuple
 from qwikidata.sparql import return_sparql_query_results
 from data_retrieval.query.builder import SPARQLBuilder
-from data_retrieval.query.parser import WikiResult
+from data_retrieval.query.parser import WikiResult, DBResult
 from .flower import WikiFlower, WikiPetal, WikiStem
 from database.neo4j_db import Neo4jDB
 from database.cypher_runner import find_person
@@ -138,10 +138,15 @@ class WikiTree:
                 # Grow upwards once to find other parent.
                 self.grow_levels(flower.id, 1, branch_down_levels - 1)
 
-    def watering(self, id):
+    def watering(self, id, query):
+        # Combine multiple queries
         result = self.db.read_db(find_person, id)
-        #TODO parse the result to list of flowers
-        children = WikiResult(result).parse(self.petal_map)
+        if not result:
+            result = self.api.query(self.info_query_template % id)
+            flowers = WikiResult(result).parse(self.petal_map)
+        else :
+            flowers = DBResult(result).parse(self.petal_map)
+        return flowers
 
     def to_json(self) -> Dict[str, any]:
         return {
