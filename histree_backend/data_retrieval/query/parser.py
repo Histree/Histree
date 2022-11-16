@@ -40,23 +40,19 @@ class DBResult:
 
     def __init__(self, result) -> None:
         self.result = result
-    
-    def parse(self, petal_map: Dict[str, WikiPetal]) -> List[WikiFlower]:
-        flowers = []
+
+    def _parse_flower(raw_flower: dict, petal_map: Dict[str, WikiPetal]) -> WikiFlower:
         defaults = ("id", "name", "description")
 
-        for item_dict in self.result:
-
-            id, name, description = map(item_dict.get, defaults)
-            flower = WikiFlower(
-                id,
-                {
-                    label: petal_map[label].parse(value)
-                    for (label, value) in item_dict.items()
-                    if label not in defaults
-                },
-            )
-            flower.name = name
-            flower.description = description
-            flowers.append(flower)
-        return flowers
+        id, name, description = map(raw_flower.get, defaults)
+        flower = WikiFlower(
+            id,
+            {
+                label: petal_map[label].parse(value)
+                for (label, value) in raw_flower.items()
+                if label not in defaults
+            },
+        )
+        flower.name = name
+        flower.description = description
+        return flower

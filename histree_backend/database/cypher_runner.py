@@ -16,9 +16,11 @@ def find_children(tx, ids) -> tuple[str, list]:
             "UNWIND $ids AS i "
             "OPTIONAL MATCH (parent {id: i, branched_down: TRUE}) "
             "OPTIONAL MATCH (parent) --> (child)"
-            "RETURN i, parent IS NOT NULL AS b, child"
+            "RETURN i, parent IS NOT NULL AS b, collect(child) AS children"
             )
-    label = ['i', 'b', 'child']
+    label = ['i', 'b', 'children']
+    # if b is Fasle, we need to query the ids from wiki
+    # if b is True, we use children
     return query, label
 
 @cypher_runner
@@ -27,9 +29,9 @@ def find_parent(tx, ids) -> tuple[str, list]:
             "UNWIND $ids AS i "
             "OPTIONAL MATCH (child {id: i, branched_up: TRUE}) "
             "OPTIONAL MATCH (parent) --> (child)"
-            "RETURN i, child IS NOT NULL AS b, parent"
+            "RETURN i, child IS NOT NULL AS b, collect(parent) AS parents"
             )
-    label = ['i', 'b', 'parent']
+    label = ['i', 'b', 'parents']
     return query, label
 
 @cypher_runner
@@ -41,8 +43,3 @@ def find_flowers(tx, ids) -> tuple[str, list]:
         )
     label = ['i', 'flower']
     return query, label
-
-    
-
-
-
