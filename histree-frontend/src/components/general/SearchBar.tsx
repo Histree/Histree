@@ -4,16 +4,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { debounce } from 'lodash';
 import './SearchBar.scss';
 import {
-  AppDispatch,
-  getSearchSuggestions,
-  resetSearch,
-  setResultServiceState
+	AppDispatch,
+	getSearchSuggestions,
+	resetSearch,
+	setResultServiceState
 } from '../../stores';
 import { fetchSearchResults, fetchSearchSuggestions } from '../../services';
 
 export const SearchBar = () => {
 	const dispatch = useDispatch();
-	const searchSuggestions = useSelector(getSearchSuggestions);
+	const { searchTerm, searchSuggestions } = useSelector(getSearchSuggestions);
 	const appDispatch = useDispatch<AppDispatch>();
 	const handleChangeWithDebounce = debounce(async (e) => {
 		handleAutocomplete(e);
@@ -46,6 +46,7 @@ export const SearchBar = () => {
 		<div className="search_container">
 			<Autocomplete
 				onChange={(e, v) => handleSearch(e, v ? v : undefined)}
+				value={searchTerm}
 				style={{
 					height: '100%'
 				}} freeSolo options={Object.keys(searchSuggestions)} renderInput={(params) =>

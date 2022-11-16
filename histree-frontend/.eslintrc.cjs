@@ -27,7 +27,10 @@ module.exports = {
 		"spaced-comment": "error",
 		"quotes": ["error", "single"],
 		"no-duplicate-imports": "error",
-		"no-tabs": 0
+		"no-tabs": 0,
+		"@typescript-eslint/strict-boolean-expressions": 0
+
+
 	},
 	"settings": {
 		"react": {

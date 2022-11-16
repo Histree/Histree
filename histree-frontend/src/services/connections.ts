@@ -14,7 +14,7 @@ export const fetchSearchSuggestions = createAsyncThunk(
     const response = await axios.get<Record<string, AutoCompleteData>>(
       `https://histree.fly.dev/find_matches/${search}`
     );
-    return response.data;
+    return { searchTerm: search, autocompleteData: response.data };
   }
 );
 

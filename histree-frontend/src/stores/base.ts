@@ -5,12 +5,15 @@ import {
   createSelector,
 } from "@reduxjs/toolkit";
 import {
-  AutoCompleteData,
+  EdgeInfo,
   ExpandInfo,
   HandleStatus,
   NodeId,
+  NodeInfo,
   NodeLookup,
   RenderContent,
+  RenderMode,
+  SearchBarInfo,
   Selected,
 } from "../models";
 import {
@@ -20,26 +23,36 @@ import {
   ServiceStatus,
 } from "../services";
 import { uniq } from "lodash";
+import { CompareNodes } from "../models/compareInfo";
 
 interface HistreeState {
+  renderMode: RenderMode;
   renderContent: ServiceStatus<RenderContent | undefined>;
   selected?: Selected;
   searchTerm?: string;
-  searchSuggestions: Record<string, AutoCompleteData>;
+  searchSuggestions: SearchBarInfo;
   nodeLookup: NodeLookup;
+  edgeInfo: EdgeInfo;
+  compareNodes: CompareNodes;
 }
 
 const initialState: HistreeState = {
   selected: undefined,
+  renderMode: "View",
   renderContent: { status: "Initial" },
-  searchSuggestions: {},
+  searchSuggestions: { searchTerm: "", autocompleteData: {} },
   nodeLookup: {},
+  edgeInfo: {},
+  compareNodes: {},
 };
 
 export const histreeState = createSlice({
   name: "histreeState",
   initialState,
   reducers: {
+    setRenderMode: (state, action: PayloadAction<RenderMode>) => {
+      state.renderMode = action.payload;
+    },
     setNodeLookupDown: (
       state,
       action: PayloadAction<{ searchedQid: NodeId; status: HandleStatus }>
@@ -55,7 +68,7 @@ export const histreeState = createSlice({
         action.payload.status;
     },
     resetSearch: (state) => {
-      state.searchSuggestions = {};
+      state.searchSuggestions.autocompleteData = {};
     },
     setResultServiceState: (
       state,
@@ -66,6 +79,29 @@ export const histreeState = createSlice({
     setSelected: (state, action: PayloadAction<Selected | undefined>) => {
       state.selected = action.payload;
     },
+    setComparisonNode: (state, action: PayloadAction<NodeInfo | undefined>) => {
+      console.log(state.compareNodes.first?.id);
+      console.log(action.payload?.id);
+      if (state.compareNodes.first === undefined) {
+        if (
+          state.compareNodes.second !== undefined &&
+          action.payload?.id === state.compareNodes.second.id
+        ) {
+          state.compareNodes.second = undefined;
+        } else {
+          state.compareNodes.first = action.payload;
+        }
+      } else if (state.compareNodes.first.id === action.payload?.id) {
+        state.compareNodes.first = undefined;
+      } else if (
+        state.compareNodes.second &&
+        state.compareNodes.second.id === action.payload?.id
+      ) {
+        state.compareNodes.second = undefined;
+      } else {
+        state.compareNodes.second = action.payload;
+      }
+    },
     setRenderContent: (
       state,
       action: PayloadAction<ServiceStatus<RenderContent | undefined>>
@@ -74,6 +110,9 @@ export const histreeState = createSlice({
     },
     setNodeLookup: (state, action: PayloadAction<NodeLookup>) => {
       state.nodeLookup = action.payload;
+    },
+    setEdgeInfo: (state, action: PayloadAction<EdgeInfo>) => {
+      state.edgeInfo = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -160,8 +199,19 @@ export const getSearchSuggestions = createSelector(
   (state: HistreeState) => {
     return state.searchSuggestions;
   },
-  (x) =>
-    Object.fromEntries(Object.values(x).map((value) => [value.label, value]))
+  (x) => ({
+    searchTerm: x.searchTerm,
+    searchSuggestions: Object.fromEntries(
+      Object.values(x.autocompleteData).map((value) => [value.label, value])
+    ),
+  })
+);
+
+export const getRenderMode = createSelector(
+  (state: HistreeState) => {
+    return state.renderMode;
+  },
+  (x) => x
 );
 
 export const getRenderContent = createSelector(
@@ -184,6 +234,18 @@ export const getNodeLookup = createSelector(
   },
   (x) => x
 );
+export const getEdgeInfo = createSelector(
+  (state: HistreeState) => {
+    return state.edgeInfo;
+  },
+  (x) => x
+);
+export const getCompareNodes = createSelector(
+  (state: HistreeState) => {
+    return state.compareNodes;
+  },
+  (x) => x
+);
 
 export const {
   setSelected,
@@ -193,6 +255,9 @@ export const {
   setResultServiceState,
   setNodeLookupDown,
   setNodeLookupUp,
+  setRenderMode,
+  setComparisonNode,
+  setEdgeInfo,
 } = histreeState.actions;
 
 export const store = configureStore({

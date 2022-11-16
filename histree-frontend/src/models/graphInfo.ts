@@ -7,8 +7,8 @@ export type NodeInfo = {
   id: NodeId;
   description?: string;
   petals?: Record<string, string>;
-  searched?: boolean;
-  visible?: boolean;
+  searched: boolean;
+  visible: boolean;
   upExpanded: HandleStatus;
   downExpanded: HandleStatus;
 } & Record<string, string>;
