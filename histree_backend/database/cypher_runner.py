@@ -5,19 +5,41 @@ def cypher_runner(query_func):
         return parser(result, labels)
     return wrapper
 
-def parser(result, labels):
+def parser(result, labels) -> list[dict]:
     return [
-        res[label] for res in result for label in labels
+        tuple(res[label] for label in labels) for res in result 
     ]
 
 @cypher_runner
-def find_person(tx, id) -> tuple[str, list]:
+def find_children(tx, ids) -> tuple[str, list]:
     query = (
-            "MATCH (p:Person) "
-            "WHERE p.id = $id "
-            "RETURN p"
+            "UNWIND $ids AS i "
+            "OPTIONAL MATCH (parent {id: i, branched_down: TRUE}) "
+            "OPTIONAL MATCH (parent) --> (child)"
+            "RETURN i, parent IS NOT NULL AS b, child"
             )
-    label = ['p']
+    label = ['i', 'b', 'child']
+    return query, label
+
+@cypher_runner
+def find_parent(tx, ids) -> tuple[str, list]:
+    query = (
+            "UNWIND $ids AS i "
+            "OPTIONAL MATCH (child {id: i, branched_up: TRUE}) "
+            "OPTIONAL MATCH (parent) --> (child)"
+            "RETURN i, child IS NOT NULL AS b, parent"
+            )
+    label = ['i', 'b', 'parent']
+    return query, label
+
+@cypher_runner
+def find_flowers(tx, ids) -> tuple[str, list]:
+    query = (
+        "UNWIND $ids AS i "
+        "OPTIONAL MATCH (flower {id: i}) "
+        "RETURN i, flower"
+        )
+    label = ['i', 'flower']
     return query, label
 
     
