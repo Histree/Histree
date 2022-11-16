@@ -10,8 +10,8 @@ import 'reactflow/dist/style.css';
 import { NodeLookup, AdjList, RenderContent, NodePositions, NodeId } from '../models';
 import TreeNode from './TreeNode';
 import dagre, { graphlib } from 'dagre';
-import { useSelector } from 'react-redux';
-import { getCompareNodes, getEdgeInfo, getNodeLookup } from '../stores';
+import { useDispatch, useSelector } from 'react-redux';
+import { getCompareNodes, getEdgeInfo, getNodeLookup, setSelected } from '../stores';
 import InvisibleConnectionLine from './general/InvisibleConnectionLine';
 import { CompareNodes } from '../models/compareInfo';
 
@@ -26,6 +26,9 @@ const Flow = (props: { content: RenderContent }) => {
 	const nodeLookup = useSelector(getNodeLookup);
 	const comparisonNodes = useSelector(getCompareNodes);
 	const edgeInfo = useSelector(getEdgeInfo);
+	const dispatch = useDispatch();
+
+	const closeWindow = () => dispatch(setSelected(undefined));
 
 	const { setCenter, getZoom } = useReactFlow();
 	const getEdgeStyle = (first: NodeId, second: NodeId): CSSProperties | undefined => {
@@ -181,6 +184,7 @@ const Flow = (props: { content: RenderContent }) => {
 				nodeOrigin={[0.5, 0.5]}
 				connectionLineComponent={InvisibleConnectionLine}
 				fitView
+				onPaneClick={closeWindow}
 			>
 				<Background />
 				<Controls />
