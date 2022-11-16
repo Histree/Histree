@@ -9,8 +9,8 @@ class Neo4jDB:
     def __init__(self) -> None:
         self.driver = GraphDatabase.driver(self.URI, auth=(self.USER, self.PASSWORD))
 
-    @staticmethod
-    def get_instance() -> 'Neo4jDB':
+    @classmethod
+    def instance() -> 'Neo4jDB':
         if not Neo4jDB.instance:
             Neo4jDB.instance = Neo4jDB()
         return Neo4jDB.instance
