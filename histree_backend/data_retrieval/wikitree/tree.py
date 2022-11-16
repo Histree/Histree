@@ -122,8 +122,13 @@ class WikiTree:
         ]
 
         # Find petals of all unseen flowers
+        
+        # Uncomment below for database integration
         # unseen_flowers, unseen_ids = find_ids_in_database(incomplete_ids)
+
+        # Keep uncommented below for w/o database integration
         unseen_flowers, unseen_ids = [], incomplete_ids
+
         unseen_flowers.extend(self.seed.sprout(unseen_ids, self))
 
         # Branch from flowers which are incomplete
@@ -145,7 +150,7 @@ class WikiTree:
                 or not self.flowers[flower.id].branched_down
             ]
             if unbranched_down:
-                flowers_above.extend(self.seed.branch_down(unbranched_down, self))
+                flowers_below.extend(self.seed.branch_down(unbranched_down, self))
 
         for flower in unseen_flowers:
             self.flowers[flower.id] = flower
