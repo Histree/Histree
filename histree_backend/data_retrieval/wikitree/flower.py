@@ -4,6 +4,8 @@ from qwikidata.entity import WikidataItem
 
 
 class WikiFlower:
+    _hidden_petals = {"caller", "father", "mother"}
+
     def __init__(self, id: str, petals: Dict[str, str]):
         self.id = id
         self.name = ""
@@ -13,7 +15,11 @@ class WikiFlower:
         self.branched_down = False
 
     def to_json(self) -> Dict[str, any]:
-        json_dict = {"id": self.id, "name": self.name, "petals": self.petals}
+        json_dict = {
+            "id": self.id,
+            "name": self.name,
+            "petals": {k: v for (k, v) in self.petals.items() if k not in self._hidden_petals},
+        }
         if self.description:
             json_dict["description"] = self.description
         return json_dict
@@ -64,14 +70,16 @@ class WikiPetal:
 
 class WikiStem:
     _instance = None
-    _TEMPLATE_STR = "%s"
+    _TEMPLATE = "temp"
+    _TEMPLATE_STR = f"%({_TEMPLATE})s"
 
     def __init__(self, id: str):
         self.id = id
         self.template = None
+        self.unique_petals = []
 
-    def get_query(self, id: str) -> str:
-        return self.template % id
+    def get_query(self, ids: List[str]) -> str:
+        return self.template % {self._TEMPLATE: " ".join(f"wd:{id}" for id in ids)}
 
     @abstractmethod
     def set_query_template(self, headers: Dict[str, any]) -> None:
@@ -82,3 +90,19 @@ class WikiStem:
         if cls._instance is None:
             cls._instance = cls()
         return cls._instance
+
+
+class UpWikiStem(WikiStem):
+    def __init__(self, id: str, caller_petal: WikiPetal):
+        super().__init__(id)
+
+        self.caller = caller_petal.label
+        self.unique_petals = [caller_petal]
+
+
+class DownWikiStem(WikiStem):
+    def __init__(self, id: str, parent_petals: List[WikiPetal]):
+        super().__init__(id)
+
+        self.parents = [petal.label for petal in parent_petals]
+        self.unique_petals = parent_petals

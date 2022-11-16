@@ -2,10 +2,10 @@ from typing import Dict, List
 import unittest
 from unittest.mock import patch, MagicMock
 from qwikidata.entity import WikidataItem
-from query.builder import SPARQLBuilder
-from query.name_query import NameQueryBuilder
-from wikitree.flower import WikiFlower
-from wikitree.tree import WikiTree
+from data_retrieval.query.builder import SPARQLBuilder
+from data_retrieval.query.name_query import NameQueryBuilder
+from data_retrieval.wikitree.flower import WikiFlower
+from data_retrieval.wikitree.tree import WikiTree
 
 
 class TestWikiTreeMethods(unittest.TestCase):
@@ -49,8 +49,8 @@ class TestWikiTreeMethods(unittest.TestCase):
                 tree.branches[id] = set()
             tree.branches[id].add(child_flower.id)
 
-    @patch("wikitree.tree.WikidataAPI")
-    @patch("wikitree.tree.WikiSeed")
+    @patch("data_retrieval.wikitree.tree.WikidataAPI")
+    @patch("data_retrieval.wikitree.tree.WikiSeed")
     def test_grow(self, MockSeedClass, MockWikidataAPIClass):
         MockSeedClass.branch_up, MockSeedClass.branch_down = MagicMock(), MagicMock()
         MockSeedClass.branch_up.side_effect = lambda it, tr: self._create_dummy_parents(
@@ -146,8 +146,8 @@ class TestWikiTreeMethods(unittest.TestCase):
                 spouse_id in tree.flowers, msg="Spouse is not stored in the WikiTree."
             )
 
-    @patch("wikitree.tree.WikidataAPI")
-    @patch("wikitree.tree.WikiSeed")
+    @patch("data_retrieval.wikitree.tree.WikidataAPI")
+    @patch("data_retrieval.wikitree.tree.WikiSeed")
     def test_to_json(self, MockSeedClass, MockWikidataAPIClass):
         tree = WikiTree(MockSeedClass(), MockWikidataAPIClass())
 

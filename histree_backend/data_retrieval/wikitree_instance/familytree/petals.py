@@ -54,12 +54,37 @@ class BirthNamePetal(WikiPetal):
 
 
 class ImagePetal(WikiPetal):
-    URL_PREFIX = "https://en.wikipedia.org/wiki/Special:FilePath/"
-
     def __init__(self):
         label = "image"
         super().__init__(PROPERTY_MAP["petals"][label], label, True, True)
 
     def parse(self, value: str) -> str:
-        # Convert to use WikiMedia URL
-        return self.URL_PREFIX + value.replace(" ", "_")
+        return value
+
+
+class RelationPetal(WikiPetal):
+    def __init__(self, id, label):
+        super().__init__(id, label, True, True)
+
+    def parse(self, value: str) -> str:
+        return value.split("/")[-1]
+
+
+class FatherPetal(RelationPetal):
+    def __init__(self):
+        label = "father"
+        super().__init__(PROPERTY_MAP["stems"][label], label)
+
+
+class MotherPetal(RelationPetal):
+    def __init__(self):
+        label = "mother"
+        super().__init__(PROPERTY_MAP["stems"][label], label)
+
+
+class CallerPetal(WikiPetal):
+    def __init__(self):
+        super().__init__(-1, "caller", False, False)
+
+    def parse(self, value: str) -> str:
+        return value.split("/")[-1]

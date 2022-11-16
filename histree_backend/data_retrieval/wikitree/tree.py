@@ -2,30 +2,32 @@ from abc import abstractmethod
 from json import JSONDecodeError
 from typing import Dict, List, Tuple
 from qwikidata.sparql import return_sparql_query_results
-from data_retrieval.query.builder import SPARQLBuilder
-from data_retrieval.query.parser import WikiResult, DBResult
-from .flower import WikiFlower, WikiPetal, WikiStem
-from database.neo4j_db import Neo4jDB
-from database.cypher_runner import find_person
+from data_retrieval.query.parser import WikiResult
+from .flower import WikiFlower, WikiPetal, WikiStem, UpWikiStem, DownWikiStem
 
 
 class WikiSeed:
-    def __init__(self, up_stem: WikiStem, down_stem: WikiStem, petals: List[WikiPetal]):
-        self.petal_map = {petal.label: petal for petal in petals}
+    def __init__(
+        self,
+        self_stem: WikiStem,
+        up_stem: UpWikiStem,
+        down_stem: DownWikiStem,
+        petals: List[WikiPetal],
+    ):
+        self.self_stem = self_stem
         self.up_stem, self.down_stem = up_stem, down_stem
+        self.petal_map = {
+            petal.label: petal
+            for petal in petals + up_stem.unique_petals + down_stem.unique_petals
+        }
 
         _headers = dict(petal.to_dict_pair() for petal in petals)
-        self.up_stem.set_query_template(_headers)
-        self.down_stem.set_query_template(_headers)
+        for stem in (self.self_stem, self.up_stem, self.down_stem):
+            stem.set_query_template(_headers)
 
-        _TEMPLATE_STR = "%s"
-        self.info_query_template = (
-            SPARQLBuilder(_headers).bounded_to("?item", f"wd:{_TEMPLATE_STR}").build()
-        )
-
-    def branch_up(self, id: str, tree: "WikiTree") -> List[WikiFlower]:
+    def branch_up(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
         # Query for parents
-        result = tree.api.query(self.up_stem.get_query(id))
+        result = tree.api.query(self.up_stem.get_query(ids))
         parents = WikiResult(result).parse(self.petal_map)
 
         # Store parents in tree
@@ -34,30 +36,40 @@ class WikiSeed:
 
             if parent.id not in tree.branches:
                 tree.branches[parent.id] = set()
-            tree.branches[parent.id].add(id)
+            tree.branches[parent.id].add(parent.petals[self.up_stem.caller])
 
         return parents
 
-    def branch_down(self, id: str, tree: "WikiTree") -> List[WikiFlower]:
-        result = tree.api.query(self.down_stem.get_query(id))
+    def branch_down(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
+        result = tree.api.query(self.down_stem.get_query(ids))
         children = WikiResult(result).parse(self.petal_map)
 
-        if children and id not in tree.branches:
-            tree.branches[id] = set()
+        seen_ids = set(ids)
+        unseen_parent_ids = set()
 
+        # Add children to tree and record unseen parents
         for child in children:
             tree.flowers[child.id] = child
-            tree.branches[id].add(child.id)
+
+            for parent_petal_label in self.down_stem.parents:
+                parent_id = child.petals[parent_petal_label]
+                if parent_id not in tree.flowers and parent_id not in seen_ids:
+                    unseen_parent_ids.add(parent_id)
+                if parent_id not in tree.branches:
+                    tree.branches[parent_id] = set()
+                tree.branches[parent_id].add(child.id)
+
+        # Find information about parents not in tree
+        parents = self.sprout(unseen_parent_ids, tree)
+        for parent in parents:
+            tree.flowers[parent.id] = parent
 
         return children
 
-    def sprout(self, id: str, tree: "WikiTree") -> WikiFlower:
-        result = tree.api.query(self.info_query_template % id)
+    def sprout(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
+        result = tree.api.query(self.self_stem.get_query(ids))
         flowers = WikiResult(result).parse(self.petal_map)
-
-        if not flowers:
-            return None
-        return flowers[0]
+        return flowers
 
 
 class WikiAPI:
@@ -93,50 +105,77 @@ class WikiTree:
 
     def grow(
         self,
-        id: str,
+        ids: List[str],
         branch_up: bool = True,
         branch_down: bool = True,
     ) -> Tuple[List[WikiFlower], List[WikiFlower]]:
-        if (
-            id in self.flowers
-            and (not branch_up or self.flowers[id].branched_up)
-            and (not branch_down or self.flowers[id].branched_down)
-        ):
-            return None, None
+        flowers_above, flowers_below = [], []
 
-        if id not in self.flowers:
-            flower = self.seed.sprout(id, self)
-            if not flower:
-                return None, None
-            self.flowers[id] = flower
-        else:
-            flower = self.flowers[id]
+        # Complete ids can be ignored as either:
+        # - we don't need to branch up or down from them
+        # - we have already branched from them and their immediates are in ids
+        incomplete_ids = [
+            id
+            for id in ids
+            if id not in self.flowers
+            or (branch_up and not self.flowers[id].branched_up)
+            or (branch_down and not self.flowers[id].branched_down)
+        ]
 
-        # Branch off from the flower to find immediate nearby flowers
-        flowers_above, flowers_below = None, None
-        if branch_up and not flower.branched_up:
-            flowers_above = self.seed.branch_up(id, self)
-            flower.branched_up = True
-        if branch_down and not flower.branched_down:
-            flowers_below = self.seed.branch_down(id, self)
-            flower.branched_down = True
+        # Find petals of all unseen flowers
+        
+        # Uncomment below for database integration
+        # unseen_flowers, unseen_ids = find_ids_in_database(incomplete_ids)
+
+        # Keep uncommented below for w/o database integration
+        unseen_flowers, unseen_ids = [], incomplete_ids
+
+        unseen_flowers.extend(self.seed.sprout(unseen_ids, self))
+
+        # Branch from flowers which are incomplete
+        if branch_up:
+            unbranched_up = [
+                flower.id
+                for flower in unseen_flowers
+                if flower.id not in self.flowers
+                or not self.flowers[flower.id].branched_up
+            ]
+            if unbranched_up:
+                flowers_above.extend(self.seed.branch_up(unbranched_up, self))
+
+        if branch_down:
+            unbranched_down = [
+                flower.id
+                for flower in unseen_flowers
+                if flower.id not in self.flowers
+                or not self.flowers[flower.id].branched_down
+            ]
+            if unbranched_down:
+                flowers_below.extend(self.seed.branch_down(unbranched_down, self))
+
+        for flower in unseen_flowers:
+            self.flowers[flower.id] = flower
+        if branch_up:
+            for id in unbranched_up:
+                self.flowers[id].branched_up = True
+        if branch_down:
+            for id in unbranched_down:
+                self.flowers[id].branched_down = True
+
         return flowers_above, flowers_below
 
     def grow_levels(
-        self, id: str, branch_up_levels: int, branch_down_levels: int
+        self, ids: List[str], branch_up_levels: int, branch_down_levels: int
     ) -> None:
         above, below = self.grow(
-            id,
+            ids,
             branch_up_levels > 0,
             branch_down_levels > 0,
         )
-        if above:
-            for flower in above:
-                self.grow_levels(flower.id, branch_up_levels - 1, 0)
-        if below:
-            for flower in below:
-                # Grow upwards once to find other parent.
-                self.grow_levels(flower.id, 1, branch_down_levels - 1)
+        if above and branch_up_levels - 1 > 0:
+            self.grow_levels([flower.id for flower in above], branch_up_levels - 1, 0)
+        if below and branch_down_levels - 1 > 0:
+            self.grow_levels([flower.id for flower in below], 0, branch_down_levels - 1)
 
     def watering(self, id, query):
         # Combine multiple queries

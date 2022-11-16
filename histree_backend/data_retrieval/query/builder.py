@@ -2,10 +2,13 @@ from typing import Dict, List
 
 
 class SPARQLBuilder:
+    _hidden_header_id = -1
+
     def __init__(
         self, headers: Dict[str, Dict[str, any]] = dict(), language: str = "en"
     ):
         self.language = language
+        self.values = ""
         self.predicate = ""
         self.limit = None
         self.order_by = ""
@@ -16,7 +19,9 @@ class SPARQLBuilder:
         self.other_filters = ""
 
     def build(self) -> str:
-        bounds = " ".join(f"BIND({value} as {variable})" for (variable, value) in self.bounds.items())
+        bounds = " ".join(
+            f"BIND({value} as {variable})" for (variable, value) in self.bounds.items()
+        )
         header_selections = " ".join(
             f"(SAMPLE(?{header}) as ?{header}_)" if config["sample"] else f"?{header}"
             for (header, config) in self.headers.items()
@@ -25,6 +30,7 @@ class SPARQLBuilder:
             ("OPTIONAL{%s}" if config["optional"] else "%s")
             % f"?item wdt:{config['id']} ?{header}."
             for (header, config) in self.headers.items()
+            if config["id"] != self._hidden_header_id
         )
         header_access = " ".join(
             f"?{header}" + ("_" if config["sample"] else "")
@@ -42,6 +48,7 @@ class SPARQLBuilder:
             WHERE {{
                 {"SELECT * WHERE {" if self.order_by else ""}
                     {bounds}
+                    {self.values}
                     {self.other}
                     ?item {self.predicate}
                         rdfs:label ?label;
@@ -57,6 +64,12 @@ class SPARQLBuilder:
             {f"LIMIT {self.limit}" if self.limit is not None else ""}
         """
 
+    def with_values(
+        self, label: str, values: List[str], prefix: bool = True
+    ) -> "SPARQLBuilder":
+        self.values = f"VALUES {label} {{ {' '.join(('wd:' if prefix else '') + value for value in values)} }}"
+        return self
+
     def with_limit(self, limit: int) -> "SPARQLBuilder":
         self.limit = limit
         return self
@@ -69,12 +82,29 @@ class SPARQLBuilder:
         self.predicate += f"p:P31/ps:P31/wdt:P279* wd:{cls};"
         return self
 
-    def with_property(self, property: str, value: str) -> "SPARQLBuilder":
-        self.predicate += f"wdt:{property} wd:{value};"
+    def with_property(
+        self, property: str, value: str, prefix: bool = True
+    ) -> "SPARQLBuilder":
+        self.predicate += f"wdt:{property} {'wd:' if prefix else ''}{value};"
         return self
-    
-    def with_any_property(self, properties: List[str], value: str) -> "SPARQLBuilder":
-        property = '|'.join(f"wdt:{prop}" for prop in properties)
+
+    def with_any_property(
+        self,
+        properties: List[str],
+        value: str,
+        prefix_property: bool = True,
+        prefix_value: bool = True,
+    ) -> "SPARQLBuilder":
+        property = "|".join(
+            ("wdt:" if prefix_property else "") + prop for prop in properties
+        )
+        self.predicate += f"{property} {'wd:' if prefix_value else ''}{value};"
+        return self
+
+    def with_path(
+        self, properties: List[str], value: str, prefix: bool = True
+    ) -> "SPARQLBuilder":
+        property = "/".join(("wdt:" if prefix else "") + prop for prop in properties)
         self.predicate += f"{property} wd:{value};"
         return self
 
