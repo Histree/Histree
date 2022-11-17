@@ -2,9 +2,10 @@ from abc import abstractmethod
 from json import JSONDecodeError
 from typing import Dict, List, Tuple
 from qwikidata.sparql import return_sparql_query_results
-from data_retrieval.query.parser import WikiResult
+from data_retrieval.query.parser import WikiResult, DBResult
 from .flower import WikiFlower, WikiPetal, WikiStem, UpWikiStem, DownWikiStem
 from database.neo4j_db import Neo4jDB
+from database.cypher_runner import find_children, find_flowers, find_parent
 
 
 class WikiSeed:
@@ -28,44 +29,47 @@ class WikiSeed:
 
     def branch_up(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
         # Query for parents
-        result = tree.api.query(self.up_stem.get_query(ids))
-        parents = WikiResult(result).parse(self.petal_map)
-
+        cid_ps_pairs = tree.watering(ids, find_parent, self.up_stem.get_query, True)
+        all_parents = []
         # Store parents in tree
-        for parent in parents:
-            tree.flowers[parent.id] = parent
+        for child_id, parents in cid_ps_pairs:
+            tree.flowers[child_id].branched_up = True
+            all_parents.extend(parents)
+            for parent in parents:
+                tree.flowers[parent.id] = parent
 
-            if parent.id not in tree.branches:
-                tree.branches[parent.id] = set()
-            tree.branches[parent.id].add(parent.petals[self.up_stem.caller])
+                if parent.id not in tree.branches:
+                    tree.branches[parent.id] = set()
+                tree.branches[parent.id].add(child_id)
 
-        return parents
+        return all_parents
 
     def branch_down(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
-        result = tree.api.query(self.down_stem.get_query(ids))
-        children = WikiResult(result).parse(self.petal_map)
+        # result = tree.api.query(self.down_stem.get_query(ids))
+        # children = WikiResult(result).parse(self.petal_map)
+        pid_cs_pairs = tree.watering(ids, find_children, self.down_stem.get_query, True)
 
         seen_ids = set(ids)
         unseen_parent_ids = set()
-
-        # Add children to tree and record unseen parents
-        for child in children:
-            tree.flowers[child.id] = child
-
-            for parent_petal_label in self.down_stem.parents:
-                parent_id = child.petals[parent_petal_label]
-                if parent_id not in tree.flowers and parent_id not in seen_ids:
-                    unseen_parent_ids.add(parent_id)
-                if parent_id not in tree.branches:
-                    tree.branches[parent_id] = set()
-                tree.branches[parent_id].add(child.id)
+        all_children = []
+        for pid, children in pid_cs_pairs:
+            all_children.extend(children)
+            tree.flowers[pid].branched_down = True
+            # Add children to tree and record unseen parents (children's another parent)
+            for child in children:
+                tree.flowers[child.id] = child
+                for parent_petal_label in self.down_stem.parents:
+                    parent_id = child.petals[parent_petal_label]
+                    if parent_id not in tree.flowers and parent_id not in seen_ids:
+                        unseen_parent_ids.add(parent_id)
+                    if parent_id not in tree.branches:
+                        tree.branches[parent_id] = set()
+                    tree.branches[parent_id].add(child.id)
 
         # Find information about parents not in tree
-        parents = self.sprout(unseen_parent_ids, tree)
-        for parent in parents:
-            tree.flowers[parent.id] = parent
+        self.sprout(unseen_parent_ids, tree)
 
-        return children
+        return all_children
 
     def sprout(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
         result = tree.api.query(self.self_stem.get_query(ids))
@@ -106,7 +110,7 @@ class WikiTree:
         self.flowers = dict()
         self.branches = dict()
         self.api = api
-        self.db = Neo4jDB.get_instance()
+        self.db = Neo4jDB.instance()
 
     def grow(
         self,
@@ -134,8 +138,6 @@ class WikiTree:
             ]
             if unbranched_up:
                 flowers_above.extend(self.seed.branch_up(unbranched_up, self))
-                for id in unbranched_up:
-                    self.flowers[id].branched_up = True
 
         if branch_down:
             unbranched_down = [
@@ -146,8 +148,6 @@ class WikiTree:
             ]
             if unbranched_down:
                 flowers_below.extend(self.seed.branch_down(unbranched_down, self))
-                for id in unbranched_down:
-                    self.flowers[id].branched_down = True
 
         return flowers_above, flowers_below
 
@@ -164,15 +164,36 @@ class WikiTree:
         if below and branch_down_levels - 1 > 0:
             self.grow_levels([flower.id for flower in below], 0, branch_down_levels - 1)
 
-    def watering(self, id, query):
+    def watering(self, ids, db_query, wiki_query, branching=True):
         # Combine multiple queries
-        result = self.db.read_db(find_person, id)
-        if not result:
-            result = self.api.query(self.info_query_template % id)
-            flowers = WikiResult(result).parse(self.petal_map)
-        else :
-            flowers = DBResult(result).parse(self.petal_map)
-        return flowers
+        result = self.db.read_db(db_query, ids)
+        incomplete_ids = []
+        id_flowers_pairs = []
+        if branching:
+            #try to fetch from the DB
+            id_im_pairs = DBResult(result).parse_immediate(self.seed.petal_map)
+
+            for id, ims in id_im_pairs:
+                if ims is None:
+                    incomplete_ids.append(id)
+                else:
+                    id_flowers_pairs.append((id, ims)) 
+                    #ims is a list of flower
+        else:
+            id_it_pairs = DBResult(result).parse_itself(self.seed.petal_map)
+            for id, it in id_it_pairs:
+                if it is None:
+                    incomplete_ids.append(id)
+                else:
+                    id_flowers_pairs.append((id, [it])) 
+                    #it is a flower, so we warp it
+            
+            
+        #Incomplete ids should query the wiki
+        result = self.api.query(wiki_query(incomplete_ids))
+        flowers = WikiResult(result).parse(self.seed.petal_map)
+        return id_flowers_pairs + list(zip(incomplete_ids, flowers))
+
 
     def to_json(self) -> Dict[str, any]:
         return {
