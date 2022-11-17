@@ -1,12 +1,16 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import ReactFlow, { Position } from 'reactflow';
+import { RelationshipInfo } from '../../models';
 import { CompareNodes } from '../../models/compareInfo';
-import { getCompareNodes } from '../../stores';
+import { ServiceStatus } from '../../services';
+import { getCompareNodes, getRelationship } from '../../stores';
 import './ComparisonFlow.scss';
 
 const ComparisonFlow = () => {
   const selected: CompareNodes = useSelector(getCompareNodes);
+  const relationshipStatus: ServiceStatus<RelationshipInfo | undefined> =
+    useSelector(getRelationship);
 
   const src: Position = Position.Right;
   const dst: Position = Position.Left;
@@ -14,7 +18,10 @@ const ComparisonFlow = () => {
   const person1Label = selected.first ? selected.first.name : '?';
   const person2Label = selected.second ? selected.second.name : '?';
   const relationshipLabel =
-    person1Label !== '?' && person2Label !== '?' ? 'Relationship' : '?';
+    relationshipStatus.status === 'Success'
+      ? relationshipStatus.content!.relationship!.charAt(0).toUpperCase() +
+        relationshipStatus.content!.relationship!.slice(1)
+      : '?';
 
   const nodes = [
     {

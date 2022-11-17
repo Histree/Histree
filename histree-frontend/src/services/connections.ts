@@ -1,6 +1,12 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import axios, { AxiosError } from "axios";
-import { AutoCompleteData, ExpandInfo, RenderContent } from "../models";
+import {
+  AutoCompleteData,
+  ExpandInfo,
+  RelationshipInfo,
+  RenderContent,
+} from "../models";
+import { CompareNodes } from "../models/compareInfo";
 
 export interface ServiceStatus<T> {
   status: "Initial" | "Loading" | "Success" | "Failure";
@@ -59,6 +65,33 @@ export const fetchSelectedExpansion = createAsyncThunk(
       return {
         status: "Failure",
         error: (e as AxiosError).message,
+      };
+    }
+  }
+);
+
+export const fetchRelationship = createAsyncThunk(
+  "relationship/fetchRelationship",
+  async (nodes: CompareNodes): Promise<ServiceStatus<RelationshipInfo>> => {
+    try {
+      if (!nodes.first || !nodes.second) {
+        throw new Error(
+          "Can't fetch relationship: one or more nodes in CompareNodes is not defined."
+        );
+      }
+
+      const response = await axios.get(
+        `https://histree.fly.dev/relationship?id1=${nodes.first.id}&id2=${nodes.second.id}`
+      );
+
+      return {
+        status: "Success",
+        content: { ...response.data },
+      };
+    } catch (e) {
+      return {
+        status: "Failure",
+        error: (e as Error).message,
       };
     }
   }
