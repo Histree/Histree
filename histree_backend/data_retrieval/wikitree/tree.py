@@ -72,11 +72,12 @@ class WikiSeed:
         return all_children
 
     def sprout(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
-        result = tree.api.query(self.self_stem.get_query(ids))
-        flowers = WikiResult(result).parse(self.petal_map)
-
-        for flower in flowers:
-            tree.flowers[flower.id] = flower
+        all_flowers = []
+        id_flws_pairs = tree.watering(ids, find_flowers, self.self_stem.get_query, False)
+        
+        for id, flowers in id_flws_pairs:
+            tree.flowers[id] = flowers[0]
+            all_flowers.append(flowers[0])
 
         return flowers
 
@@ -122,6 +123,7 @@ class WikiTree:
         
         # We only sprout (from db or wiki) if we don't have it in our flowers
         unseen_ids = [ id for id in ids if id not in self.flowers]
+        print(unseen_ids)
         unseen_flowers = self.seed.sprout(unseen_ids, id)
 
         # seed.sprout/seed.branch_up/seed.branch_down will give back
