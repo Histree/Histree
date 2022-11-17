@@ -124,7 +124,7 @@ class WikiTree:
         # We only sprout (from db or wiki) if we don't have it in our flowers
         unseen_ids = [ id for id in ids if id not in self.flowers]
         print(unseen_ids)
-        unseen_flowers = self.seed.sprout(unseen_ids, id)
+        unseen_flowers = self.seed.sprout(unseen_ids, self)
 
         # seed.sprout/seed.branch_up/seed.branch_down will give back
         # unseen_flowers/parents/children
@@ -168,6 +168,7 @@ class WikiTree:
 
     def watering(self, ids, db_query, wiki_query, branching=True):
         # Combine multiple queries
+        print(self.db)
         result = self.db.read_db(db_query, ids)
         incomplete_ids = []
         id_flowers_pairs = []
