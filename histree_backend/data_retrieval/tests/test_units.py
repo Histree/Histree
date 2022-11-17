@@ -10,10 +10,9 @@ from data_retrieval.wikitree.tree import WikiTree
 
 class TestWikiTreeMethods(unittest.TestCase):
     def _create_dummy_parents(
-        self, id: str, tree: WikiTree, params: Dict[str, any]
-    ) -> None:
-        tree.grow(params["father"]["id"], branch_up=False, branch_down=False)
-        tree.grow(params["mother"]["id"], branch_up=False, branch_down=False)
+        self, ids: List[str], tree: WikiTree, params: Dict[str, any]
+    ) -> List[WikiFlower]:
+        tree.grow([params["father"]["id"], params["mother"]["id"]], branch_up=False, branch_down=False)
         self.assertTrue(
             params["father"]["id"] in tree.flowers,
             msg="Father is not stored in WikiTree.",
@@ -27,27 +26,34 @@ class TestWikiTreeMethods(unittest.TestCase):
         mother = tree.flowers[params["mother"]["id"]]
         father.petals = params["father"]["petals"]
         mother.petals = params["mother"]["petals"]
-
+        
         for parent in (father, mother):
             if parent not in tree.branches:
                 tree.branches[parent.id] = set()
-            tree.branches[parent.id].add(id)
+            for id in ids:
+                tree.branches[parent.id].add(id)
+        
+        return [father, mother]
 
     def _create_dummy_children(
-        self, id: str, tree: WikiTree, params: List[Dict[str, any]]
-    ) -> None:
+        self, ids: List[str], tree: WikiTree, params: List[Dict[str, any]]
+    ) -> List[WikiFlower]:
+        children = []
         for child in params:
             child_flower = WikiFlower(child["id"], child["petals"])
-            tree.grow(child["other_parent"], branch_up=False, branch_down=False)
+            children.append(child_flower)
+            tree.grow([child["other_parent"]], branch_up=False, branch_down=False)
             self.assertTrue(
                 child["other_parent"] in tree.flowers,
                 msg="Spouse is not stored in WikiTree.",
             )
             tree.flowers[child_flower.id] = child_flower
 
-            if id not in tree.branches:
-                tree.branches[id] = set()
-            tree.branches[id].add(child_flower.id)
+            for id in ids:
+                if id not in tree.branches:
+                    tree.branches[id] = set()
+                tree.branches[id].add(child_flower.id)
+        return children
 
     @patch("data_retrieval.wikitree.tree.WikidataAPI")
     @patch("data_retrieval.wikitree.tree.WikiSeed")
@@ -67,15 +73,6 @@ class TestWikiTreeMethods(unittest.TestCase):
                 },
             },
         )
-        mock_flower_data = {
-            "aliases": [],
-            "claims": [],
-            "descriptions": "",
-            "id": "Q2",
-            "labels": {"en": {"language": "en", "value": "name"}},
-            "sitelinks": [],
-            "type": "item",
-        }
         MockSeedClass.branch_down.side_effect = (
             lambda it, tr: self._create_dummy_children(
                 it,
@@ -87,16 +84,21 @@ class TestWikiTreeMethods(unittest.TestCase):
             )
         )
 
-        def mock_flower(id: str, tree: any) -> WikidataItem:
-            flower = WikiFlower(id, dict())
-            flower.name = "name"
-            flower.description = "description"
-            return flower
+        tree = WikiTree(MockSeedClass, MockWikidataAPIClass)
+
+        def mock_flower(ids: List[str], _tree: any) -> List[WikiFlower]:
+            flowers = []
+            for id in ids:
+                flower = WikiFlower(id, dict())
+                flower.name = "name"
+                flower.description = "description"
+                tree.flowers[id] = flower
+                flowers.append(flower)
+            return flowers
 
         MockSeedClass.sprout = mock_flower
 
-        tree = WikiTree(MockSeedClass, MockWikidataAPIClass)
-        tree.grow("Q2")
+        tree.grow(["Q2"])
 
         # Flower is correctly stored in the WikiTree
         self.assertTrue(
