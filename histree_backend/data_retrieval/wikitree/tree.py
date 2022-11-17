@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple
 from qwikidata.sparql import return_sparql_query_results
 from data_retrieval.query.parser import WikiResult
 from .flower import WikiFlower, WikiPetal, WikiStem, UpWikiStem, DownWikiStem
+from database.neo4j_db import Neo4jDB
 
 
 class WikiSeed:
@@ -69,6 +70,10 @@ class WikiSeed:
     def sprout(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
         result = tree.api.query(self.self_stem.get_query(ids))
         flowers = WikiResult(result).parse(self.petal_map)
+
+        for flower in flowers:
+            tree.flowers[flower.id] = flower
+
         return flowers
 
 
@@ -110,57 +115,39 @@ class WikiTree:
         branch_down: bool = True,
     ) -> Tuple[List[WikiFlower], List[WikiFlower]]:
         flowers_above, flowers_below = [], []
-
-        # Complete ids can be ignored as either:
-        # - we don't need to branch up or down from them
-        # - we have already branched from them and their immediates are in ids
-        incomplete_ids = [
-            id
-            for id in ids
-            if id not in self.flowers
-            or (branch_up and not self.flowers[id].branched_up)
-            or (branch_down and not self.flowers[id].branched_down)
-        ]
-
-        # Find petals of all unseen flowers
         
-        # Uncomment below for database integration
-        # unseen_flowers, unseen_ids = find_ids_in_database(incomplete_ids)
+        # We only sprout (from db or wiki) if we don't have it in our flowers
+        unseen_ids = [ id for id in ids if id not in self.flowers]
+        unseen_flowers = self.seed.sprout(unseen_ids, id)
 
-        # Keep uncommented below for w/o database integration
-        unseen_flowers, unseen_ids = [], incomplete_ids
-
-        unseen_flowers.extend(self.seed.sprout(unseen_ids, self))
+        # seed.sprout/seed.branch_up/seed.branch_down will give back
+        # unseen_flowers/parents/children
+        # They will find a source(db/wiki) themselves.
 
         # Branch from flowers which are incomplete
         if branch_up:
             unbranched_up = [
-                flower.id
-                for flower in unseen_flowers
-                if flower.id not in self.flowers
-                or not self.flowers[flower.id].branched_up
+                id
+                for id in ids
+                if id in unseen_ids
+                or not self.flowers[id].branched_up
             ]
             if unbranched_up:
                 flowers_above.extend(self.seed.branch_up(unbranched_up, self))
+                for id in unbranched_up:
+                    self.flowers[id].branched_up = True
 
         if branch_down:
             unbranched_down = [
-                flower.id
-                for flower in unseen_flowers
-                if flower.id not in self.flowers
-                or not self.flowers[flower.id].branched_down
+                id
+                for id in ids
+                if id in unseen_ids
+                or not self.flowers[id].branched_down
             ]
             if unbranched_down:
                 flowers_below.extend(self.seed.branch_down(unbranched_down, self))
-
-        for flower in unseen_flowers:
-            self.flowers[flower.id] = flower
-        if branch_up:
-            for id in unbranched_up:
-                self.flowers[id].branched_up = True
-        if branch_down:
-            for id in unbranched_down:
-                self.flowers[id].branched_down = True
+                for id in unbranched_down:
+                    self.flowers[id].branched_down = True
 
         return flowers_above, flowers_below
 
