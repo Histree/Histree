@@ -17,3 +17,7 @@ export interface AutoCompleteData {
   id: NodeId;
   label: string;
 }
+
+export interface RelationshipInfo {
+  relationship?: string;
+}

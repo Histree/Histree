@@ -11,12 +11,14 @@ import {
   NodeId,
   NodeInfo,
   NodeLookup,
+  RelationshipInfo,
   RenderContent,
   RenderMode,
   SearchBarInfo,
   Selected,
 } from "../models";
 import {
+  fetchRelationship,
   fetchSearchResults,
   fetchSearchSuggestions,
   fetchSelectedExpansion,
@@ -34,6 +36,7 @@ interface HistreeState {
   nodeLookup: NodeLookup;
   edgeInfo: EdgeInfo;
   compareNodes: CompareNodes;
+  relationship: ServiceStatus<RelationshipInfo | undefined>;
 }
 
 const initialState: HistreeState = {
@@ -44,6 +47,7 @@ const initialState: HistreeState = {
   nodeLookup: {},
   edgeInfo: {},
   compareNodes: {},
+  relationship: { status: "Initial" },
 };
 
 export const histreeState = createSlice({
@@ -113,6 +117,12 @@ export const histreeState = createSlice({
     },
     setEdgeInfo: (state, action: PayloadAction<EdgeInfo>) => {
       state.edgeInfo = action.payload;
+    },
+    setRelationship: (
+      state,
+      action: PayloadAction<ServiceStatus<RelationshipInfo | undefined>>
+    ) => {
+      state.relationship = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -192,6 +202,10 @@ export const histreeState = createSlice({
         }
       }
     );
+
+    builder.addCase(fetchRelationship.fulfilled, (state, action) => {
+      state.relationship = action.payload;
+    });
   },
 });
 
@@ -246,6 +260,12 @@ export const getCompareNodes = createSelector(
   },
   (x) => x
 );
+export const getRelationship = createSelector(
+  (state: HistreeState) => {
+    return state.relationship;
+  },
+  (x) => x
+);
 
 export const {
   setSelected,
@@ -258,6 +278,7 @@ export const {
   setRenderMode,
   setComparisonNode,
   setEdgeInfo,
+  setRelationship,
 } = histreeState.actions;
 
 export const store = configureStore({

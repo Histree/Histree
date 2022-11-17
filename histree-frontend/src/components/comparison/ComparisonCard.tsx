@@ -1,36 +1,16 @@
-import React, { SyntheticEvent, useEffect, useMemo, useState } from 'react';
-import {
-  TextField,
-  Autocomplete,
-  Card,
-  CardHeader,
-  CardContent,
-  Typography
-} from '@mui/material';
-import { useDispatch, useSelector } from 'react-redux';
-import { debounce } from 'lodash';
+import React from 'react';
+import { Card, CardHeader, CardContent } from '@mui/material';
 import './ComparisonCard.scss';
-import {
-  AppDispatch,
-  getCompareNodes,
-  getSearchSuggestions,
-  resetSearch,
-  setResultServiceState
-} from '../../stores';
 import ComparisonFlow from './ComparisonFlow';
 import { ReactFlowProvider } from 'reactflow';
 
 export const ComparisonCard = () => {
-  // const appDispatch = useDispatch<AppDispatch>();
-  // const handleChangeWithDebounce = debounce(async (e) => {
-  // 	handleAutocomplete(e);
-  // }, 500);
   return (
     <div className="comparison-container">
       <Card>
-        <CardHeader title="Find relationship" />
+        <CardHeader title="Relationship Search" />
         <CardContent>
-          <div style={{ height: '150px', width: 'auto' }}>
+          <div className="comparison-container-inner">
             <ReactFlowProvider>
               <ComparisonFlow />
             </ReactFlowProvider>
