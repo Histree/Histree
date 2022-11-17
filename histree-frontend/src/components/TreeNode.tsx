@@ -61,22 +61,21 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 				appDispatch(
 					fetchSelectedExpansion({ searchedQid: data.id, direction: 'up' })
 				);
-			} else if (branches[data.id]) {
-				Object.keys(branches).forEach((parentId) => {
-					if (branches[parentId].includes(data.id)) {
-						const parent = { ...nodes[parentId] };
-						parent.visible = true;
-						nodes[parentId] = parent;
-					}
-				});
-
-				dispatch(setNodeLookup(nodes));
-				dispatch(setNodeLookupUp({ searchedQid: data.id, status: 'Complete' }))
 			} else {
-				// TODO: Do something if no parent data exists
+				if (branches[data.id]) {
+					Object.keys(branches).forEach((parentId) => {
+						if (branches[parentId].includes(data.id)) {
+							const parent = { ...nodes[parentId] };
+							parent.visible = true;
+							nodes[parentId] = parent;
+						}
+					});
+					dispatch(setNodeLookup(nodes));
+				}
+				dispatch(setNodeLookupUp({ searchedQid: data.id, status: 'Complete' }))
 			}
-		}
-	};
+		};
+	}
 
 	const handleExpandChildren = (): void => {
 		dispatch(setNodeLookupDown({ searchedQid: data.id, status: 'Loading' }))
@@ -88,17 +87,17 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 				appDispatch(
 					fetchSelectedExpansion({ searchedQid: data.id, direction: 'down' })
 				);
-			} else if (branches[data.id]) {
-				branches[data.id].forEach((childId) => {
-					console.log(nodes[childId]);
-					const child = { ...nodes[childId] };
-					child.visible = true;
-					nodes[childId] = child;
-				});
-				dispatch(setNodeLookup(nodes));
-				dispatch(setNodeLookupDown({ searchedQid: data.id, status: 'Complete' }))
 			} else {
-				// TODO: Do something if no children data exists
+				if (branches[data.id]) {
+					branches[data.id].forEach((childId) => {
+						console.log(nodes[childId]);
+						const child = { ...nodes[childId] };
+						child.visible = true;
+						nodes[childId] = child;
+					});
+					dispatch(setNodeLookup(nodes));
+				}
+				dispatch(setNodeLookupDown({ searchedQid: data.id, status: 'Complete' }))
 			}
 		}
 	};
