@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from data_retrieval.wikitree.flower import WikiFlower, WikiPetal
 
@@ -41,14 +41,14 @@ class DBResult:
     def __init__(self, result) -> None:
         self.result = result
 
-    def parse_immediate(self, petal_map: Dict[str, WikiPetal]) -> list[tuple[str, list[WikiFlower] | None]]:
+    def parse_immediate(self, petal_map: Dict[str, WikiPetal]) -> list[tuple[str, Optional[list[WikiFlower]]]]:
         # self.result is list of (id, bool(reliability),[flower])
         return [(id,
                 [DBResult._parse_flower(f, petal_map) for f in flowers] if reliable else None)
                 for id, reliable, flowers in self.result
                 ]
 
-    def parse_itself(self, petal_map: Dict[str, WikiPetal]) -> list[tuple[str, WikiFlower | None]]:
+    def parse_itself(self, petal_map: Dict[str, WikiPetal]) -> list[tuple[str, Optional[list[WikiFlower]]]]:
         # self.result is list of (id, flower)
         return [(id, 
                 DBResult._parse_flower(flower, petal_map) if flower else None) 
