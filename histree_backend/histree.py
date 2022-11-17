@@ -36,3 +36,19 @@ def person_info(qid):
         response = Response()
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response
+
+
+# Pass in the Wiki IDs of two people and return a json of their relationship
+@app.route('/relationship', methods=['GET'])
+def relationship_calculator():
+    id1 = request.args.get('id1', default="", type=str)
+    id2 = request.args.get('id2', default="", type=str)
+    result = {"relationship" : "sibling"}
+
+    try:
+        response = jsonify(result)
+    except JSONDecodeError:
+        response = Response()
+
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
