@@ -55,7 +55,7 @@ def merge_nodes_into_db(tx, json_data, flabels, ptlabels):
             f"WITH {json_data} AS document "
             "UNWIND document.flowers AS flower "
             "UNWIND flower.petals AS petal "
-            "MERGE (node {id: flower.id})"
+            "MERGE (node:Person {id: flower.id})"
             f"{setting}"
             "RETURN NULL"
     )
@@ -70,9 +70,14 @@ def merge_relation_into_db(tx, json_data):
         "UNWIND document.branches AS branch "
         "UNWIND keys(branch) AS parent "
         "UNWIND branch[from] AS child "
-        "MATCH (from {id: parent}), \
-                (to {id: child}) "
+        "MATCH (from:Person {id: parent}), \
+                (to:Person {id: child}) "
         "MERGE (from)-[:PARENT_OF]->(to) "
+        "ON CREATE SET \
+            to += (CASE from.gender \
+                    WHEN 'female' THEN {mother: from.id} \
+                    WHEN 'male' THEN {father: from.id} \
+                    ELSE {})"
         "RETURN from, to"
     )
 

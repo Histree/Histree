@@ -59,7 +59,7 @@ class DBResult:
     def _parse_flower(raw_flower: dict, petal_map: Dict[str, WikiPetal], caller_id: str) -> WikiFlower:
         defaults = ("id", "name", "description", "branched_up", "branched_down")
 
-        id, name, description, branched_up, branched_down = map(raw_flower.get, defaults)
+        id, name, description, _, _ = map(raw_flower.get, defaults)
         flower = WikiFlower(
             id,
             {
@@ -71,6 +71,4 @@ class DBResult:
         flower.petals["caller"] = caller_id
         flower.name = name
         flower.description = description
-        flower.branched_up = branched_up
-        flower.branched_down = branched_down
         return flower
