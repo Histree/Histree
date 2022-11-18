@@ -52,7 +52,7 @@ def merge_nodes_into_db(tx, json_data, flabels, ptlabels):
         [f"node.{label} = petal.{label}" for label in ptlabels]
         )
     query = (
-            f"WITH {json_data} AS document "
+            f"WITH apoc.convert.fromJsonMap(\'{json_data}\') AS document "
             "UNWIND document.flowers AS flower "
             "UNWIND flower.petals AS petal "
             "MERGE (node:Person { id: flower.id }) "
@@ -66,10 +66,10 @@ def merge_nodes_into_db(tx, json_data, flabels, ptlabels):
 @cypher_runner
 def merge_relation_into_db(tx, json_data):
     query = (
-        f"WITH {json_data} AS document "
+        f"WITH apoc.convert.fromJsonMap(\'{json_data}\') AS document "
         "UNWIND document.branches AS branch "
         "UNWIND keys(branch) AS parent "
-        "UNWIND branch[from] AS child "
+        "UNWIND branch[parent] AS child "
         "MATCH (from:Person {id: parent}), \
                 (to:Person {id: child}) "
         "MERGE (from)-[:PARENT_OF]->(to) "

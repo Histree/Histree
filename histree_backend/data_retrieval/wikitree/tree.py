@@ -7,7 +7,13 @@ from qwikidata.sparql import return_sparql_query_results
 from data_retrieval.query.parser import WikiResult, DBResult
 from .flower import WikiFlower, WikiPetal, WikiStem, UpWikiStem, DownWikiStem
 from database.neo4j_db import Neo4jDB
-from database.cypher_runner import find_children, find_flowers, find_parent, merge_nodes_into_db, merge_relation_into_db
+from database.cypher_runner import (
+    find_children,
+    find_flowers,
+    find_parent,
+    merge_nodes_into_db,
+    merge_relation_into_db,
+)
 
 
 class WikiSeed:
@@ -192,16 +198,17 @@ class WikiTree:
         flowers = WikiResult(result).parse(self.seed.petal_map)
         return flowers_in_db + flowers
 
-    def to_json(self) -> Dict[str, any]:
-        
+    def to_json(self, for_db: bool = False) -> Dict[str, any]:
         data = {
-            "flowers": [flower.to_json() for flower in self.flowers.values()],
+            "flowers": [
+                flower.to_json(for_db=for_db) for flower in self.flowers.values()
+            ],
             "branches": {id: list(adj_set) for (id, adj_set) in self.branches.items()},
         }
+        return data
+
+    def write_to_database(self) -> None:
         flabels = {"name", "description", "branched_up", "branched_down"}
-        json_data = json.loads(str(data)) # When it jsonloads, everything disappear
-        # print(str(json_data))
-        print(data)
+        json_data = json.dumps(self.to_json(for_db=True))
         self.db.write_db(merge_nodes_into_db, json_data, flabels, self.seed.petal_map)
         self.db.write_db(merge_relation_into_db, json_data)
-        return data

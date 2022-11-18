@@ -70,6 +70,7 @@ class HistreeQuery:
     ) -> Dict[str, any]:
         tree = WikiTree(seed)
         tree.grow_levels([qid], branch_up_levels, branch_down_levels)
+        tree.write_to_database()
         return tree.to_json()
 
     def _query_cli() -> None:

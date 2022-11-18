@@ -15,14 +15,17 @@ class WikiFlower:
         self.branched_up = False
         self.branched_down = False
 
-    def to_json(self) -> Dict[str, any]:
+    def to_json(self, for_db: bool = False) -> Dict[str, any]:
         json_dict = {
             "id": self.id,
             "name": self.name,
-            "petals": {k: v for (k, v) in self.petals.items() if k not in self._hidden_petals},
-            "branched_up": self.branched_up,
-            "branched_down": self.branched_down
+            "petals": {
+                k: v for (k, v) in self.petals.items() if k not in self._hidden_petals
+            },
         }
+        if for_db:
+            json_dict["branched_up"] = self.branched_up
+            json_dict["branched_down"] = self.branched_down
         if self.description:
             json_dict["description"] = self.description
         return json_dict
