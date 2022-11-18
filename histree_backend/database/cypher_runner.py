@@ -44,19 +44,37 @@ def find_flowers(tx, ids) -> tuple[str, list]:
     label = ['i', 'flower']
     return query, label
 
-# @cypher_runner
-# def merge_into_db(tx, json_data, flabels, ptlabels):
-#     setting = ', '.join([
-#         f"node.{label} = flower.{label}" for label in flabels] 
-#         +
-#         [
-#         f"node.{label} = petal.{label}" for label in ptlabels
-#         ])
-#     query = (
-#             f"WITH {json_data} AS document "
-#             "UNWIND document.flowers AS flower "
-#             "UNWIND flower.petals AS petal "
-#             f"{merge_line(flower)}"
-#             f"{setting_props(FLOWER_ATTR, seed)}"
-#             "RETURN node"
-#     )
+@cypher_runner
+def merge_nodes_into_db(tx, json_data, flabels, ptlabels):
+    setting = ', '.join(
+        [f"node.{label} = flower.{label}" for label in flabels] 
+        +
+        [f"node.{label} = petal.{label}" for label in ptlabels]
+        )
+    query = (
+            f"WITH {json_data} AS document "
+            "UNWIND document.flowers AS flower "
+            "UNWIND flower.petals AS petal "
+            "MERGE (node {id: flower.id})"
+            f"{setting}"
+            "RETURN NULL"
+    )
+
+    label = []
+    return query, label
+
+@cypher_runner
+def merge_relation_into_db(tx, json_data):
+    query = (
+        f"WITH {json_data} AS document "
+        "UNWIND document.branches AS branch "
+        "UNWIND keys(branch) AS parent "
+        "UNWIND branch[from] AS child "
+        "MATCH (from {id: parent}), \
+                (to {id: child}) "
+        "MERGE (from)-[:PARENT_OF]->(to) "
+        "RETURN from, to"
+    )
+
+    label = ["from", "to"]
+    return query, label
