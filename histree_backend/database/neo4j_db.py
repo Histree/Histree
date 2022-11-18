@@ -24,3 +24,10 @@ class Neo4jDB:
                 cypher_runner, *args
             )
             return result
+
+    def write_db(self, cypher_runner, *args):
+        with self.driver.session(database="neo4j") as session:
+            result = session.execute_write(
+                cypher_runner, *args
+            )
+            return result

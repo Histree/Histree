@@ -1,11 +1,13 @@
 from abc import abstractmethod
+import pickle
+import json
 from json import JSONDecodeError
 from typing import Dict, List, Tuple
 from qwikidata.sparql import return_sparql_query_results
 from data_retrieval.query.parser import WikiResult, DBResult
 from .flower import WikiFlower, WikiPetal, WikiStem, UpWikiStem, DownWikiStem
 from database.neo4j_db import Neo4jDB
-from database.cypher_runner import find_children, find_flowers, find_parent
+from database.cypher_runner import find_children, find_flowers, find_parent, merge_nodes_into_db, merge_relation_into_db
 
 
 class WikiSeed:
@@ -191,7 +193,15 @@ class WikiTree:
         return flowers_in_db + flowers
 
     def to_json(self) -> Dict[str, any]:
-        return {
+        
+        data = {
             "flowers": [flower.to_json() for flower in self.flowers.values()],
             "branches": {id: list(adj_set) for (id, adj_set) in self.branches.items()},
         }
+        flabels = {"name", "description", "branched_up", "branched_down"}
+        json_data = json.loads(str(data))
+        # print(str(json_data))
+        print(data)
+        self.db.write_db(merge_nodes_into_db, json_data, flabels, self.seed.petal_map)
+        self.db.write_db(merge_relation_into_db, json_data)
+        return data

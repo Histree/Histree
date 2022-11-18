@@ -5,6 +5,7 @@ from qwikidata.entity import WikidataItem
 
 class WikiFlower:
     _hidden_petals = {"caller", "father", "mother"}
+    _defaults = {"name", "description", "branched_up", "branched_down"}
 
     def __init__(self, id: str, petals: Dict[str, str]):
         self.id = id
@@ -19,6 +20,8 @@ class WikiFlower:
             "id": self.id,
             "name": self.name,
             "petals": {k: v for (k, v) in self.petals.items() if k not in self._hidden_petals},
+            "branched_up": self.branched_up,
+            "branched_down": self.branched_down
         }
         if self.description:
             json_dict["description"] = self.description

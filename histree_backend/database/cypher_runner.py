@@ -55,8 +55,8 @@ def merge_nodes_into_db(tx, json_data, flabels, ptlabels):
             f"WITH {json_data} AS document "
             "UNWIND document.flowers AS flower "
             "UNWIND flower.petals AS petal "
-            "MERGE (node:Person {id: flower.id})"
-            f"{setting}"
+            "MERGE (node:Person { id: flower.id }) "
+            f"ON CREATE SET {setting} "
             "RETURN NULL"
     )
 
@@ -77,9 +77,10 @@ def merge_relation_into_db(tx, json_data):
             to += (CASE from.gender \
                     WHEN 'female' THEN {mother: from.id} \
                     WHEN 'male' THEN {father: from.id} \
-                    ELSE {})"
+                    ELSE {} \
+                    END) "
         "RETURN from, to"
     )
 
-    label = ["from", "to"]
+    label = []
     return query, label
