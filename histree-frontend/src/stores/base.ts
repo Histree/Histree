@@ -55,6 +55,10 @@ export const histreeState = createSlice({
   initialState,
   reducers: {
     setRenderMode: (state, action: PayloadAction<RenderMode>) => {
+      if (action.payload === "View") {
+        state.edgeInfo = {};
+        state.compareNodes = {};
+      }
       state.renderMode = action.payload;
     },
     setNodeLookupDown: (

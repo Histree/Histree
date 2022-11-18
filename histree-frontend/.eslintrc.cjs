@@ -28,7 +28,8 @@ module.exports = {
 		"quotes": ["error", "single"],
 		"no-duplicate-imports": "error",
 		"no-tabs": 0,
-		"@typescript-eslint/strict-boolean-expressions": 0
+		"@typescript-eslint/strict-boolean-expressions": 0,
+		"no-mixed-spaces-and-tabs": 0
 
 
 	},
