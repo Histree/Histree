@@ -175,29 +175,28 @@ class App:
     
     @staticmethod
     def _distances_to_ca(tx, ca_id, person_id1, person_id2):
-        distance1 = 0
+        distance1, distance2 = 0, 0
+        
         if ca_id != person_id1:
-            query1 = (
-                "MATCH (p1:Person {id: \'" + person_id1 + "\'}), "
-                "(p2:Person {id: \'" + ca_id + "\'}), "
-                "path = shortestPath((p1)-[*]-(p2)) "
-                "RETURN length(path) AS length"
-            )
-            distances = tx.run(query1, person_id1=person_id1, ca_id=ca_id)
-            distance1 = [distance["length"] for distance in distances][0]
-
-        distance2 = 0
+            distance1 = App._shortest_distance_between(tx=tx, person_id1=person_id1, person_id2=ca_id)
+        
         if ca_id != person_id2:
-            query2 = (
-                "MATCH (p1:Person {id: \'" + person_id2 + "\'}), "
-                "(p2:Person {id: \'" + ca_id + "\'}), "
-                "path = shortestPath((p1)-[*]-(p2)) "
-                "RETURN length(path) AS length"
-            )
-            distances = tx.run(query2, person_id2=person_id2, ca_id=ca_id)
-            distance2 = [distance["length"] for distance in distances][0]
+            distance2 = App._shortest_distance_between(tx=tx, person_id1=person_id2, person_id2=ca_id)
 
         return distance1, distance2
+    
+    
+    @staticmethod
+    def _shortest_distance_between(tx, person_id1, person_id2):
+        query2 = (
+            "MATCH (p1:Person {id: \'" + person_id1 + "\'}), "
+            "(p2:Person {id: \'" + person_id2 + "\'}), "
+            "path = shortestPath((p1)-[*]-(p2)) "
+            "RETURN length(path) AS length"
+        )
+        distances = tx.run(query2, person_id1=person_id1, person_id2=person_id2)
+        return [distance["length"] for distance in distances][0]
+        
 
 
 
