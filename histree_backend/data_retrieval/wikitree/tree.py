@@ -57,12 +57,13 @@ class WikiSeed:
             tree.flowers[child.id] = child
 
             for parent_petal_label in self.down_stem.parents:
-                parent_id = child.petals[parent_petal_label]
-                if parent_id not in tree.flowers and parent_id not in seen_ids:
-                    unseen_parent_ids.add(parent_id)
-                if parent_id not in tree.branches:
-                    tree.branches[parent_id] = set()
-                tree.branches[parent_id].add(child.id)
+                if parent_petal_label in child.petals:
+                    parent_id = child.petals[parent_petal_label]
+                    if parent_id not in tree.flowers and parent_id not in seen_ids:
+                        unseen_parent_ids.add(parent_id)
+                    if parent_id not in tree.branches:
+                        tree.branches[parent_id] = set()
+                    tree.branches[parent_id].add(child.id)
 
         # Find information about parents not in tree
         self.sprout(list(unseen_parent_ids), tree)
