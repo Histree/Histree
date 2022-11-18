@@ -1,7 +1,7 @@
 def cypher_runner(query_func):
-    def wrapper(tx, **kwargs):
-        query, labels = query_func()
-        result = tx.run(query, **kwargs)
+    def wrapper(tx, *args):
+        query, labels = query_func(tx, *args)
+        result = tx.run(query)
         return parser(result, labels)
     return wrapper
 
@@ -13,7 +13,7 @@ def parser(result, labels) -> list[dict]:
 @cypher_runner
 def find_children(tx, ids) -> tuple[str, list]:
     query = (
-            "UNWIND $ids AS i "
+            f"UNWIND {ids} AS i "
             "OPTIONAL MATCH (parent {id: i, branched_down: TRUE}) "
             "OPTIONAL MATCH (parent) --> (child)"
             "RETURN i, parent IS NOT NULL AS b, collect(child) AS children"
@@ -26,7 +26,7 @@ def find_children(tx, ids) -> tuple[str, list]:
 @cypher_runner
 def find_parent(tx, ids) -> tuple[str, list]:
     query = (
-            "UNWIND $ids AS i "
+            f"UNWIND {ids} AS i "
             "OPTIONAL MATCH (child {id: i, branched_up: TRUE}) "
             "OPTIONAL MATCH (parent) --> (child)"
             "RETURN i, child IS NOT NULL AS b, collect(parent) AS parents"
@@ -37,9 +37,26 @@ def find_parent(tx, ids) -> tuple[str, list]:
 @cypher_runner
 def find_flowers(tx, ids) -> tuple[str, list]:
     query = (
-        "UNWIND $ids AS i "
+        f"UNWIND {ids} AS i "
         "OPTIONAL MATCH (flower {id: i}) "
         "RETURN i, flower"
         )
     label = ['i', 'flower']
     return query, label
+
+# @cypher_runner
+# def merge_into_db(tx, json_data, flabels, ptlabels):
+#     setting = ', '.join([
+#         f"node.{label} = flower.{label}" for label in flabels] 
+#         +
+#         [
+#         f"node.{label} = petal.{label}" for label in ptlabels
+#         ])
+#     query = (
+#             f"WITH {json_data} AS document "
+#             "UNWIND document.flowers AS flower "
+#             "UNWIND flower.petals AS petal "
+#             f"{merge_line(flower)}"
+#             f"{setting_props(FLOWER_ATTR, seed)}"
+#             "RETURN node"
+#     )
