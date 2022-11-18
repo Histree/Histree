@@ -29,7 +29,7 @@ class DatePetal(WikiPetal):
     def parse(self, value: str) -> str:
         if not value:
             return self.undefined
-        return value[1:].split("T")[0]
+        return value.split("T")[0]
 
 
 class BirthDatePetal(DatePetal):

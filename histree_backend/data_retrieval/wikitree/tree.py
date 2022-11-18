@@ -29,55 +29,54 @@ class WikiSeed:
 
     def branch_up(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
         # Query for parents
-        cid_ps_pairs = tree.watering(ids, find_parent, self.up_stem.get_query, True)
-        all_parents = []
+        parents = tree.watering(ids, find_parent, self.up_stem.get_query, True)
+
         # Store parents in tree
-        for child_id, parents in cid_ps_pairs:
-            tree.flowers[child_id].branched_up = True
-            all_parents.extend(parents)
-            for parent in parents:
-                tree.flowers[parent.id] = parent
+        for parent in parents:
+            tree.flowers[parent.id] = parent
 
-                if parent.id not in tree.branches:
-                    tree.branches[parent.id] = set()
-                tree.branches[parent.id].add(child_id)
+            if parent.id not in tree.branches:
+                tree.branches[parent.id] = set()
+            tree.branches[parent.id].add(parent.petals[self.up_stem.caller])
 
-        return all_parents
+        for id in ids:
+            tree.flowers[id].branched_up = True
+
+        return parents
 
     def branch_down(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
         # result = tree.api.query(self.down_stem.get_query(ids))
         # children = WikiResult(result).parse(self.petal_map)
-        pid_cs_pairs = tree.watering(ids, find_children, self.down_stem.get_query, True)
+        children = tree.watering(ids, find_children, self.down_stem.get_query, True)
 
         seen_ids = set(ids)
         unseen_parent_ids = set()
-        all_children = []
-        for pid, children in pid_cs_pairs:
-            all_children.extend(children)
-            tree.flowers[pid].branched_down = True
-            # Add children to tree and record unseen parents (children's another parent)
-            for child in children:
-                tree.flowers[child.id] = child
-                for parent_petal_label in self.down_stem.parents:
-                    parent_id = child.petals[parent_petal_label]
-                    if parent_id not in tree.flowers and parent_id not in seen_ids:
-                        unseen_parent_ids.add(parent_id)
-                    if parent_id not in tree.branches:
-                        tree.branches[parent_id] = set()
-                    tree.branches[parent_id].add(child.id)
+
+        # Add children to tree and record unseen parents (children's another parent)
+        for child in children:
+            tree.flowers[child.id] = child
+
+            for parent_petal_label in self.down_stem.parents:
+                parent_id = child.petals[parent_petal_label]
+                if parent_id not in tree.flowers and parent_id not in seen_ids:
+                    unseen_parent_ids.add(parent_id)
+                if parent_id not in tree.branches:
+                    tree.branches[parent_id] = set()
+                tree.branches[parent_id].add(child.id)
 
         # Find information about parents not in tree
-        self.sprout(unseen_parent_ids, tree)
+        self.sprout(list(unseen_parent_ids), tree)
 
-        return all_children
+        for id in ids:
+            tree.flowers[id].branched_down = True
+
+        return children
 
     def sprout(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
-        all_flowers = []
-        id_flws_pairs = tree.watering(ids, find_flowers, self.self_stem.get_query, False)
-        
-        for id, flowers in id_flws_pairs:
-            tree.flowers[id] = flowers[0]
-            all_flowers.append(flowers[0])
+        flowers = tree.watering(ids, find_flowers, self.self_stem.get_query, False)
+
+        for flower in flowers:
+            tree.flowers[flower.id] = flower
 
         return flowers
 
@@ -119,13 +118,12 @@ class WikiTree:
         branch_up: bool = True,
         branch_down: bool = True,
     ) -> Tuple[List[WikiFlower], List[WikiFlower]]:
-        flowers_above, flowers_below = [], []
-        
-        # We only sprout (from db or wiki) if we don't have it in our flowers
-        unseen_ids = [ id for id in ids if id not in self.flowers]
-        print(unseen_ids)
-        unseen_flowers = self.seed.sprout(unseen_ids, self)
 
+        flowers_above, flowers_below = [], []
+        # We only sprout (from db or wiki) if we don't have it in our flowers
+        unseen_ids = [id for id in ids if id not in self.flowers]
+        unseen_set = set(unseen_ids)
+        self.seed.sprout(unseen_ids, self)
         # seed.sprout/seed.branch_up/seed.branch_down will give back
         # unseen_flowers/parents/children
         # They will find a source(db/wiki) themselves.
@@ -133,10 +131,7 @@ class WikiTree:
         # Branch from flowers which are incomplete
         if branch_up:
             unbranched_up = [
-                id
-                for id in ids
-                if id in unseen_ids
-                or not self.flowers[id].branched_up
+                id for id in ids if id in unseen_set or not self.flowers[id].branched_up
             ]
             if unbranched_up:
                 flowers_above.extend(self.seed.branch_up(unbranched_up, self))
@@ -145,8 +140,7 @@ class WikiTree:
             unbranched_down = [
                 id
                 for id in ids
-                if id in unseen_ids
-                or not self.flowers[id].branched_down
+                if id in unseen_set or not self.flowers[id].branched_down
             ]
             if unbranched_down:
                 flowers_below.extend(self.seed.branch_down(unbranched_down, self))
@@ -168,35 +162,32 @@ class WikiTree:
 
     def watering(self, ids, db_query, wiki_query, branching=True):
         # Combine multiple queries
-        print(self.db)
         result = self.db.read_db(db_query, ids)
         incomplete_ids = []
-        id_flowers_pairs = []
+        flowers_in_db = []
         if branching:
-            #try to fetch from the DB
+            # try to fetch from the DB
             id_im_pairs = DBResult(result).parse_immediate(self.seed.petal_map)
 
             for id, ims in id_im_pairs:
                 if ims is None:
                     incomplete_ids.append(id)
                 else:
-                    id_flowers_pairs.append((id, ims)) 
-                    #ims is a list of flower
+                    flowers_in_db.extend(ims)
+                    # ims is a list of flower
         else:
             id_it_pairs = DBResult(result).parse_itself(self.seed.petal_map)
             for id, it in id_it_pairs:
                 if it is None:
                     incomplete_ids.append(id)
                 else:
-                    id_flowers_pairs.append((id, [it])) 
-                    #it is a flower, so we warp it
-            
-            
-        #Incomplete ids should query the wiki
+                    flowers_in_db.append(it)
+                    # it is a flower, so we warp it
+
+        # Incomplete ids should query the wiki
         result = self.api.query(wiki_query(incomplete_ids))
         flowers = WikiResult(result).parse(self.seed.petal_map)
-        return id_flowers_pairs + list(zip(incomplete_ids, flowers))
-
+        return flowers_in_db + flowers
 
     def to_json(self) -> Dict[str, any]:
         return {
