@@ -199,7 +199,7 @@ class WikiTree:
             "branches": {id: list(adj_set) for (id, adj_set) in self.branches.items()},
         }
         flabels = {"name", "description", "branched_up", "branched_down"}
-        json_data = json.loads(str(data))
+        json_data = json.loads(str(data)) # When it jsonloads, everything disappear
         # print(str(json_data))
         print(data)
         self.db.write_db(merge_nodes_into_db, json_data, flabels, self.seed.petal_map)
