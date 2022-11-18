@@ -4,15 +4,15 @@ RETURN p.gender AS gender
 
 
 Charles III id: Q43274   and    Anne id: Q151754   are siblings
-MATCH (p1: Person {id: 'Q43274'})-[:PARENT_OF*]-(a1: Person)
-MATCH (p2: Person {id: 'Q151754'})-[:PARENT_OF*]-(a2: Person)
+MATCH (p1: Person {id: 'Q43274'})-[:PARENT_OF*0..10]-(a1: Person)
+MATCH (p2: Person {id: 'Q151754'})-[:PARENT_OF*0..10]-(a2: Person)
 WHERE a1.id = a2.id
 MATCH path = (p1)-[:PARENT_OF*]->(a1)
 RETURN a1.id AS id
 LIMIT 1
 
 
-MATCH path = (p1:Person)-[:PARENT_OF*]-(a:Person)-[:PARENT_OF*]-(p2:Person)
+MATCH path = (p1:Person)<-[:PARENT_OF*0..10]-(a:Person)-[:PARENT_OF*0..10]->(p2:Person)
 WHERE p1.id = 'Q43274' AND p2.id = 'Q151754'
 RETURN a.id AS id
 ORDER BY length(path)

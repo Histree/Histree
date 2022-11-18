@@ -22,6 +22,7 @@ class App:
         return app
 
 
+
     # Create a parent relationship between person 1 and person 2
     def create_parenthood(self, person1_name, person2_name):
         with self.driver.session(database="neo4j") as session:
@@ -79,16 +80,14 @@ class App:
     @staticmethod
     def _common_ancestor(tx, person_id1, person_id2):
         query = (
-            "MATCH (p1: Person {id: \'" + person_id1 + "\'})-[:PARENT_OF*]->(a1: Person) "
-            "MATCH (p2: Person {id: \'" + person_id2 + "\'})-[:PARENT_OF*]->(a2: Person) "
-            "WHERE a1.id = a2.id "
-            "MATCH path = (p1)-[:PARENT_OF*]->(a1) "
-            "RETURN a1.id AS id "
+            "MATCH path = (p1:Person)<-[:PARENT_OF*0..10]-(a:Person)-[PARENT_OF*0..10]->(p2:Person) "
+            f"WHERE p1.id=\'{person_id1}\' AND p2.id=\'{person_id2}\' "
+            "RETURN a.id AS id "
             "ORDER BY length(path) "
             "LIMIT 1"
         )
-        matches = tx.run(query, person_id1=person_id1, person_id2=person_id2)
-        return [match["id"] for match in matches][0]
+        ancestors = tx.run(query, person_id1=person_id1, person_id2=person_id2)
+        return [match["id"] for match in ancestors][0]
 
 
     def shortest_path(self, person_id1, person_id2):
@@ -96,11 +95,12 @@ class App:
             result = session.execute_read(self._shortest_path, person_id1, person_id2)
             return result
 
+
     @staticmethod
     def _shortest_path(tx, person_id1, person_id2):
         query = (
             "MATCH (p1:Person {id: \'" + person_id1 + "\'}), "
-            "(p2: Person {id: \'" + person_id2 + "\'}), "
+            "(p2:Person {id: \'" + person_id2 + "\'}), "
             "p = shortestPath((p1)-[*]-(p2)) "
             "WHERE length(p) > 1 "
             "RETURN nodes(p)"
@@ -110,15 +110,37 @@ class App:
         return [node["id"] for node in path]
 
 
+    def shortest_path_length(self, person_id1, person_id2):
+        with self.driver.session(database="neo4j") as session:
+            result = session.execute_read(self._shortest_path_length, person_id1, person_id2)
+            return result
+
+
+    @staticmethod
+    def _shortest_path_length(tx, person_id1, person_id2):
+        query = (
+            "MATCH (p1:Person {id: \'" + person_id1 + "\'}), "
+            "(p2:Person {id: \'" + person_id2 + "\'}), "
+            "p = shortestPath((p1)-[*]-(p2)) "
+            "RETURN length(p)"
+        )
+
+        lengths = tx.run(query, person_id1=person_id1, person_id2=person_id2)["length"]
+        return lengths[0]
+        
+
+
+
     
     def relationship_calculator(self, person_id1, person_id2):
         '''Works out the relationship where person1 is the _ of person2'''
         
         with self.driver.session(database="neo4j") as session:
-            sex = session.execute_read(self._return_sex, person_id1)
+            gender = session.execute_read(self._return_gender, person_id1)
             ca_id = session.execute_read(self._common_ancestor, person_id1, person_id2)
             distance1, distance2 = session.execute_read(self._distances_to_ca, ca_id, person_id1, person_id2)
-            return self._relationship_table[distance1][distance2][sex]
+            table = self.relationship_table()
+            return table[distance1][distance2][gender]
 
 
     @staticmethod
@@ -153,37 +175,41 @@ class App:
     
     @staticmethod
     def _distances_to_ca(tx, ca_id, person_id1, person_id2):
-        query1 = (
-            "MATCH (p1: Person {id: \'" + person_id1 + "\'}), "
-            "MATCH (p2: Person {id: \'" + ca_id + "\'}), "
-            "path = shortestPath((p1)-[*]-(p2)) "
-            "RETURN length(path) AS length"
-        )
-        distances = tx.run(query1, person_id1=person_id1, ca_id=ca_id)
-        distance1 = [distance["length"] for distance in distances][0]
+        distance1 = 0
+        if ca_id != person_id1:
+            query1 = (
+                "MATCH (p1:Person {id: \'" + person_id1 + "\'}), "
+                "(p2:Person {id: \'" + ca_id + "\'}), "
+                "path = shortestPath((p1)-[*]-(p2)) "
+                "RETURN length(path) AS length"
+            )
+            distances = tx.run(query1, person_id1=person_id1, ca_id=ca_id)
+            distance1 = [distance["length"] for distance in distances][0]
 
-        query2 = (
-            "MATCH (p1: Person {id: \'" + person_id2 + "\'}), "
-            "MATCH (p2: Person {id: \'" + ca_id + "\'}), "
-            "path = shortestPath((p1)-[*]-(p2)) "
-            "RETURN length(path) AS length"
-        )
-        distances = tx.run(query2, person_id2=person_id2, ca_id=ca_id)
-        distance2 = [distance["length"] for distance in distances][0]
+        distance2 = 0
+        if ca_id != person_id2:
+            query2 = (
+                "MATCH (p1:Person {id: \'" + person_id2 + "\'}), "
+                "(p2:Person {id: \'" + ca_id + "\'}), "
+                "path = shortestPath((p1)-[*]-(p2)) "
+                "RETURN length(path) AS length"
+            )
+            distances = tx.run(query2, person_id2=person_id2, ca_id=ca_id)
+            distance2 = [distance["length"] for distance in distances][0]
 
         return distance1, distance2
 
 
 
     @staticmethod
-    def _return_sex(tx, person_id):
+    def _return_gender(tx, person_id):
         query = (
             "MATCH (p:Person) "
             "WHERE p.id = $person_id "
-            "RETURN p.sex AS sex"
+            "RETURN p.gender AS gender"
         )
         matches = tx.run(query, person_id=person_id)
-        return [person["sex"] for person in matches][0]
+        return [person["gender"] for person in matches][0]
     
 
         
@@ -236,6 +262,8 @@ class App:
         )
         result = tx.run(query, data=data)
         return {row["parent.name"]: row["child.name"]  for row in result}
+
+
 
 if __name__ == "__main__":
     # Aura queries use an encrypted connection using the "neo4j+s" URI scheme
