@@ -12,12 +12,15 @@ class GenderPetal(WikiPetal):
         "Q1052281": "transgender female",
         "Q505371": "agender",
     }
+    genders = set(gender_map.values())
 
     def __init__(self):
         label = "gender"
         super().__init__(PROPERTY_MAP["petals"][label], label, True, False)
 
     def parse(self, value: str) -> str:
+        if value in self.genders:
+            return value
         id = value.split("/")[-1]
         return self.gender_map.get(id, self.undefined)
 
