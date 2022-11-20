@@ -42,6 +42,7 @@ class HistreeQuery:
             NameQueryBuilder()
             .with_instance(instance)
             .with_name(name)
+            .matches_regex(name)
             .ordered_by("?num")
             .with_limit(10)
             .build()
@@ -68,7 +69,8 @@ class HistreeQuery:
         branch_down_levels: int = 1,
     ) -> Dict[str, any]:
         tree = WikiTree(seed)
-        tree.grow_levels(qid, branch_up_levels, branch_down_levels)
+        tree.grow_levels([qid], branch_up_levels, branch_down_levels)
+        tree.write_to_database()
         return tree.to_json()
 
     def _query_cli() -> None:

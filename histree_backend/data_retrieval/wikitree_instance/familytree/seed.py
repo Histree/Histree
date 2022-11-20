@@ -1,8 +1,6 @@
-
 from data_retrieval.wikitree.tree import WikiSeed, WikiTree
 from data_retrieval.wikitree_instance.familytree.petals import *
 from data_retrieval.wikitree_instance.familytree.stems import *
-
 
 
 class FamilySeed(WikiSeed):
@@ -10,16 +8,16 @@ class FamilySeed(WikiSeed):
 
     def __init__(self):
         super().__init__(
+            self_stem=SelfStem.instance(),
             up_stem=ParentStem.instance(),
             down_stem=ChildStem.instance(),
-            partner_stem=SpouseStem.instance(),
             petals=[
                 GenderPetal.instance(),
                 BirthDatePetal.instance(),
                 DeathDatePetal.instance(),
                 BirthNamePetal.instance(),
-                ImagePetal.instance()
-            ]
+                ImagePetal.instance(),
+            ],
         )
 
     @classmethod

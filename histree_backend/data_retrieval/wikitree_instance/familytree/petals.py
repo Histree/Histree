@@ -1,15 +1,5 @@
-from qwikidata.entity import WikidataItem
 from data_retrieval.wikitree.flower import WikiPetal
 from data_retrieval.wikitree_instance.familytree.property import PROPERTY_MAP
-
-
-class NamePetal(WikiPetal):
-    def __init__(self):
-        # Id is not required here as name is not an explicit property
-        super().__init__("n/a", "name")
-
-    def parse(self, item: WikidataItem) -> str:
-        return item.get_label()
 
 
 class GenderPetal(WikiPetal):
@@ -20,77 +10,84 @@ class GenderPetal(WikiPetal):
         "Q1097630": "intersex",
         "Q2449503": "transgender male",
         "Q1052281": "transgender female",
-        "Q505371": "agender"
+        "Q505371": "agender",
     }
+    genders = set(gender_map.values())
 
     def __init__(self):
-        label = "sex/gender"
-        super().__init__(
-            PROPERTY_MAP["petals"][label], label)
+        label = "gender"
+        super().__init__(PROPERTY_MAP["petals"][label], label, True, False)
 
-    def parse(self, item: WikidataItem) -> str:
-        gender_ids = [claim.mainsnak.datavalue.value['id']
-                      for claim in item.get_claim_group(self.id)._claims if claim.mainsnak.datavalue]
-        if not gender_ids:
-            return self.undefined
-        return self.gender_map.get(gender_ids[0], self.undefined)
+    def parse(self, value: str) -> str:
+        if value in self.genders:
+            return value
+        id = value.split("/")[-1]
+        return self.gender_map.get(id, self.undefined)
 
 
 class DatePetal(WikiPetal):
     def __init__(self, id, label):
-        super().__init__(id, label)
+        super().__init__(id, label, True, False)
 
-    def parse(self, item: WikidataItem) -> str:
-        dob = [claim.mainsnak.datavalue.value.get(
-            "time", self.undefined) for claim in item.get_claim_group(self.id)._claims if claim.mainsnak.datavalue]
-        # Note: month and day could be unknown, e.g. 1501-00-00
-        if not dob or dob[0] == self.undefined:
+    def parse(self, value: str) -> str:
+        if not value:
             return self.undefined
-        return dob[0][1:].split('T')[0]
+        return value.split("T")[0]
 
 
 class BirthDatePetal(DatePetal):
     def __init__(self):
-        label = "date of birth"
-        super().__init__(
-            PROPERTY_MAP["petals"][label], label)
+        label = "date_of_birth"
+        super().__init__(PROPERTY_MAP["petals"][label], label)
 
 
 class DeathDatePetal(DatePetal):
     def __init__(self):
-        label = "date of death"
-        super().__init__(
-            PROPERTY_MAP["petals"][label], label)
+        label = "date_of_death"
+        super().__init__(PROPERTY_MAP["petals"][label], label)
 
 
 class BirthNamePetal(WikiPetal):
     def __init__(self):
-        label = "birth name"
-        super().__init__(
-            PROPERTY_MAP["petals"][label], label)
+        label = "birth_name"
+        super().__init__(PROPERTY_MAP["petals"][label], label, True, True)
 
-    def parse(self, item: WikidataItem) -> str:
-        birth_names = [claim.mainsnak.datavalue.value['text']
-                       for claim in item.get_claim_group(self.id)._claims if claim.mainsnak.datavalue]
-        if not birth_names:
-            return self.undefined
-        return birth_names[0]
+    def parse(self, value: str) -> str:
+        return value
 
 
 class ImagePetal(WikiPetal):
-    URL_PREFIX = "https://en.wikipedia.org/wiki/Special:FilePath/"
-
     def __init__(self):
         label = "image"
-        super().__init__(
-            PROPERTY_MAP["petals"][label], label)
+        super().__init__(PROPERTY_MAP["petals"][label], label, True, True)
 
-    def to_wikimedia_url(self, image: str) -> str:
-        return self.URL_PREFIX + image.replace(' ', '_')
+    def parse(self, value: str) -> str:
+        return value
 
-    def parse(self, item: WikidataItem) -> str:
-        images = [claim.mainsnak.datavalue.value
-                  for claim in item.get_claim_group(self.id)._claims if claim.mainsnak.datavalue]
-        if not images:
-            return self.undefined
-        return self.to_wikimedia_url(images[0])
+
+class RelationPetal(WikiPetal):
+    def __init__(self, id, label):
+        super().__init__(id, label, True, True)
+
+    def parse(self, value: str) -> str:
+        return value.split("/")[-1]
+
+
+class FatherPetal(RelationPetal):
+    def __init__(self):
+        label = "father"
+        super().__init__(PROPERTY_MAP["stems"][label], label)
+
+
+class MotherPetal(RelationPetal):
+    def __init__(self):
+        label = "mother"
+        super().__init__(PROPERTY_MAP["stems"][label], label)
+
+
+class CallerPetal(WikiPetal):
+    def __init__(self):
+        super().__init__(-1, "caller", False, False)
+
+    def parse(self, value: str) -> str:
+        return value.split("/")[-1]

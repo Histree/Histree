@@ -22,9 +22,9 @@ class NameQueryBuilder(SPARQLBuilder):
         return self
 
     def starts_with(self, match: str) -> "NameQueryBuilder":
-        self.other_filters += f'FILTER(REGEX(?item, "^{match}")) '
+        self.other_filters += f'FILTER(REGEX(LCASE(STR(?label)), "^{match.lower()}")) '
         return self
 
     def matches_regex(self, expr: str) -> "NameQueryBuilder":
-        self.other_filters += f'FILTER(REGEX(?item, "{expr}")) '
+        self.other_filters += f'FILTER(REGEX(LCASE(STR(?label)), "{expr.lower()}")) '
         return self
