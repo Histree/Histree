@@ -1,9 +1,9 @@
 from abc import abstractmethod
 import pickle
+import requests
 import json
 from json import JSONDecodeError
 from typing import Dict, List, Tuple
-from qwikidata.sparql import return_sparql_query_results
 from data_retrieval.query.parser import WikiResult, DBResult
 from .flower import WikiFlower, WikiPetal, WikiStem, UpWikiStem, DownWikiStem
 from database.neo4j_db import Neo4jDB
@@ -102,7 +102,10 @@ class WikidataAPI(WikiAPI):
 
     def query(self, query_string: str) -> Dict[str, any]:
         try:
-            response = return_sparql_query_results(query_string)
+            response = requests.get(
+                "https://query.wikidata.org/sparql",
+                params={"format": "json", "query": query_string},
+            ).json()
         except JSONDecodeError:
             response = dict()
         return response
