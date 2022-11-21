@@ -1,5 +1,4 @@
 from abc import abstractmethod
-import pickle
 import requests
 import json
 from json import JSONDecodeError
@@ -63,7 +62,7 @@ class WikiSeed:
         # Add children to tree and record unseen parents (children's another parent)
         for child in children:
             tree.flowers[child.id] = child
-
+            
             for parent_petal_label in self.down_stem.parents:
                 if parent_petal_label in child.petals:
                     parent_id = child.petals[parent_petal_label]
@@ -76,6 +75,9 @@ class WikiSeed:
         # Find information about parents not in tree
         if unseen_parent_ids:
             self.sprout(list(unseen_parent_ids), tree)
+
+        for child in children:
+            child.branched_up = True
 
         for id in ids:
             tree.flowers[id].branched_down = True
@@ -131,7 +133,6 @@ class WikiTree:
         branch_up: bool = True,
         branch_down: bool = True,
     ) -> Tuple[List[WikiFlower], List[WikiFlower]]:
-        start = time.time()
         flowers_above, flowers_below = [], []
         # We only sprout (from db or wiki) if we don't have it in our flowers
         unseen_ids = [id for id in ids if id not in self.flowers]
