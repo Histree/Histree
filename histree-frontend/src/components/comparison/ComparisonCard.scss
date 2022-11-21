@@ -1,0 +1,15 @@
+.comparison-container {
+	margin: 1em;
+	width: 400px;
+	position: absolute;
+	z-index: 99;
+	left: 5%;
+	top: 2%;
+	display: flex;
+	flex-direction: column;
+
+	&-inner {
+		height: 175px;
+		width: auto;
+	}
+}

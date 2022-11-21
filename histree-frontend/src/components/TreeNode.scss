@@ -1,0 +1,35 @@
+.treenodecard {
+	margin: 0 1em 0 1em;
+	width: 100px;
+	height: 25px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.treenodechild {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
+}
+
+.react-flow__node-dataNode {
+	font-size: 12px;
+	background: white;
+	border: 1px solid #555;
+	border-radius: 5px;
+	text-align: center;
+}
+
+.handle_loading {
+	background-color: orange;
+}
+
+.handle_complete {
+	background-color: green;
+}
+
+.handle_nodata {
+	background-color: red;
+}

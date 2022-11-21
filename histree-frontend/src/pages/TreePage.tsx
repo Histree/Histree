@@ -1,31 +1,59 @@
-import React from "react";
-import Flow from "../components/Flow";
-import { Drawer, Box, Typography } from "@mui/material";
-import { getSelected, setSelected, getRenderContent, setRenderContent, AppDispatch } from "../stores/base";
-import { useSelector, useDispatch } from 'react-redux';
-import "./TreePage.scss";
-import { DescriptorCard, SearchBar } from "../components";
-import { ReactFlowProvider } from "reactflow";
-import { DepthBox } from "../components";
-import { fetchSearchSuggestions } from "../services";
+import React, { useRef } from 'react';
+import Flow from '../components/Flow';
+import { getSelected, getRenderContent, getRenderMode, setSelected } from '../stores/base';
+import { useDispatch, useSelector } from 'react-redux';
+import './TreePage.scss';
+import { ComparisonCard, ComparisonToggle, DescriptorCard, SearchBar } from '../components';
+import { ReactFlowProvider } from 'reactflow';
+import { Alert, Box, CircularProgress, Snackbar } from '@mui/material';
+import { useOnClickOutside } from 'usehooks-ts';
 
 const TreePage = () => {
 	const selected = useSelector(getSelected);
 	const renderContent = useSelector(getRenderContent);
-	const dispatch = useDispatch<AppDispatch>();
-	console.log(dispatch(fetchSearchSuggestions('Elizabeth')));
-	console.log(selected);
+	const renderMode = useSelector(getRenderMode);
+	const expandedRef = useRef<HTMLDivElement>(null);
+	const dispatch = useDispatch();
+
+	const handleClickOutside = () => {
+		dispatch(setSelected(undefined));
+	};
+
+	useOnClickOutside(expandedRef, handleClickOutside);
+
 	return (
 		<div className="treepage">
-			{!!renderContent &&
+			{renderContent.status === 'Success' && (
 				<ReactFlowProvider>
-					<Flow />
+					<Flow content={renderContent.content!} />
 				</ReactFlowProvider>
-			}
-
-			<DepthBox />
-			<SearchBar />
-			{selected !== undefined && <DescriptorCard selectedItem={selected} />}
+			)}
+			{renderContent.status === 'Loading' && (
+				<Box
+					sx={{
+						display: 'flex',
+						width: '100%',
+						height: '100%',
+						alignItems: 'center',
+						justifyContent: 'center'
+					}}
+				>
+					<CircularProgress />
+				</Box>
+			)}
+			<Snackbar
+				anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+				open={renderContent.status === 'Failure'}
+				autoHideDuration={3000}
+			>
+				<Alert severity="error">
+					Error Occured while searching, please try again
+				</Alert>
+			</Snackbar>
+			<ComparisonToggle />
+			{renderMode === 'View' && <SearchBar />}
+			{renderMode === 'Compare' && <ComparisonCard />}
+			{selected !== undefined && <DescriptorCard ref={expandedRef} selectedItem={selected} />}
 		</div>
 	);
 };

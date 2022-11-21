@@ -1,200 +1,190 @@
-import React from "react";
+import React, { CSSProperties, useEffect, useMemo } from 'react';
 import ReactFlow, {
 	Controls,
 	Background,
 	Node,
 	Edge,
-	useReactFlow,
-} from "reactflow";
-import "reactflow/dist/style.css";
-import {
-	NodeInfo,
-	NodesList,
-	AdjList,
-	mockNodeInfo,
-	mockAdjList,
-	NodeId,
-} from "../models";
-import { getDepth } from "../stores/base";
-import { useSelector } from "react-redux";
-import TreeNodeCard from "./TreeNodeCard";
-import dagre, { graphlib } from "dagre";
+	useReactFlow
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+import { NodeLookup, AdjList, RenderContent, NodePositions, NodeId } from '../models';
+import TreeNode from './TreeNode';
+import dagre, { graphlib } from 'dagre';
+import { useDispatch, useSelector } from 'react-redux';
+import { getCompareNodes, getEdgeInfo, getNodeLookup, setSelected } from '../stores';
+import InvisibleConnectionLine from './general/InvisibleConnectionLine';
+import { CompareNodes } from '../models/compareInfo';
 
 // const CENTER_X = 800;
 // const CENTER_Y = 400;
 const NODE_BOX_WIDTH = 155;
 const NODE_BOX_HEIGHT = 50;
 
-// Populate a Dagre graph with nodes and edges.
-const populateGraph = (
-	nodes: NodesList,
-	adjList: AdjList,
-	graph: graphlib.Graph
-): void => {
-	Object.keys(nodes).forEach((node) => {
-		const { id, name } = nodes[node];
-		graph.setNode(id, {
-			label: name,
-			width: NODE_BOX_WIDTH,
-			height: NODE_BOX_HEIGHT,
-		});
-	});
 
-	Object.keys(adjList).forEach((sourceId) => {
-		adjList[sourceId].forEach((targetId) => {
-			graph.setEdge(sourceId, targetId);
-		});
-	});
-};
+const Flow = (props: { content: RenderContent }) => {
+	const { content } = props;
+	const nodeLookup = useSelector(getNodeLookup);
+	const comparisonNodes = useSelector(getCompareNodes);
+	const edgeInfo = useSelector(getEdgeInfo);
+	const dispatch = useDispatch();
 
-// Convert dagre graph to list of Nodes for React Flow rendering.
-const dagreToFlowNodes = (graph: graphlib.Graph): Node[] => {
-	const ns: Node[] = [];
+	const closeWindow = () => dispatch(setSelected(undefined));
 
-	const dagreNodes = graph.nodes();
-	/* eslint-disable  @typescript-eslint/no-explicit-any */
-	dagreNodes.forEach((n: any) => {
-		const nodeObj = graph.node(n);
-		if (nodeObj) {
-			const flowNode: Node = {
-				id: n,
-				data: {
-					label: <TreeNodeCard displayName={`${nodeObj.label}`} />,
-				},
-				position: { x: nodeObj.x, y: nodeObj.y },
-				draggable: false,
-				connectable: false,
-				deletable: false,
-			};
-			ns.push(flowNode);
-		}
-	});
-	return ns;
-};
-
-// Returns nodes to be displayed on the graph based on the depth provided.
-const nodesToDisplay = (
-	selectedNodeInfo: NodeInfo,
-	nodesInfo: NodesList,
-	adjList: AdjList,
-	depth: number
-): NodesList => {
-	if (depth < 0) {
-		return {};
-	}
-
-	const result: NodesList = {};
-	// BFS find all ancestors
-	const ancestorQueue: NodeInfo[] = [];
-
-	if (depth == 0) {
-		const result: NodesList = {};
-		result[selectedNodeInfo.id] = selectedNodeInfo;
-	}
-
-	let currDepth: number = 1;
-	ancestorQueue.push(selectedNodeInfo);
-
-	while (currDepth <= depth) {
-		const tmpList: NodeInfo[] = [];
-
-		while (ancestorQueue.length > 0) {
-			let generated = 0;
-			// get node and find its direct ancestors
-			const currNode: NodeInfo = ancestorQueue.shift()!;
-
-			const ancestors: NodeId[] = [];
-			Object.keys(adjList).forEach((nodeId) => {
-				if (adjList[nodeId].includes(currNode.id)) {
-					ancestors.push(nodeId);
-				}
-			});
-
-			ancestors.forEach((nodeId) => {
-				tmpList.push(nodesInfo[nodeId]);
-			});
-			result[currNode.id] = currNode;
-		}
-		tmpList.forEach((x) => {
-			ancestorQueue.push(x);
-		});
-		currDepth++;
-	}
-	ancestorQueue.forEach((x) => (result[x.id] = x));
-
-	// BFS find all descendants
-	const descendantQueue: NodeInfo[] = [];
-	currDepth = 1;
-	descendantQueue.push(selectedNodeInfo);
-
-	while (currDepth <= depth) {
-		const tmpList: NodeInfo[] = [];
-
-		while (descendantQueue.length > 0) {
-			// get node and find its direct descendants
-			const currNode: NodeInfo = descendantQueue.shift()!;
-
-			if (Object.keys(adjList).includes(currNode.id)) {
-				adjList[currNode.id].forEach((nodeId) => {
-					tmpList.push(nodesInfo[nodeId]);
-				});
+	const { setCenter, getZoom } = useReactFlow();
+	const getEdgeStyle = (first: NodeId, second: NodeId): CSSProperties | undefined => {
+		console.log(`Getting Edge Style for ${first} and ${second}`);
+		// Check if edgeinfo contains 'first' as key
+		var sourceObject = edgeInfo[first];
+		if (sourceObject !== undefined) {
+			const sourceKey = Object.keys(sourceObject)[0];
+			// Check if object contained within 'first' has correct key
+			// i.e. nested key is === second
+			console.log(Object.keys(sourceObject)[0], first, second);
+			if (sourceKey === second) {
+				return sourceObject[second];
 			}
-			result[currNode.id] = currNode;
 		}
-		tmpList.forEach((x) => {
-			descendantQueue.push(x);
-		});
-		currDepth++;
+		// If the above condition fails to hold, check if edgeinfo contains 'second' as key
+		sourceObject = edgeInfo[second];
+		if (sourceObject === undefined) {
+			// Edge is not styled, move on
+			return undefined;
+		}
+		// Edge is styled, return
+		return sourceObject[first];
 	}
-	descendantQueue.forEach((x) => (result[x.id] = x));
 
-	result[selectedNodeInfo.id] = selectedNodeInfo;
-	return result;
-};
+	const getNodeStyle = (nodeid: NodeId): CSSProperties => {
+		if (comparisonNodes.first && comparisonNodes.first.id === nodeid ||
+			comparisonNodes.second && comparisonNodes.second.id === nodeid ||
+			edgeInfo[nodeid] !== undefined) {
+			return { color: 'orange', borderColor: 'orange' };
+		}
+		return {}
+	}
 
-// Converts adjacency list to list of Edges for React Flow rendering.
-const layoutEdges = (adjList: AdjList): Edge[] => {
-	const completeEdges: Edge[] = [];
-
-	Object.keys(adjList).forEach((source) => {
-		adjList[source].forEach((target) => {
-			const edge: Edge = {
-				id: `${source}-${target}`,
-				source: source,
-				target: target,
-				type: "step",
-			};
-			completeEdges.push(edge);
-		});
-	});
-
-	return completeEdges;
-};
-
-const Flow = () => {
-	const depth = useSelector(getDepth);
-
+	const nodeTypes = useMemo(
+		() => ({
+			dataNode: TreeNode
+		}),
+		[]
+	);
 	const graph: graphlib.Graph = new graphlib.Graph();
 	graph.setGraph({});
 	graph.setDefaultEdgeLabel(function () {
 		return {};
 	});
 
-	const nodes = nodesToDisplay(
-		mockNodeInfo["2"],
-		mockNodeInfo,
-		mockAdjList,
-		depth
-	);
-	populateGraph(nodes, mockAdjList, graph);
+	// Populate a Dagre graph with nodes and edges.
+	const populateGraph = (
+		nodes: NodeLookup,
+		adjList: AdjList,
+		graph: graphlib.Graph
+	): NodePositions => {
+		const positions: NodePositions = {};
+		Object.keys(nodes).forEach((node) => {
+			if (nodes[node].visible) {
+				const { id, name, petals, description } = nodes[node];
+				graph.setNode(id, {
+					label: name,
+					qid: id,
+					petals: petals,
+					description: description,
+					width: NODE_BOX_WIDTH,
+					height: NODE_BOX_HEIGHT
+				});
+				positions[id] = graph.node(id);
+			}
+		});
+
+		Object.keys(adjList).forEach((sourceId) => {
+			adjList[sourceId].forEach((targetId) => {
+				graph.setEdge(sourceId, targetId);
+			});
+		});
+		return positions;
+	};
+
+	// Convert dagre graph to list of Nodes for React Flow rendering.
+	const dagreToFlowNodes = (graph: graphlib.Graph): Node[] => {
+		const ns: Node[] = [];
+
+		const dagreNodes = graph.nodes();
+		console.log(dagreNodes);
+		/* eslint-disable  @typescript-eslint/no-explicit-any */
+		dagreNodes.forEach((n: any) => {
+			const nodeObj: any = graph.node(n);
+
+			if (nodeObj) {
+				const flowNode: Node = {
+					id: n,
+					type: 'dataNode',
+					data: {
+						name: nodeObj.label,
+						description: nodeObj.description,
+						id: n,
+						petals: nodeObj.petals
+					},
+					style: getNodeStyle(n),
+					position: { x: nodeObj.x, y: nodeObj.y },
+					draggable: false,
+					connectable: false,
+					deletable: false
+				};
+				ns.push(flowNode);
+			}
+		});
+		return ns;
+	};
+
+	const positions = populateGraph(nodeLookup, content.branches, graph);
 	dagre.layout(graph);
 
+	// Converts adjacency list to list of Edges for React Flow rendering.
+	const layoutEdges = (adjList: AdjList): Edge[] => {
+		const completeEdges: Edge[] = [];
+		const comparisonEdges: Edge[] = [];
+
+		Object.keys(adjList).forEach((source) => {
+			adjList[source].forEach((target) => {
+				const style = getEdgeStyle(source, target);
+				const edge: Edge = {
+					id: `${source}-${target}`,
+					source: source,
+					target: target,
+					// type: 'step',
+					style: style
+				};
+				if (style === undefined) {
+					completeEdges.push(edge)
+				} else {
+					comparisonEdges.push(edge)
+				};
+			});
+		});
+		for (const e of comparisonEdges) {
+			e.animated = true;
+			completeEdges.push(e)
+		}
+		console.log('COMPARISON');
+		console.log(comparisonEdges);
+		console.log('COMPLETE');
+		console.log(completeEdges);
+
+		return completeEdges;
+	};
+
 	return (
-		<div style={{ height: "100%" }}>
+		<div style={{ height: '100%' }}>
 			<ReactFlow
+				className="flow"
 				nodes={dagreToFlowNodes(graph)}
-				edges={layoutEdges(mockAdjList)}
-				onNodeClick={(e) => console.log(e.target)}
+				edges={layoutEdges(content.branches)}
+				nodeTypes={nodeTypes}
+				nodeOrigin={[0.5, 0.5]}
+				connectionLineComponent={InvisibleConnectionLine}
+				fitView
+				onPaneClick={closeWindow}
 			>
 				<Background />
 				<Controls />

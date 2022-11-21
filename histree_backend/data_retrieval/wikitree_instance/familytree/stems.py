@@ -1,53 +1,63 @@
 from typing import Dict, List
-
-from data_retrieval.wikitree.flower import WikiFlower, WikiStem
-from qwikidata.entity import WikidataItem
+from data_retrieval.query.builder import SPARQLBuilder
+from data_retrieval.wikitree.flower import WikiStem, UpWikiStem, DownWikiStem
 from data_retrieval.wikitree_instance.familytree.property import PROPERTY_MAP
+from .petals import FatherPetal, MotherPetal, CallerPetal
 
 
-
-class HumanStem(WikiStem):
-    def __init__(self, id):
-        super().__init__(id)
-
-    def parse(self, item: WikidataItem, flowers: Dict[str, WikiFlower]) -> List[WikiFlower]:
-        humans = [claim.mainsnak.datavalue.value['id'] for claim in item.get_claim_group(
-            self.id)._claims if claim.mainsnak.datavalue]
-        if not humans:
-            return []
-        return [flowers.get(human, WikiFlower(human, dict())) for human in humans]
-
-
-class ChildStem(HumanStem):
+class SelfStem(WikiStem):
     def __init__(self):
-        super().__init__(PROPERTY_MAP["stems"]["child"])
+        super().__init__(-1)
+
+    def set_query_template(self, headers: Dict[str, any]) -> None:
+        value_label = "?people"
+        self.template = (
+            SPARQLBuilder(headers)
+            .with_values(value_label, [self._TEMPLATE_STR], prefix=False)
+            .bounded_to("?item", value_label)
+            .build()
+        )
 
 
-class FatherStem(HumanStem):
+class ChildStem(DownWikiStem):
     def __init__(self):
-        super().__init__(PROPERTY_MAP["stems"]["father"])
+        super().__init__(
+            PROPERTY_MAP["stems"]["child"],
+            parent_petals=[FatherPetal.instance(), MotherPetal.instance()],
+        )
+
+    def set_query_template(self, headers: Dict[str, any]) -> None:
+        value_label = "?people"
+        headers.update(petal.to_dict_pair() for petal in self.unique_petals)
+        self.template = (
+            SPARQLBuilder(headers)
+            .with_values(value_label, [self._TEMPLATE_STR], prefix=False)
+            .with_any_property(
+                [
+                    PROPERTY_MAP["stems"][label]
+                    for label in ("mother", "father", "parent")
+                ],
+                value_label,
+                prefix_property=True,
+                prefix_value=False,
+            )
+            .build()
+        )
 
 
-class MotherStem(HumanStem):
+class ParentStem(UpWikiStem):
     def __init__(self):
-        super().__init__(PROPERTY_MAP["stems"]["mother"])
+        super().__init__(
+            PROPERTY_MAP["stems"]["parent"], caller_petal=CallerPetal.instance()
+        )
 
-
-class ParentStem(WikiStem):
-    def __init__(self):
-        super().__init__(PROPERTY_MAP["stems"]["parent"])
-
-    def parse(self, item: WikidataItem, flowers: Dict[str, WikiFlower]) -> List[WikiFlower]:
-        return sum([parent_stem.instance().parse(item, flowers) for parent_stem in (FatherStem, MotherStem)], [])
-
-
-class SpouseStem(WikiStem):
-    def __init__(self):
-        super().__init__(PROPERTY_MAP["stems"]["spouse"])
-
-    def parse(self, item: WikidataItem, flowers: Dict[str, WikiFlower]) -> List[WikiFlower]:
-        spouses = [claim.mainsnak.datavalue.value['id'] for claim in item.get_claim_group(
-            self.id)._claims if claim.mainsnak.datavalue]
-        if not spouses:
-            return []
-        return [flowers.get(spouse, WikiFlower(spouse, dict())) for spouse in spouses]
+    def set_query_template(self, headers: Dict[str, any]) -> None:
+        value_label = "?people"
+        headers.update(petal.to_dict_pair() for petal in self.unique_petals)
+        self.template = (
+            SPARQLBuilder(headers)
+            .bounded_to("?caller", self._TEMPLATE_STR)
+            .with_values(value_label, [self._TEMPLATE_STR], prefix=False)
+            .with_property(PROPERTY_MAP["stems"]["child"], value_label, prefix=False)
+            .build()
+        )

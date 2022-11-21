@@ -2,3 +2,4 @@
 **/.DS_Store
 **/venv
 **/pytest-env
+**/.pyc

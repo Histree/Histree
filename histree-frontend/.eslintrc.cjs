@@ -26,6 +26,16 @@ module.exports = {
 		"camelcase": "error",
 		"spaced-comment": "error",
 		"quotes": ["error", "single"],
-		"no-duplicate-imports": "error"
+		"no-duplicate-imports": "error",
+		"no-tabs": 0,
+		"@typescript-eslint/strict-boolean-expressions": 0,
+		"no-mixed-spaces-and-tabs": 0
+
+
+	},
+	"settings": {
+		"react": {
+			"version": "detect"
+		}
 	}
 }

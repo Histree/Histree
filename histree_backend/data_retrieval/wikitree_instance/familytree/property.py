@@ -1,9 +1,10 @@
 PROPERTY_MAP = {
     "petals": {
-        "birth name": "P1477",
-        "date of birth": "P569",
-        "date of death": "P570",
-        "sex/gender": "P21"
+        "birth_name": "P1477",
+        "date_of_birth": "P569",
+        "date_of_death": "P570",
+        "image": "P18",
+        "gender": "P21"
     },
     "stems": {
         "child": "P40",
