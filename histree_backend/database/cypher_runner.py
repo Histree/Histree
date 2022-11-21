@@ -51,6 +51,8 @@ def merge_nodes_into_db(tx, json_data, fcreates, ptcreates):
         +
         [f"node.{label} = petal.{label}" for label in ptcreates]
         )
+    json_data = json_data.replace("'", "\\'")
+    print(json_data)
     query = (
             f"WITH apoc.convert.fromJsonMap(\'{json_data}\') AS document "
             "UNWIND document.flowers AS flower "
@@ -70,6 +72,7 @@ def merge_nodes_into_db(tx, json_data, fcreates, ptcreates):
 
 @cypher_runner
 def merge_relation_into_db(tx, json_data):
+    json_data = json_data.replace("'", "\\'")
     query = (
         f"WITH apoc.convert.fromJsonMap(\'{json_data}\') AS document "
         "UNWIND document.branches AS branch "
