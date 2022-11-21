@@ -1,6 +1,7 @@
 from neo4j import GraphDatabase
 import logging
 import json
+from relationship_table import RelationshipTable
 from neo4j.exceptions import ServiceUnavailable
 
 
@@ -128,9 +129,6 @@ class App:
         lengths = tx.run(query, person_id1=person_id1, person_id2=person_id2)["length"]
         return lengths[0]
         
-
-
-
     
     def relationship_calculator(self, person_id1, person_id2):
         '''Works out the relationship where person1 is the _ of person2'''
@@ -139,38 +137,9 @@ class App:
             gender = session.execute_read(self._return_gender, person_id1)
             ca_id = session.execute_read(self._common_ancestor, person_id1, person_id2)
             distance1, distance2 = session.execute_read(self._distances_to_ca, ca_id, person_id1, person_id2)
-            table = self.relationship_table()
+            table = RelationshipTable.relationship_table()
             return table[distance1][distance2][gender]
 
-
-    @staticmethod
-    def relationship_table():
-        table = [[{} for i in range(5)] for j in range(5)]
-
-        # index 1 is person 1's distance from ca, index 2 is person 2's distance from ca
-        # index 3 is person 1's sex
-        table[0][1]["male"] = "father"
-        table[0][1]["female"] = "mother"
-        table[1][0]["male"] = "son"
-        table[1][0]["female"] = "daughter"
-
-        table[0][2]["male"] = "grandfather"
-        table[0][2]["female"] = "grandmother"
-        table[2][0]["male"] = "grandson"
-        table[2][0]["female"] = "granddaughter"
-
-        table[1][1]["male"] = "brother"
-        table[1][1]["female"] = "sister"
-
-        table[1][2]["male"] = "uncle"
-        table[1][2]["female"] = "aunt"
-        table[2][1]["male"] = "nephew"
-        table[2][1]["female"] = "niece"
-
-        table[2][2]["male"] = "cousin"
-        table[2][2]["female"] = "cousin"
-        
-        return table
 
     
     @staticmethod
@@ -261,6 +230,7 @@ class App:
         )
         result = tx.run(query, data=data)
         return {row["parent.name"]: row["child.name"]  for row in result}
+
 
 
 

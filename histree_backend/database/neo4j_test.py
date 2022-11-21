@@ -4,6 +4,7 @@ import json
 from neo4j.exceptions import ServiceUnavailable
 import pytest
 from people_db import App
+from relationship_table import RelationshipTable
 
 
 @pytest.fixture
@@ -32,10 +33,16 @@ def test_find_common_ancestor(make_connection):
     assert common_ancestor_id == "Q937"
 
 
-def test_relationship_table(make_connection):
-    table = make_connection.relationship_table()
+
+def test_relationship_table():
+    table = RelationshipTable.relationship_table()
     assert table[2][0]["male"] == "grandson"
     assert table[1][1]["female"] == "sister"
+    assert table[3][0]["female"] == "great granddaughter"
+    assert table[4][4]["male"] == "third cousin"
+    assert table[0][5]["male"] == "great great great grandfather"
+    assert table[4][0]["female"] == "great great granddaughter"
+
 
 
 def test_relationship_calculator(make_connection):
@@ -46,18 +53,3 @@ def test_relationship_calculator(make_connection):
     # Elizabeth is the grandmother of Charles
     relationship = make_connection.relationship_calculator("Q10633", "Q43274")
     assert relationship == "grandmother"
-
-
-
-
-
-# def test_find_shortest_path(make_connection):
-#     # Shortest path between Eduard Einstein and Hermann Einstein goes through Albert Einstein
-#     shortest_path = make_connection.shortest_path("Q118253", "Q432375")
-#     assert "Q937" in shortest_path
-# 
-# 
-# # def test_shortest_path_length(make_connection):
-#     # The shortest path between George IV and Charles III is of length 2
-#     length = make_connection.shortest_path_length("Q280856", "Q43274")
-#     assert length == 2
