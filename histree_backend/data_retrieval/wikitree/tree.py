@@ -74,7 +74,8 @@ class WikiSeed:
                     tree.branches[parent_id].add(child.id)
 
         # Find information about parents not in tree
-        self.sprout(list(unseen_parent_ids), tree)
+        if unseen_parent_ids:
+            self.sprout(list(unseen_parent_ids), tree)
 
         for id in ids:
             tree.flowers[id].branched_down = True
@@ -127,12 +128,13 @@ class WikiTree:
         branch_up: bool = True,
         branch_down: bool = True,
     ) -> Tuple[List[WikiFlower], List[WikiFlower]]:
-
+        start = time.time()
         flowers_above, flowers_below = [], []
         # We only sprout (from db or wiki) if we don't have it in our flowers
         unseen_ids = [id for id in ids if id not in self.flowers]
         unseen_set = set(unseen_ids)
-        self.seed.sprout(unseen_ids, self)
+        if unseen_set:
+            self.seed.sprout(unseen_ids, self)
         # seed.sprout/seed.branch_up/seed.branch_down will give back
         # unseen_flowers/parents/children
         # They will find a source(db/wiki) themselves.
@@ -194,6 +196,9 @@ class WikiTree:
                     # it is a flower, so we warp it
 
         # Incomplete ids should query the wiki
+        if not incomplete_ids:
+            return flowers_in_db
+
         result = self.api.query(wiki_query(incomplete_ids))
         flowers = WikiResult(result).parse(self.seed.petal_map)
         return flowers_in_db + flowers
