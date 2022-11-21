@@ -45,18 +45,25 @@ def find_flowers(tx, ids) -> tuple[str, list]:
     return query, label
 
 @cypher_runner
-def merge_nodes_into_db(tx, json_data, flabels, ptlabels):
+def merge_nodes_into_db(tx, json_data, fcreates, ptcreates):
     setting = ', '.join(
-        [f"node.{label} = flower.{label}" for label in flabels] 
+        [f"node.{label} = flower.{label}" for label in fcreates] 
         +
-        [f"node.{label} = petal.{label}" for label in ptlabels]
+        [f"node.{label} = petal.{label}" for label in ptcreates]
         )
+    json_data = json_data.replace("'", "\\'")
+    print(json_data)
     query = (
             f"WITH apoc.convert.fromJsonMap(\'{json_data}\') AS document "
             "UNWIND document.flowers AS flower "
             "UNWIND flower.petals AS petal "
             "MERGE (node:Person { id: flower.id }) "
-            f"ON CREATE SET {setting} "
+            "ON CREATE SET "
+            f"{setting} "
+            "ON MATCH SET "
+            "node += (CASE flower.branched_up WHEN TRUE THEN {branched_up: TRUE} ELSE {} END) "
+            "ON MATCH SET "
+            "node += (CASE flower.branched_down WHEN TRUE THEN {branched_down: TRUE} ELSE {} END) "
             "RETURN NULL"
     )
 
@@ -65,6 +72,7 @@ def merge_nodes_into_db(tx, json_data, flabels, ptlabels):
 
 @cypher_runner
 def merge_relation_into_db(tx, json_data):
+    json_data = json_data.replace("'", "\\'")
     query = (
         f"WITH apoc.convert.fromJsonMap(\'{json_data}\') AS document "
         "UNWIND document.branches AS branch "
@@ -73,7 +81,7 @@ def merge_relation_into_db(tx, json_data):
         "MATCH (from:Person {id: parent}), \
                 (to:Person {id: child}) "
         "MERGE (from)-[:PARENT_OF]->(to) "
-        "ON CREATE SET \
+        "SET \
             to += (CASE from.gender \
                     WHEN 'female' THEN {mother: from.id} \
                     WHEN 'male' THEN {father: from.id} \
