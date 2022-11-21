@@ -61,7 +61,7 @@ def merge_nodes_into_db(tx, json_data, fcreates, ptcreates):
             "ON MATCH SET "
             "node += (CASE flower.branched_up WHEN TRUE THEN {branched_up: TRUE} ELSE {} END) "
             "ON MATCH SET "
-            "node += (CASE flower.branched_down WHEN FALSE THEN {branched_down: TRUE} ELSE {} END) "
+            "node += (CASE flower.branched_down WHEN TRUE THEN {branched_down: TRUE} ELSE {} END) "
             "RETURN NULL"
     )
 
