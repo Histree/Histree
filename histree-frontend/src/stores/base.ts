@@ -23,13 +23,16 @@ import {
   fetchSearchSuggestions,
   fetchSelectedExpansion,
   ServiceStatus,
+  DataFail,
+  DataSuccess,
 } from "../services";
-import { uniq } from "lodash";
+import { uniq, isEqual } from "lodash";
 import { CompareNodes } from "../models/compareInfo";
+import { Viewport } from "reactflow";
 
 interface HistreeState {
   renderMode: RenderMode;
-  renderContent: ServiceStatus<RenderContent | undefined>;
+  renderContent: ServiceStatus<RenderContent>;
   selected?: Selected;
   searchTerm?: string;
   searchSuggestions: SearchBarInfo;
@@ -37,6 +40,7 @@ interface HistreeState {
   edgeInfo: EdgeInfo;
   compareNodes: CompareNodes;
   relationship: ServiceStatus<RelationshipInfo | undefined>;
+  currViewport: Viewport;
 }
 
 const initialState: HistreeState = {
@@ -48,12 +52,21 @@ const initialState: HistreeState = {
   edgeInfo: {},
   compareNodes: {},
   relationship: { status: "Initial" },
+  currViewport: { x: 0, y: 0, zoom: 2 },
 };
 
 export const histreeState = createSlice({
   name: "histreeState",
   initialState,
   reducers: {
+    setNodeOnScreen: (
+      state,
+      action: PayloadAction<{ id: NodeId; onScreen: boolean }>
+    ) => {
+      if (!state.nodeLookup[action.payload.id].visible) {
+        state.nodeLookup[action.payload.id].visible = action.payload.onScreen;
+      }
+    },
     setRenderMode: (state, action: PayloadAction<RenderMode>) => {
       if (action.payload === "View") {
         state.edgeInfo = {};
@@ -77,6 +90,9 @@ export const histreeState = createSlice({
     },
     resetSearch: (state) => {
       state.searchSuggestions.autocompleteData = {};
+    },
+    setSearchValue: (state, action: PayloadAction<string>) => {
+      state.searchSuggestions.searchTerm = action.payload;
     },
     setResultServiceState: (
       state,
@@ -112,7 +128,7 @@ export const histreeState = createSlice({
     },
     setRenderContent: (
       state,
-      action: PayloadAction<ServiceStatus<RenderContent | undefined>>
+      action: PayloadAction<ServiceStatus<RenderContent>>
     ) => {
       state.renderContent = action.payload;
     },
@@ -131,78 +147,83 @@ export const histreeState = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(fetchSearchSuggestions.fulfilled, (state, action) => {
-      state.searchSuggestions = action.payload;
-    });
-
-    builder.addCase(fetchSearchResults.fulfilled, (state, action) => {
-      state.renderContent = action.payload;
-      const lookup: NodeLookup = {};
-
-      if (action.payload.status === "Success") {
-        state.renderContent.content?.flowers.forEach((f) => {
-          lookup[f.id] = f;
-          lookup[f.id].visible = f.id === action.payload.content?.searchedQid;
-          lookup[f.id].searched = f.id === action.payload.content?.searchedQid;
-        });
-      }
-      state.nodeLookup = lookup;
+      state.searchSuggestions.autocompleteData = action.payload;
     });
 
     builder.addCase(
+      fetchSearchResults.fulfilled,
+      (state, action: PayloadAction<DataSuccess<RenderContent> | DataFail>) => {
+        const lookup: NodeLookup = {};
+        const successData = action.payload as DataSuccess<RenderContent>;
+        state.renderContent = successData;
+        state.renderContent.content.flowers.forEach((f) => {
+          lookup[f.id] = f;
+          lookup[f.id].visible = f.id === successData.content.searchedQid;
+          lookup[f.id].searched = f.id === successData.content.searchedQid;
+        });
+        state.renderContent.content.branches = successData.content.branches;
+        state.nodeLookup = lookup;
+      }
+    );
+
+    builder.addCase(
       fetchSelectedExpansion.fulfilled,
-      (state: HistreeState, action) => {
-        const response = action.payload;
+      (
+        state: HistreeState,
+        action: PayloadAction<
+          DataSuccess<RenderContent & ExpandInfo> | DataFail
+        >
+      ) => {
+        const response = action.payload as DataSuccess<
+          RenderContent & ExpandInfo
+        >;
         const lookup = { ...state.nodeLookup };
-        if (response.status === "Success") {
-          const { branches, flowers, direction, searchedQid } =
-            response.content as RenderContent & ExpandInfo;
+        const { branches, flowers, direction, searchedQid } = response.content;
+        const stateContent = (
+          state.renderContent as DataSuccess<RenderContent & ExpandInfo>
+        ).content;
+        flowers.forEach((f) => {
+          if (lookup[f.id] === undefined) {
+            lookup[f.id] = f;
+            lookup[f.id].visible = f.id === searchedQid;
+            lookup[f.id].searched = f.id === searchedQid;
+          }
+          if (!stateContent.flowers.includes(f)) {
+            stateContent.flowers.push(f);
+          }
+        });
 
-          flowers.forEach((f) => {
-            if (lookup[f.id] === undefined) {
-              lookup[f.id] = f;
-              lookup[f.id].visible = f.id === searchedQid;
-              lookup[f.id].searched = f.id === searchedQid;
+        Object.keys(branches).forEach((b) => {
+          const individualBranch = stateContent.branches[b];
+          const newBranch =
+            individualBranch !== undefined
+              ? uniq([...individualBranch, ...branches[b]])
+              : branches[b];
+          stateContent.branches[b] = newBranch;
+        });
+
+        if (direction !== "down") {
+          Object.keys(branches).forEach((parentId) => {
+            if (branches[parentId].includes(searchedQid)) {
+              lookup[parentId].visible = true;
             }
           });
-
-          flowers.forEach((x) => {
-            if (
-              state.renderContent.content !== undefined &&
-              !state.renderContent.content.flowers.includes(x)
-            ) {
-              state.renderContent.content.flowers.push(x);
-            }
-          });
-
-          Object.keys(branches).forEach((b) => {
-            const individualBranch = state.renderContent.content?.branches[b];
-            const newBranch =
-              individualBranch !== undefined
-                ? uniq([...individualBranch, ...branches[b]])
-                : branches[b];
-            if (state.renderContent.content != null) {
-              state.renderContent.content.branches[b] = newBranch;
-            }
-          });
-
-          if (direction === "up") {
-            Object.keys(branches).forEach((parentId) => {
-              if (branches[parentId].includes(searchedQid)) {
-                lookup[parentId].visible = true;
+          lookup[searchedQid].upExpanded = "Complete";
+        }
+        if (direction !== "up") {
+          if (branches[searchedQid] !== undefined) {
+            branches[searchedQid].forEach((childId) => {
+              if (lookup[childId] !== undefined) {
+                lookup[childId].visible = true;
               }
             });
-            lookup[searchedQid].upExpanded = "Complete";
-          } else {
-            if (branches[searchedQid] !== undefined) {
-              branches[searchedQid].forEach((childId) => {
-                if (lookup[childId] !== undefined) {
-                  lookup[childId].visible = true;
-                }
-              });
-            }
-            lookup[searchedQid].downExpanded = "Complete";
           }
+          lookup[searchedQid].downExpanded = "Complete";
+        }
+        if (!isEqual(state.nodeLookup, lookup)) {
           state.nodeLookup = lookup;
+        } else {
+          console.log("lookup is unchanged");
         }
       }
     );
@@ -213,6 +234,12 @@ export const histreeState = createSlice({
   },
 });
 
+export const getCurrentViewport = createSelector(
+  (state: HistreeState) => {
+    return state.currViewport;
+  },
+  (x) => x
+);
 export const getSearchSuggestions = createSelector(
   (state: HistreeState) => {
     return state.searchSuggestions;
@@ -220,7 +247,7 @@ export const getSearchSuggestions = createSelector(
   (x) => ({
     searchTerm: x.searchTerm,
     searchSuggestions: Object.fromEntries(
-      Object.values(x.autocompleteData).map((value) => [value.label, value])
+      Object.values(x.autocompleteData).map((value) => [value.id, value])
     ),
   })
 );
@@ -283,6 +310,8 @@ export const {
   setComparisonNode,
   setEdgeInfo,
   setRelationship,
+  setNodeOnScreen,
+  setSearchValue,
 } = histreeState.actions;
 
 export const store = configureStore({

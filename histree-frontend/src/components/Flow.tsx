@@ -4,16 +4,15 @@ import ReactFlow, {
 	Background,
 	Node,
 	Edge,
-	useReactFlow
+	useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { NodeLookup, AdjList, RenderContent, NodePositions, NodeId } from '../models';
 import TreeNode from './TreeNode';
 import dagre, { graphlib } from 'dagre';
 import { useDispatch, useSelector } from 'react-redux';
-import { getCompareNodes, getEdgeInfo, getNodeLookup, setSelected } from '../stores';
+import { AppDispatch, getCompareNodes, getCurrentViewport, getEdgeInfo, getNodeLookup, setSelected } from '../stores';
 import InvisibleConnectionLine from './general/InvisibleConnectionLine';
-import { CompareNodes } from '../models/compareInfo';
 
 // const CENTER_X = 800;
 // const CENTER_Y = 400;
@@ -27,19 +26,17 @@ const Flow = (props: { content: RenderContent }) => {
 	const comparisonNodes = useSelector(getCompareNodes);
 	const edgeInfo = useSelector(getEdgeInfo);
 	const dispatch = useDispatch();
-
 	const closeWindow = () => dispatch(setSelected(undefined));
 
-	const { setCenter, getZoom } = useReactFlow();
+	const { setCenter, getZoom, viewportInitialized } = useReactFlow();
 	const getEdgeStyle = (first: NodeId, second: NodeId): CSSProperties | undefined => {
-		console.log(`Getting Edge Style for ${first} and ${second}`);
+		// console.log(`Getting Edge Style for ${first} and ${second}`);
 		// Check if edgeinfo contains 'first' as key
 		var sourceObject = edgeInfo[first];
 		if (sourceObject !== undefined) {
 			const sourceKey = Object.keys(sourceObject)[0];
 			// Check if object contained within 'first' has correct key
 			// i.e. nested key is === second
-			console.log(Object.keys(sourceObject)[0], first, second);
 			if (sourceKey === second) {
 				return sourceObject[second];
 			}
@@ -69,7 +66,7 @@ const Flow = (props: { content: RenderContent }) => {
 		}),
 		[]
 	);
-	const graph: graphlib.Graph = new graphlib.Graph();
+	var graph: graphlib.Graph = new graphlib.Graph();
 	graph.setGraph({});
 	graph.setDefaultEdgeLabel(function () {
 		return {};
@@ -83,18 +80,18 @@ const Flow = (props: { content: RenderContent }) => {
 	): NodePositions => {
 		const positions: NodePositions = {};
 		Object.keys(nodes).forEach((node) => {
-			if (nodes[node].visible) {
-				const { id, name, petals, description } = nodes[node];
-				graph.setNode(id, {
-					label: name,
-					qid: id,
-					petals: petals,
-					description: description,
-					width: NODE_BOX_WIDTH,
-					height: NODE_BOX_HEIGHT
-				});
-				positions[id] = graph.node(id);
-			}
+			// if (nodes[node].visible) {
+			const { id, name, petals, description } = nodes[node];
+			graph.setNode(id, {
+				label: name,
+				qid: id,
+				petals: petals,
+				description: description,
+				width: NODE_BOX_WIDTH,
+				height: NODE_BOX_HEIGHT
+			});
+			positions[id] = graph.node(id);
+			// }
 		});
 
 		Object.keys(adjList).forEach((sourceId) => {
@@ -106,11 +103,10 @@ const Flow = (props: { content: RenderContent }) => {
 	};
 
 	// Convert dagre graph to list of Nodes for React Flow rendering.
-	const dagreToFlowNodes = (graph: graphlib.Graph): Node[] => {
-		const ns: Node[] = [];
-
+	const dagreToFlowNodes = (graph: graphlib.Graph, adjList: AdjList): Record<NodeId, Node> => {
+		const ns: Record<NodeId, Node> = {};
+		dagre.layout(graph)
 		const dagreNodes = graph.nodes();
-		console.log(dagreNodes);
 		/* eslint-disable  @typescript-eslint/no-explicit-any */
 		dagreNodes.forEach((n: any) => {
 			const nodeObj: any = graph.node(n);
@@ -125,20 +121,20 @@ const Flow = (props: { content: RenderContent }) => {
 						id: n,
 						petals: nodeObj.petals
 					},
+					// hidden: !nodeLookup[n].visible,
 					style: getNodeStyle(n),
 					position: { x: nodeObj.x, y: nodeObj.y },
 					draggable: false,
 					connectable: false,
 					deletable: false
 				};
-				ns.push(flowNode);
+				ns[n] = flowNode;
 			}
 		});
 		return ns;
 	};
 
 	const positions = populateGraph(nodeLookup, content.branches, graph);
-	dagre.layout(graph);
 
 	// Converts adjacency list to list of Edges for React Flow rendering.
 	const layoutEdges = (adjList: AdjList): Edge[] => {
@@ -166,30 +162,36 @@ const Flow = (props: { content: RenderContent }) => {
 			e.animated = true;
 			completeEdges.push(e)
 		}
-		console.log('COMPARISON');
-		console.log(comparisonEdges);
-		console.log('COMPLETE');
-		console.log(completeEdges);
 
 		return completeEdges;
 	};
+
+	const flowNodes = dagreToFlowNodes(graph, content.branches)
+
+	useEffect(() => {
+		if (viewportInitialized) {
+			setCenter(
+				flowNodes[content.searchedQid].position.x,
+				flowNodes[content.searchedQid].position.y,
+				{ zoom: 2, duration: 300 })
+		}
+	}, [viewportInitialized])
 
 	return (
 		<div style={{ height: '100%' }}>
 			<ReactFlow
 				className="flow"
-				nodes={dagreToFlowNodes(graph)}
+				nodes={Object.values(flowNodes)}
 				edges={layoutEdges(content.branches)}
 				nodeTypes={nodeTypes}
-				nodeOrigin={[0.5, 0.5]}
 				connectionLineComponent={InvisibleConnectionLine}
-				fitView
+				// fitView
 				onPaneClick={closeWindow}
 			>
 				<Background />
 				<Controls />
 			</ReactFlow>
-		</div>
+		</div >
 	);
 };
 

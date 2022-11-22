@@ -29,6 +29,17 @@ export const cleanseBranches = (
   return newAdjList;
 };
 
+export const addChildrenNode = (adjList: AdjList): AdjList => {
+  const newAdjList = { ...adjList };
+  Object.values(adjList).forEach((children) => {
+    children.forEach((child) => {
+      if (newAdjList[child] === undefined) {
+        newAdjList[child] = [];
+      }
+    });
+  });
+  return newAdjList;
+};
 export const convertToUndirected = (adjList: AdjList): AdjList => {
   const newAdjList = { ...adjList };
   Object.entries(adjList).forEach(([parent, children]) => {
