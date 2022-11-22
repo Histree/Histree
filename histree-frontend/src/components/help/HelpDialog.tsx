@@ -7,6 +7,7 @@ import {
   Typography
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import HelpIcon from '@mui/icons-material/Help';
 import React, { useState } from 'react';
 import "./HelpDialog.scss"
 
@@ -16,12 +17,14 @@ const HelpDialogTitle = (props: {
 }) => {
   const { onClose, children } = props;
   return (
-    <DialogTitle>
-      {children}
-      <IconButton onClick={onClose}>
-        <CloseIcon />
-      </IconButton>
-    </DialogTitle>
+    <div>
+      <DialogTitle sx={{paddingBottom: 0}}>
+        {children}
+        <IconButton sx={{position: 'absolute', top: "0.5em", right: "0.25em"}} onClick={onClose}>
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+    </div>
   );
 };
 
@@ -33,13 +36,23 @@ export const HelpDialog = () => {
 
   return (
     <div className="help-dialog">
-      <Button onClick={handleClickOpen} variant="outlined">Help</Button>
-      <Dialog open={open}>
+      <IconButton onClick={handleClickOpen}>
+        <HelpIcon />
+      </IconButton>
+      <Dialog open={open} onClose={(e, r) => {handleClose()}}>
         <HelpDialogTitle onClose={handleClose}>
-          How to use Histree
+          <Typography variant="h5">
+            How to use Histree
+          </Typography>
         </HelpDialogTitle>
         <DialogContent>
-          <Typography>Here is how to use our app.</Typography>
+          <Typography sx={{fontWeight: 700}}>View Mode</Typography>
+          <Typography>Search for a person you want to explore their relationships of.</Typography>
+          <Typography>Click on nodes to find out more about the person.</Typography>
+          <br/>
+          <Typography sx={{fontWeight: 700}}>Compare Mode</Typography>
+          <Typography>Click on the top-left button to toggle between View Mode and Compare Mode.</Typography>
+          <Typography>Find the relationship between two relatives by clicking on two nodes.</Typography>
         </DialogContent>
       </Dialog>
     </div>

@@ -23,6 +23,8 @@ const TreePage = () => {
 
 	return (
 		<div className="treepage">
+			<HelpDialog />
+
 			{renderContent.status === 'Success' && (
 				<ReactFlowProvider>
 					<Flow content={renderContent.content!} />
@@ -54,7 +56,6 @@ const TreePage = () => {
 			{renderMode === 'View' && <SearchBar />}
 			{renderMode === 'Compare' && <ComparisonCard />}
 			{selected !== undefined && <DescriptorCard ref={expandedRef} selectedItem={selected} />}
-			<HelpDialog />
 		</div>
 	);
 };
