@@ -1,7 +1,7 @@
 import pytest
-from relationship_calculator import RelationshipCalculator
-from cypher_runner import common_ancestor
-from neo4j_db import Neo4jDB
+from .relationship_calculator import RelationshipCalculator
+from .cypher_runner import common_ancestor
+from .neo4j_db import Neo4jDB
 
 
 @pytest.fixture(scope='session', autouse=True)

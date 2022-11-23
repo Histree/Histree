@@ -14,7 +14,10 @@ class RelationshipCalculator:
         
         gender1 = db.read_db(gender, id1)[0][0]
         table = RelationshipCalculator.relationship_table()
-        return table[distance1][distance2][gender1]
+        try:
+            return table[distance1][distance2][gender1]
+        except IndexError:
+            return "has no close relationship with"
 
 
     @staticmethod
