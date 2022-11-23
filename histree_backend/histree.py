@@ -1,6 +1,9 @@
 from flask import Flask, render_template, jsonify, request, Response
 from json import JSONDecodeError
 from histree_query import HistreeQuery
+from database.neo4j_db import Neo4jDB
+from database.relationship_calculator import RelationshipCalculator
+
 
 app = Flask(__name__)
 
@@ -67,6 +70,11 @@ def persons_info():
 def relationship_calculator():
     id1 = request.args.get("id1", default="", type=str)
     id2 = request.args.get("id2", default="", type=str)
+    
+    db = Neo4jDB.instance()
+    relationship = RelationshipCalculator.calculate_relationship(db, id1, id2)
+    db.close()
+
     result = {"relationship": "sibling"}
 
     try:

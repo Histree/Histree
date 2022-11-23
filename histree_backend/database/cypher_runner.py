@@ -19,7 +19,7 @@ def find_children(tx, ids) -> tuple[str, list]:
             "RETURN i, parent IS NOT NULL AS b, collect(child) AS children"
             )
     label = ['i', 'b', 'children']
-    # if b is Fasle, we need to query the ids from wiki
+    # if b is False, we need to query the ids from wiki
     # if b is True, we use children
     return query, label
 
@@ -92,3 +92,43 @@ def merge_relation_into_db(tx, json_data):
 
     label = []
     return query, label
+
+
+@cypher_runner
+def common_ancestor(tx, person_id1, person_id2):
+    query = (
+            "MATCH path = (p1:Person)<-[:PARENT_OF*0..10]-(a:Person)-[PARENT_OF*0..10]->(p2:Person) "
+            f"WHERE p1.id=\'{person_id1}\' AND p2.id=\'{person_id2}\' "
+            "RETURN a.id AS id "
+            "ORDER BY length(path) "
+            "LIMIT 1"
+        )
+    
+    label = ["id"]
+    return query, label
+
+
+@cypher_runner
+def shortest_distance(tx, person_id1, person_id2):
+    query = (
+        "MATCH (p1:Person {id: \'" + person_id1 + "\'}), "
+        "(p2:Person {id: \'" + person_id2 + "\'}), "
+        "path = shortestPath((p1)-[*]-(p2)) "
+        "RETURN length(path) AS length"
+    )
+
+    label = ["length"]
+    return query, label
+
+
+@cypher_runner
+def gender(tx, person_id):
+    query = (
+        "MATCH (p:Person) "
+        f"WHERE p.id = \'{person_id}\' "
+        "RETURN p.gender AS gender"
+    )
+
+    label = ["gender"]
+    return query, label
+    
