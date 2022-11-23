@@ -1,5 +1,4 @@
-from neo4j_db import Neo4jDB
-from cypher_runner import common_ancestor, shortest_distance, gender
+from .cypher_runner import common_ancestor, shortest_distance, gender
 
 class RelationshipCalculator:
 
