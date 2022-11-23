@@ -1,9 +1,8 @@
 from abc import abstractmethod
-import pickle
+import requests
 import json
 from json import JSONDecodeError
 from typing import Dict, List, Tuple
-from qwikidata.sparql import return_sparql_query_results
 from data_retrieval.query.parser import WikiResult, DBResult
 from .flower import WikiFlower, WikiPetal, WikiStem, UpWikiStem, DownWikiStem
 from database.neo4j_db import Neo4jDB
@@ -63,7 +62,7 @@ class WikiSeed:
         # Add children to tree and record unseen parents (children's another parent)
         for child in children:
             tree.flowers[child.id] = child
-
+            
             for parent_petal_label in self.down_stem.parents:
                 if parent_petal_label in child.petals:
                     parent_id = child.petals[parent_petal_label]
@@ -74,7 +73,11 @@ class WikiSeed:
                     tree.branches[parent_id].add(child.id)
 
         # Find information about parents not in tree
-        self.sprout(list(unseen_parent_ids), tree)
+        if unseen_parent_ids:
+            self.sprout(list(unseen_parent_ids), tree)
+
+        for child in children:
+            child.branched_up = True
 
         for id in ids:
             tree.flowers[id].branched_down = True
@@ -101,7 +104,10 @@ class WikidataAPI(WikiAPI):
 
     def query(self, query_string: str) -> Dict[str, any]:
         try:
-            response = return_sparql_query_results(query_string)
+            response = requests.get(
+                "https://query.wikidata.org/sparql",
+                params={"format": "json", "query": query_string},
+            ).json()
         except JSONDecodeError:
             response = dict()
         return response
@@ -127,12 +133,12 @@ class WikiTree:
         branch_up: bool = True,
         branch_down: bool = True,
     ) -> Tuple[List[WikiFlower], List[WikiFlower]]:
-
         flowers_above, flowers_below = [], []
         # We only sprout (from db or wiki) if we don't have it in our flowers
         unseen_ids = [id for id in ids if id not in self.flowers]
         unseen_set = set(unseen_ids)
-        self.seed.sprout(unseen_ids, self)
+        if unseen_set:
+            self.seed.sprout(unseen_ids, self)
         # seed.sprout/seed.branch_up/seed.branch_down will give back
         # unseen_flowers/parents/children
         # They will find a source(db/wiki) themselves.
@@ -194,6 +200,9 @@ class WikiTree:
                     # it is a flower, so we warp it
 
         # Incomplete ids should query the wiki
+        if not incomplete_ids:
+            return flowers_in_db
+
         result = self.api.query(wiki_query(incomplete_ids))
         flowers = WikiResult(result).parse(self.seed.petal_map)
         return flowers_in_db + flowers

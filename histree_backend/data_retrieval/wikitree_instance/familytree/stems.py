@@ -56,7 +56,7 @@ class ParentStem(UpWikiStem):
         headers.update(petal.to_dict_pair() for petal in self.unique_petals)
         self.template = (
             SPARQLBuilder(headers)
-            .bounded_to("?caller", self._TEMPLATE_STR)
+            .bounded_to("?caller", value_label)
             .with_values(value_label, [self._TEMPLATE_STR], prefix=False)
             .with_property(PROPERTY_MAP["stems"]["child"], value_label, prefix=False)
             .build()

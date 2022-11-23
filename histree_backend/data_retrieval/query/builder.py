@@ -47,8 +47,8 @@ class SPARQLBuilder:
             SELECT ?item ?label ?description {header_selections}
             WHERE {{
                 {"SELECT * WHERE {" if self.order_by else ""}
-                    {bounds}
                     {self.values}
+                    {bounds}
                     {self.other}
                     ?item {self.predicate}
                         rdfs:label ?label;
