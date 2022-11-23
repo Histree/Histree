@@ -32,6 +32,8 @@ def test_relationship_table():
     assert table[4][4]["male"] == "third cousin"
     assert table[0][5]["male"] == "great great great grandfather"
     assert table[4][0]["female"] == "great great granddaughter"
+    assert table[1][1]["default"] == "sibling"
+    assert table[5][0]["default"] == "great great great grandchild"
 
 
 
