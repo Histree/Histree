@@ -6,11 +6,12 @@ class RelationshipCalculator:
 
     @staticmethod
     def calculate_relationship(db, id1, id2):
-        common_ancestors = db.read_db(common_ancestor, id1, id2)[0]
+        common_ancestors = db.read_db(common_ancestor, id1, id2)
         if not common_ancestors: # there is no common ancestor
             return "has no close relationship with" 
 
-        common_ancestor_id = common_ancestors[0]
+
+        common_ancestor_id = common_ancestors[0][0]
 
         distance1, distance2 = 0, 0
         if common_ancestor_id != id1:

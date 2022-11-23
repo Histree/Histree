@@ -75,7 +75,7 @@ def relationship_calculator():
     relationship = RelationshipCalculator.calculate_relationship(db, id1, id2)
     db.close()
 
-    result = {"relationship": "sibling"}
+    result = {"relationship": relationship}
 
     try:
         response = jsonify(result)
