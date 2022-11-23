@@ -2,8 +2,8 @@ from flask import Flask, render_template, jsonify, request, Response
 from json import JSONDecodeError
 from histree_query import HistreeQuery
 from database.neo4j_db import Neo4jDB
-from database.cypher_runner import common_ancestor, shortest_distance, gender
-from database.relationship_table import RelationshipTable
+from database.relationship_calculator import RelationshipCalculator
+
 
 app = Flask(__name__)
 
@@ -46,21 +46,12 @@ def person_info(qid):
 def relationship_calculator():
     id1 = request.args.get('id1', default="", type=str)
     id2 = request.args.get('id2', default="", type=str)
-
     db = Neo4jDB.instance()
-    common_ancestor_id = db.read_db(common_ancestor, id1, id2)[0][0]
 
-    distance1, distance2 = 0, 0
-    if common_ancestor_id != id1:
-        distance1 = db.read_db(shortest_distance, id1, common_ancestor_id)[0][0]
-    if common_ancestor_id != id2:
-        distance2 = db.read_db(shortest_distance, id2, common_ancestor_id)[0][0]
-    
-    gender1 = db.read_db(gender, id1)[0][0]
-    table = RelationshipTable.relationship_table()
-    relationship = table[distance1][distance2][gender1]
+    relationship = RelationshipCalculator.calculate_relationship(db, id1, id2)
+    db.close()
 
-    result = {"relationship" : relationship}
+    result = { "relationship" : relationship }
 
     try:
         response = jsonify(result)

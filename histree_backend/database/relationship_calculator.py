@@ -38,6 +38,10 @@ class RelationshipCalculator:
         table[1][2]["female"] = "aunt"
         table[2][1]["male"] = "nephew"
         table[2][1]["female"] = "niece"
+        table[3][1]["male"] = "great nephew"
+        table[3][1]["female"] = "great niece"
+        table[1][3]["male"] = "great uncle"
+        table[1][3]["female"] = "great aunt"
 
         table[2][2]["male"] = "first cousin"
         table[2][2]["female"] = "first cousin"
