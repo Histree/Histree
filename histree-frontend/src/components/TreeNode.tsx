@@ -38,7 +38,6 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 	const comparisonNodes = useSelector(getCompareNodes);
 	const renderContent = useSelector(getRenderContent);
 	const nodeLookup = useSelector(getNodeLookup);
-	const appDispatch = useDispatch<AppDispatch>();
 
 	useEffect(() => {
 		if (isInView) {
@@ -121,24 +120,6 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 			// }
 		}
 	};
-
-	useEffect(() => {
-		if (
-			comparisonNodes.first !== undefined &&
-			comparisonNodes.second !== undefined
-		) {
-			const result = findPathBetweenTwoNodes(
-				comparisonNodes.first.id,
-				comparisonNodes.second.id,
-				cleanseBranches((renderContent as DataSuccess<RenderContent>).content?.branches, nodeLookup)
-			);
-			console.log(result);
-			dispatch(setEdgeInfo(result));
-			appDispatch(fetchRelationship(comparisonNodes));
-		} else {
-			dispatch(setRelationship({ status: 'Initial' }));
-		}
-	}, [comparisonNodes]);
 
 	return (
 		<div ref={ref}>

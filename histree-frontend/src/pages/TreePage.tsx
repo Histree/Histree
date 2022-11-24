@@ -52,9 +52,11 @@ const TreePage = () => {
 					Error Occured while searching, please try again
 				</Alert>
 			</Snackbar>
-			<ComparisonToggle />
-			{renderMode === 'View' && <SearchBar />}
-			{renderMode === 'Compare' && <ComparisonCard />}
+			<div className='topleft-container'>
+				<ComparisonToggle />
+				{renderMode === 'View' && <SearchBar />}
+				{renderMode === 'Compare' && <ComparisonCard />}
+			</div>
 			{selected !== undefined && <DescriptorCard ref={expandedRef} selectedItem={selected} />}
 		</div>
 	);

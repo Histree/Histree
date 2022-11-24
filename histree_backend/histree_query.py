@@ -1,5 +1,5 @@
 import re
-from typing import Dict
+from typing import Dict, List
 from data_retrieval.query.name_query import NameQueryBuilder
 from data_retrieval.wikitree.tree import WikiSeed, WikiTree
 from data_retrieval.wikitree_instance.familytree.seed import FamilySeed
@@ -62,14 +62,14 @@ class HistreeQuery:
         return qid_label_map
 
     @staticmethod
-    def get_tree_from_id(
-        qid: str,
+    def get_tree_from_ids(
+        qids: List[str],
         seed: WikiSeed = FamilySeed.instance(),
         branch_up_levels: int = 1,
         branch_down_levels: int = 1,
     ) -> Dict[str, any]:
         tree = WikiTree(seed)
-        tree.grow_levels([qid], branch_up_levels, branch_down_levels)
+        tree.grow_levels(qids, branch_up_levels, branch_down_levels)
         tree.write_to_database()
         return tree.to_json()
 
@@ -84,5 +84,5 @@ class HistreeQuery:
         index = int(input("Choose the option you wish to query: ")) - 1
         qid = matches[index][0]
 
-        tree_json = HistreeQuery.get_tree_from_id(qid)
+        tree_json = HistreeQuery.get_tree_from_ids([qid])
         print(tree_json)

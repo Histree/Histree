@@ -17,6 +17,7 @@ class Neo4jDB:
     
     def close(self):
         self.driver.close()
+        _instance = None
 
     def read_db(self, cypher_runner, *args):
         with self.driver.session(database="neo4j") as session:
