@@ -54,15 +54,6 @@ const Flow = (props: { content: RenderContent }) => {
 		return sourceObject[first];
 	}
 
-	const getNodeStyle = (nodeid: NodeId): CSSProperties => {
-		if (comparisonNodes.first && comparisonNodes.first.id === nodeid ||
-			comparisonNodes.second && comparisonNodes.second.id === nodeid ||
-			edgeInfo[nodeid] !== undefined) {
-			return { color: 'orange', borderColor: 'orange' };
-		}
-		return {}
-	}
-
 	const nodeTypes = useMemo(
 		() => ({
 			dataNode: TreeNode
@@ -125,7 +116,6 @@ const Flow = (props: { content: RenderContent }) => {
 						petals: nodeObj.petals
 					},
 					// hidden: !nodeLookup[n].visible,
-					style: getNodeStyle(n),
 					position: { x: nodeObj.x, y: nodeObj.y },
 					draggable: false,
 					connectable: false,
