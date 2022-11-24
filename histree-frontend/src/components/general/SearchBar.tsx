@@ -63,20 +63,18 @@ export const SearchBar = () => {
 				freeSolo
 				options={Object.values(searchSuggestions)}
 				renderOption={(params, option) =>
-					<>
-						<Box {...params} style={{
+					<div key={`${option.id}`}>
+						<li {...params} style={{
 							display: 'flex',
 							flexDirection: 'column',
-							margin: '0.3em',
-							padding: '0 0.6em',
 							justifyContent: 'flex-start',
 							alignItems: 'flex-start'
-						}} component='li' >
+						}}>
 							<Typography variant='h6'>{option.label}</Typography>
 							<Typography variant='subtitle1'>{option.description}</Typography>
-						</Box>
-						<Divider variant='middle' />
-					</>
+						</li>
+						<Divider />
+					</div>
 				}
 				renderInput={(params) => (
 					<TextField
