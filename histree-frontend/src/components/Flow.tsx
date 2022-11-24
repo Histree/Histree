@@ -11,8 +11,10 @@ import { NodeLookup, AdjList, RenderContent, NodePositions, NodeId } from '../mo
 import TreeNode from './TreeNode';
 import dagre, { graphlib } from 'dagre';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, getCompareNodes, getCurrentViewport, getEdgeInfo, getNodeLookup, setSelected } from '../stores';
+import { AppDispatch, getCompareNodes, getCurrentViewport, getEdgeInfo, getNodeLookup, setEdgeInfo, setRelationship, setSelected } from '../stores';
 import InvisibleConnectionLine from './general/InvisibleConnectionLine';
+import { cleanseBranches, findPathBetweenTwoNodes } from '../utils/utils';
+import { DataSuccess, fetchRelationship } from '../services';
 
 // const CENTER_X = 800;
 // const CENTER_Y = 400;
@@ -26,6 +28,7 @@ const Flow = (props: { content: RenderContent }) => {
 	const comparisonNodes = useSelector(getCompareNodes);
 	const edgeInfo = useSelector(getEdgeInfo);
 	const dispatch = useDispatch();
+	const appDispatch = useDispatch<AppDispatch>();
 	const closeWindow = () => dispatch(setSelected(undefined));
 
 	const { setCenter, getZoom, viewportInitialized } = useReactFlow();
@@ -176,6 +179,25 @@ const Flow = (props: { content: RenderContent }) => {
 				{ zoom: 2, duration: 300 })
 		}
 	}, [viewportInitialized])
+
+	useEffect(() => {
+		if (
+			comparisonNodes.first !== undefined &&
+			comparisonNodes.second !== undefined
+		) {
+			const result = findPathBetweenTwoNodes(
+				comparisonNodes.first.id,
+				comparisonNodes.second.id,
+				cleanseBranches(content?.branches, nodeLookup)
+			);
+			console.log(result);
+			dispatch(setEdgeInfo(result));
+			appDispatch(fetchRelationship(comparisonNodes));
+		} else {
+			dispatch(setRelationship({ status: 'Initial' }));
+		}
+	}, [comparisonNodes]);
+
 
 	return (
 		<div style={{ height: '100%' }}>
