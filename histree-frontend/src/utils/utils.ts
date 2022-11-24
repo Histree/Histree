@@ -109,7 +109,7 @@ const buildPath = (target: NodeId, path: Map<NodeId, NodeId>): EdgeInfo => {
   while (path.get(target) !== undefined) {
     const source = path.get(target) as NodeId;
     const targetCSS: EdgeChildInfo = {};
-    targetCSS[target] = { stroke: "orange" };
+    targetCSS[target] = { stroke: "orange", strokeWidth: "0.3em" };
     result[source] = targetCSS;
     target = source;
   }
