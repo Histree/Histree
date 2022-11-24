@@ -2,11 +2,11 @@ import React, { useRef } from 'react';
 import Flow from '../components/Flow';
 import { getSelected, getRenderContent, getRenderMode, setSelected } from '../stores/base';
 import { useDispatch, useSelector } from 'react-redux';
-import './TreePage.scss';
-import { ComparisonCard, ComparisonToggle, DescriptorCard, SearchBar } from '../components';
+import { ComparisonCard, ComparisonToggle, DescriptorCard, SearchBar, HelpDialog } from '../components';
 import { ReactFlowProvider } from 'reactflow';
 import { Alert, Box, CircularProgress, Snackbar } from '@mui/material';
 import { useOnClickOutside } from 'usehooks-ts';
+import './TreePage.scss';
 
 const TreePage = () => {
 	const selected = useSelector(getSelected);
@@ -23,6 +23,8 @@ const TreePage = () => {
 
 	return (
 		<div className="treepage">
+			<HelpDialog />
+
 			{renderContent.status === 'Success' && (
 				<ReactFlowProvider>
 					<Flow content={renderContent.content!} />
