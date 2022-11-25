@@ -8,6 +8,7 @@ import { Alert, Box, CircularProgress, Snackbar } from '@mui/material';
 import { useOnClickOutside } from 'usehooks-ts';
 import './TreePage.scss';
 import { CenterSearched } from '../components/general/CenterSearched';
+import '../components/TreeNode.scss'
 
 const TreePage = () => {
 	const selected = useSelector(getSelected);

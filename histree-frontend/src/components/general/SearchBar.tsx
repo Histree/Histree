@@ -46,9 +46,6 @@ export const SearchBar = () => {
 			dispatch(setResultServiceState({ status: 'Loading' }));
 			console.log(searchSuggestions[id]);
 			appDispatch(fetchSearchResults(searchSuggestions[id].id));
-		} else {
-			console.log('Resetting');
-			dispatch(resetSearch());
 		}
 	};
 	return (
@@ -60,6 +57,7 @@ export const SearchBar = () => {
 					height: '100%'
 				}}
 				freeSolo
+				autoHighlight
 				options={Object.values(searchSuggestions)}
 				renderOption={(params, option) =>
 					<div key={`${option.id}`}>

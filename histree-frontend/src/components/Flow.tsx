@@ -58,15 +58,6 @@ const Flow = (props: { content: RenderContent }) => {
 		return false;
 	}
 
-	const getNodeStyle = (nodeid: NodeId): CSSProperties => {
-		if (comparisonNodes.first && comparisonNodes.first.id === nodeid ||
-			comparisonNodes.second && comparisonNodes.second.id === nodeid ||
-			edgeInfo[nodeid] !== undefined) {
-			return { color: 'orange', borderColor: 'orange' };
-		}
-		return {}
-	}
-
 	const nodeTypes = useMemo(() => ({ dataNode: TreeNode }), []);
 	const edgeTypes = useMemo(() => ({ dataEdge: TreeEdge }), []);
 	var graph: graphlib.Graph = new graphlib.Graph();
@@ -125,7 +116,6 @@ const Flow = (props: { content: RenderContent }) => {
 						petals: nodeObj.petals
 					},
 					// hidden: !nodeLookup[n].visible,
-					style: getNodeStyle(n),
 					position: { x: nodeObj.x, y: nodeObj.y },
 					draggable: false,
 					connectable: false,

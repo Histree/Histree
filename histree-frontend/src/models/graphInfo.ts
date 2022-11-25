@@ -11,6 +11,7 @@ export type NodeInfo = {
   visible: boolean;
   upExpanded: HandleStatus;
   downExpanded: HandleStatus;
+  matchedFilter: boolean;
 } & Record<string, string>;
 
 export type AdjList = Record<NodeId, NodeId[]>;
