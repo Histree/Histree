@@ -80,7 +80,7 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
 
                     return (
                       <Typography key={att} variant="body2">
-                        {`${attrName}: ${attrDesc}`}
+                        {`${attrName.replace(/_/g, ' ')}: ${attrDesc}`}
                       </Typography>
                     );
                   })}
