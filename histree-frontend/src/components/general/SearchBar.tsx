@@ -33,8 +33,6 @@ export const SearchBar = () => {
 	};
 
 	const handleSearch = (e: SyntheticEvent, value?: string | AutoCompleteData) => {
-		console.log('handleSearch');
-		console.log(value);
 		var id = (value as string);
 		if (value && typeof value !== 'string') {
 			id = value.id
