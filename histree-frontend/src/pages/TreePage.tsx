@@ -7,6 +7,7 @@ import { ReactFlowProvider } from 'reactflow';
 import { Alert, Box, CircularProgress, Snackbar } from '@mui/material';
 import { useOnClickOutside } from 'usehooks-ts';
 import './TreePage.scss';
+import '../components/TreeNode.scss'
 
 const TreePage = () => {
 	const selected = useSelector(getSelected);

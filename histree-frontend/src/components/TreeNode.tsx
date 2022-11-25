@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { CSSProperties, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
 	setSelected,
@@ -11,9 +11,10 @@ import {
 	setComparisonNode,
 	setEdgeInfo,
 	getCompareNodes,
-	setNodeOnScreen
+	setNodeOnScreen,
+	getEdgeInfo
 } from '../stores/base';
-import { HandleStatus, NodeInfo } from '../models';
+import { HandleStatus, NodeId, NodeInfo } from '../models';
 import './TreeNode.scss';
 import { Handle, Position } from 'reactflow';
 import { useIsInViewport } from '../utils/viewport';
@@ -34,6 +35,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 	const comparisonNodes = useSelector(getCompareNodes);
 	const renderContent = useSelector(getRenderContent);
 	const nodeLookup = useSelector(getNodeLookup);
+	const edgeInfo = useSelector(getEdgeInfo);
 
 	useEffect(() => {
 		if (isInView) {
@@ -117,8 +119,19 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 		}
 	};
 
+	const getNodeStyle = (nodeid: NodeId): CSSProperties => {
+		if (comparisonNodes.first && comparisonNodes.first.id === nodeid ||
+			comparisonNodes.second && comparisonNodes.second.id === nodeid ||
+			edgeInfo[nodeid] !== undefined) {
+			return { color: 'orange', borderColor: 'orange' };
+		} else if (!data.matchedFilter) {
+			return { color: 'lightgray', borderColor: 'lightgray' };
+		}
+		return {}
+	}
+
 	return (
-		<div ref={ref}>
+		<div ref={ref} className="tree-node" style={getNodeStyle(data.id)}>
 			{nodeLookup[data.id].visible ? <>
 				<Handle
 					className={nodeClassMap[nodeLookup[data.id].upExpanded]}
@@ -127,8 +140,8 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 					isConnectable
 					onClick={handleExpandParents}
 				/>
-				<div className="treenodecard" onClick={handleNodeClick}>
-					<div className="treenodechild">{data.name}</div>
+				<div className="tree-node-card" onClick={handleNodeClick}>
+					<div className="tree-node-child">{data.name}</div>
 				</div>
 
 				<Handle
