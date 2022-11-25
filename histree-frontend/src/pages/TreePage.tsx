@@ -7,6 +7,7 @@ import { ReactFlowProvider } from 'reactflow';
 import { Alert, Box, CircularProgress, Snackbar } from '@mui/material';
 import { useOnClickOutside } from 'usehooks-ts';
 import './TreePage.scss';
+import { CenterSearched } from '../components/general/CenterSearched';
 
 const TreePage = () => {
 	const selected = useSelector(getSelected);
@@ -25,39 +26,41 @@ const TreePage = () => {
 		<div className="treepage">
 			<HelpDialog />
 
-			{renderContent.status === 'Success' && (
-				<ReactFlowProvider>
+			<ReactFlowProvider>
+				{renderContent.status === 'Success' && (
 					<Flow content={renderContent.content!} />
-				</ReactFlowProvider>
-			)}
-			{renderContent.status === 'Loading' && (
-				<Box
-					sx={{
-						display: 'flex',
-						width: '100%',
-						height: '100%',
-						alignItems: 'center',
-						justifyContent: 'center'
-					}}
+				)}
+
+				{renderContent.status === 'Loading' && (
+					<Box
+						sx={{
+							display: 'flex',
+							width: '100%',
+							height: '100%',
+							alignItems: 'center',
+							justifyContent: 'center'
+						}}
+					>
+						<CircularProgress />
+					</Box>
+				)}
+				<Snackbar
+					anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+					open={renderContent.status === 'Failure'}
+					autoHideDuration={3000}
 				>
-					<CircularProgress />
-				</Box>
-			)}
-			<Snackbar
-				anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-				open={renderContent.status === 'Failure'}
-				autoHideDuration={3000}
-			>
-				<Alert severity="error">
-					Error Occured while searching, please try again
-				</Alert>
-			</Snackbar>
-			<div className='topleft-container'>
-				<ComparisonToggle />
-				{renderMode === 'View' && <SearchBar />}
-				{renderMode === 'Compare' && <ComparisonCard />}
-			</div>
-			{selected !== undefined && <DescriptorCard ref={expandedRef} selectedItem={selected} />}
+					<Alert severity="error">
+						Error Occured while searching, please try again
+					</Alert>
+				</Snackbar>
+				<div className='topleft-container'>
+					<ComparisonToggle />
+					{renderMode === 'View' && <SearchBar />}
+					{renderMode === 'Compare' && <ComparisonCard />}
+				</div>
+				<CenterSearched />
+				{selected !== undefined && <DescriptorCard ref={expandedRef} selectedItem={selected} />}
+			</ReactFlowProvider>
 		</div>
 	);
 };
