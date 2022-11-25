@@ -5,6 +5,7 @@ import {
   createSelector,
 } from "@reduxjs/toolkit";
 import {
+  AutoCompleteData,
   EdgeInfo,
   ExpandInfo,
   HandleStatus,
@@ -34,7 +35,6 @@ interface HistreeState {
   renderMode: RenderMode;
   renderContent: ServiceStatus<RenderContent>;
   selected?: Selected;
-  searchTerm?: string;
   searchSuggestions: SearchBarInfo;
   nodeLookup: NodeLookup;
   edgeInfo: EdgeInfo;

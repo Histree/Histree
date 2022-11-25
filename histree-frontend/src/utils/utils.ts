@@ -6,28 +6,28 @@ import {
   NodeLookup,
 } from "../models";
 
-export const cleanseBranches = (
-  adjList: AdjList | undefined,
-  lookup: NodeLookup
-): AdjList => {
-  if (adjList === undefined) {
-    return {};
-  }
-  const newAdjList = { ...adjList };
-  Object.entries(adjList).forEach(([parent, children]) => {
-    if (lookup[parent] !== undefined && !lookup[parent].visible) {
-      // eslint-disable-next-line
-      delete newAdjList[parent];
-    } else {
-      children.forEach((c) => {
-        if (lookup[c] !== undefined && !lookup[c].visible) {
-          newAdjList[parent] = newAdjList[parent].filter((i) => i !== c);
-        }
-      });
-    }
-  });
-  return newAdjList;
-};
+// export const cleanseBranches = (
+//   adjList: AdjList | undefined,
+//   lookup: NodeLookup
+// ): AdjList => {
+//   if (adjList === undefined) {
+//     return {};
+//   }
+//   const newAdjList = { ...adjList };
+//   Object.entries(adjList).forEach(([parent, children]) => {
+//     if (lookup[parent] !== undefined && !lookup[parent].visible) {
+//       // eslint-disable-next-line
+//       delete newAdjList[parent];
+//     } else {
+//       children.forEach((c) => {
+//         if (lookup[c] !== undefined && !lookup[c].visible) {
+//           newAdjList[parent] = newAdjList[parent].filter((i) => i !== c);
+//         }
+//       });
+//     }
+//   });
+//   return newAdjList;
+// };
 
 export const addChildrenNode = (adjList: AdjList): AdjList => {
   const newAdjList = { ...adjList };
