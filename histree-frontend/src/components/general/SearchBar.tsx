@@ -19,7 +19,6 @@ export const SearchBar = () => {
 	const { searchTerm, searchSuggestions } = useSelector(getSearchSuggestions);
 	const appDispatch = useDispatch<AppDispatch>();
 	const handleChangeWithDebounce = debounce(async (e) => {
-		dispatch(setSearchValue((e.target as HTMLInputElement).value))
 		handleAutocomplete(e);
 	}, 1000);
 	const handleAutocomplete = (e: SyntheticEvent) => {

@@ -5,21 +5,17 @@ import {
 	getRenderContent,
 	getNodeLookup,
 	setNodeLookup,
-	AppDispatch,
 	setNodeLookupDown,
 	setNodeLookupUp,
 	getRenderMode,
 	setComparisonNode,
 	setEdgeInfo,
 	getCompareNodes,
-	setRelationship,
 	setNodeOnScreen
 } from '../stores/base';
-import { AdjList, HandleStatus, NodeInfo, RenderContent } from '../models';
+import { HandleStatus, NodeInfo } from '../models';
 import './TreeNode.scss';
 import { Handle, Position } from 'reactflow';
-import { DataSuccess, fetchRelationship, fetchSelectedExpansion } from '../services';
-import { cleanseBranches, findPathBetweenTwoNodes } from '../utils/utils';
 import { useIsInViewport } from '../utils/viewport';
 
 const nodeClassMap: Record<HandleStatus, string> = {
