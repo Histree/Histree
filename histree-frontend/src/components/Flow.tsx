@@ -13,8 +13,9 @@ import dagre, { graphlib } from 'dagre';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, getCompareNodes, getCurrentViewport, getEdgeInfo, getNodeLookup, setEdgeInfo, setRelationship, setSelected } from '../stores';
 import InvisibleConnectionLine from './general/InvisibleConnectionLine';
-import { cleanseBranches, findPathBetweenTwoNodes } from '../utils/utils';
+import { findPathBetweenTwoNodes } from '../utils/utils';
 import { DataSuccess, fetchRelationship } from '../services';
+import TreeEdge from './TreeEdge';
 
 // const CENTER_X = 800;
 // const CENTER_Y = 400;
@@ -32,7 +33,7 @@ const Flow = (props: { content: RenderContent }) => {
 	const closeWindow = () => dispatch(setSelected(undefined));
 
 	const { setCenter, getZoom, viewportInitialized } = useReactFlow();
-	const getEdgeStyle = (first: NodeId, second: NodeId): CSSProperties | undefined => {
+	const getEdgeAnimation = (first: NodeId, second: NodeId): boolean => {
 		// console.log(`Getting Edge Style for ${first} and ${second}`);
 		// Check if edgeinfo contains 'first' as key
 		var sourceObject = edgeInfo[first];
@@ -41,17 +42,20 @@ const Flow = (props: { content: RenderContent }) => {
 			// Check if object contained within 'first' has correct key
 			// i.e. nested key is === second
 			if (sourceKey === second) {
-				return sourceObject[second];
+				return true;
 			}
 		}
 		// If the above condition fails to hold, check if edgeinfo contains 'second' as key
 		sourceObject = edgeInfo[second];
-		if (sourceObject === undefined) {
-			// Edge is not styled, move on
-			return undefined;
+		if (sourceObject !== undefined) {
+			const sourceKey = Object.keys(sourceObject)[0];
+			if (sourceKey === first) {
+				// Edge is styled, return
+				return true;
+			}
 		}
-		// Edge is styled, return
-		return sourceObject[first];
+		// Edge is not styled, move on
+		return false;
 	}
 
 	const getNodeStyle = (nodeid: NodeId): CSSProperties => {
@@ -63,12 +67,8 @@ const Flow = (props: { content: RenderContent }) => {
 		return {}
 	}
 
-	const nodeTypes = useMemo(
-		() => ({
-			dataNode: TreeNode
-		}),
-		[]
-	);
+	const nodeTypes = useMemo(() => ({ dataNode: TreeNode }), []);
+	const edgeTypes = useMemo(() => ({ dataEdge: TreeEdge }), []);
 	var graph: graphlib.Graph = new graphlib.Graph();
 	graph.setGraph({});
 	graph.setDefaultEdgeLabel(function () {
@@ -146,25 +146,16 @@ const Flow = (props: { content: RenderContent }) => {
 
 		Object.keys(adjList).forEach((source) => {
 			adjList[source].forEach((target) => {
-				const style = getEdgeStyle(source, target);
 				const edge: Edge = {
 					id: `${source}-${target}`,
 					source: source,
 					target: target,
-					// type: 'step',
-					style: style
+					type: 'dataEdge',
+					animated: getEdgeAnimation(source, target)
 				};
-				if (style === undefined) {
-					completeEdges.push(edge)
-				} else {
-					comparisonEdges.push(edge)
-				};
+				completeEdges.push(edge)
 			});
 		});
-		for (const e of comparisonEdges) {
-			e.animated = true;
-			completeEdges.push(e)
-		}
 
 		return completeEdges;
 	};
@@ -188,7 +179,8 @@ const Flow = (props: { content: RenderContent }) => {
 			const result = findPathBetweenTwoNodes(
 				comparisonNodes.first.id,
 				comparisonNodes.second.id,
-				cleanseBranches(content?.branches, nodeLookup)
+				// cleanseBranches(content?.branches, nodeLookup)
+				content?.branches
 			);
 			console.log(result);
 			dispatch(setEdgeInfo(result));
@@ -206,6 +198,7 @@ const Flow = (props: { content: RenderContent }) => {
 				nodes={Object.values(flowNodes)}
 				edges={layoutEdges(content.branches)}
 				nodeTypes={nodeTypes}
+				edgeTypes={edgeTypes}
 				connectionLineComponent={InvisibleConnectionLine}
 				// fitView
 				onPaneClick={closeWindow}
