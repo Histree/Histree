@@ -1,7 +1,5 @@
 from abc import abstractmethod
 from typing import Dict, List, Tuple
-from qwikidata.entity import WikidataItem
-from .tree import WikiSeed
 
 
 class WikiFlower:
@@ -56,9 +54,9 @@ class WikiPetal:
         optional: bool = True,
         sample: bool = False,
         label_only: bool = False,
-        lazy_seed: WikiSeed = None,
+        lazy_seed: "WikiSeed" = None,
     ):
-        """ 
+        """
         id:             wikidata property id
         label:          property label
         optional:       specifies if entries MUST have this attribute
