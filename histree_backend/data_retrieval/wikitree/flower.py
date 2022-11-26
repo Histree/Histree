@@ -25,6 +25,12 @@ class WikiFlower:
         if for_db:
             json_dict["branched_up"] = self.branched_up
             json_dict["branched_down"] = self.branched_down
+
+            # Only return id for nested properties as db can only handle primitives
+            for k, v in json_dict["petals"].items():
+                if isinstance(v, dict):
+                    json_dict["petals"][k] = v["id"]
+
         if self.description:
             json_dict["description"] = self.description
         return json_dict

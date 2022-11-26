@@ -202,6 +202,8 @@ class WikiTree:
                     if lazy_petal.label in flower.petals
                     and not isinstance(flower.petals[lazy_petal.label], dict)
                 ]
+                if not rel_flowers:
+                    continue
                 lazy_ids = [flower.petals[lazy_petal.label] for flower in rel_flowers]
                 lazy_result = self.api.query(
                     lazy_petal.lazy_seed.self_stem.get_query(lazy_ids)
