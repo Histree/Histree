@@ -83,14 +83,8 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
                     );
                   })
                   .map((att) => {
-                    console.log("Starting the attribute map thingy")
-                    console.log(att)
-                    console.log(att.charAt(0))
-
                     const attrName = att.charAt(0).toUpperCase() + att.slice(1);
-                    console.log(attrName)
                     const attrVal = selectedItem.attributes![att];
-                    console.log(attrVal)
                     // make this nicer code
                     var attrDesc = ''
                   
