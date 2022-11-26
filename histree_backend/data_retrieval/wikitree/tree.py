@@ -4,7 +4,13 @@ import json
 from json import JSONDecodeError
 from typing import Dict, List, Tuple
 from data_retrieval.query.parser import WikiResult, DBResult
-from .flower import WikiFlower, WikiPetal, WikiStem, UpWikiStem, DownWikiStem
+from data_retrieval.wikitree.flower import (
+    WikiFlower,
+    WikiPetal,
+    WikiStem,
+    UpWikiStem,
+    DownWikiStem,
+)
 from database.neo4j_db import Neo4jDB
 from database.cypher_runner import (
     find_children,
@@ -27,14 +33,21 @@ class WikiSeed:
         self.up_stem, self.down_stem = up_stem, down_stem
         self.petal_map = {
             petal.label: petal
-            for petal in petals + up_stem.unique_petals + down_stem.unique_petals
+            for petal in petals
+            + ([] if up_stem is None else up_stem.unique_petals)
+            + ([] if down_stem is None else down_stem.unique_petals)
         }
+        self.lazy_petals = {petal for petal in petals if petal.lazy_seed is not None}
 
         _headers = dict(petal.to_dict_pair() for petal in petals)
         for stem in (self.self_stem, self.up_stem, self.down_stem):
-            stem.set_query_template(_headers)
+            if stem is not None:
+                stem.set_query_template(_headers)
 
     def branch_up(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
+        if self.up_stem is None:
+            return []
+
         # Query for parents
         parents = tree.watering(ids, find_parent, self.up_stem.get_query, True)
 
@@ -52,8 +65,9 @@ class WikiSeed:
         return parents
 
     def branch_down(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
-        # result = tree.api.query(self.down_stem.get_query(ids))
-        # children = WikiResult(result).parse(self.petal_map)
+        if self.down_stem is None:
+            return []
+
         children = tree.watering(ids, find_children, self.down_stem.get_query, True)
 
         seen_ids = set(ids)
@@ -62,7 +76,7 @@ class WikiSeed:
         # Add children to tree and record unseen parents (children's another parent)
         for child in children:
             tree.flowers[child.id] = child
-            
+
             for parent_petal_label in self.down_stem.parents:
                 if parent_petal_label in child.petals:
                     parent_id = child.petals[parent_petal_label]
@@ -163,7 +177,11 @@ class WikiTree:
         return flowers_above, flowers_below
 
     def grow_levels(
-        self, ids: List[str], branch_up_levels: int, branch_down_levels: int
+        self,
+        ids: List[str],
+        branch_up_levels: int,
+        branch_down_levels: int,
+        is_entry_point: bool = False,
     ) -> None:
         above, below = self.grow(
             ids,
@@ -174,6 +192,32 @@ class WikiTree:
             self.grow_levels([flower.id for flower in above], branch_up_levels - 1, 0)
         if below and branch_down_levels - 1 > 0:
             self.grow_levels([flower.id for flower in below], 0, branch_down_levels - 1)
+
+        # Only run when entirety of tree is constructed
+        if is_entry_point:
+            for lazy_petal in self.seed.lazy_petals:
+                rel_flowers = [
+                    flower
+                    for flower in self.flowers.values()
+                    if lazy_petal.label in flower.petals
+                ]
+                lazy_ids = [flower.petals[lazy_petal.label] for flower in rel_flowers]
+                lazy_result = self.api.query(
+                    lazy_petal.lazy_seed.self_stem.get_query(lazy_ids)
+                )
+                sub_flowers = WikiResult(lazy_result).parse(
+                    lazy_petal.lazy_seed.petal_map
+                )
+
+                # Need to have a caller petal here to distinguish results
+                sub_tree = {
+                    sub_flower.petals["caller"]: sub_flower.to_json()
+                    for sub_flower in sub_flowers
+                }
+                for flower in rel_flowers:
+                    flower.petals[lazy_petal.label] = sub_tree[
+                        flower.petals[lazy_petal.label]
+                    ]
 
     def watering(self, ids, db_query, wiki_query, branching=True):
         # Combine multiple queries
