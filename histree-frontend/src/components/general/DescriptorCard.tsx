@@ -58,10 +58,22 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
               </IconButton>
             }
             title={selectedItem.name}
+            subheader={selectedItem.description &&
+              selectedItem.description !== 'undefined' ? (
+                <Typography variant="body2" color="text.secondary">
+                  {selectedItem.description.charAt(0).toUpperCase() +
+                    selectedItem.description.slice(1)}
+                </Typography>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Description not available.
+                </Typography>
+            )}
           />
 
           <CardContent>
             <Box className="descriptor-container-body">
+              
               {selectedItem.attributes &&
                 Object.keys(selectedItem.attributes)
                   .filter((att) => {
@@ -71,13 +83,25 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
                     );
                   })
                   .map((att) => {
-                    const attrName = att.charAt(0).toUpperCase() + att.slice(1);
-                    const attrVal = selectedItem.attributes![att];
-                    const attrDesc =
-                      attrVal === 'undefined'
-                        ? 'Unknown'
-                        : attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
+                    console.log("Starting the attribute map thingy")
+                    console.log(att)
+                    console.log(att.charAt(0))
 
+                    const attrName = att.charAt(0).toUpperCase() + att.slice(1);
+                    console.log(attrName)
+                    const attrVal = selectedItem.attributes![att];
+                    console.log(attrVal)
+                    // make this nicer code
+                    var attrDesc = ''
+                  
+                    if (attrVal === 'undefined') {
+                      attrDesc = 'Unknown'
+                    } else if (typeof attrVal === 'string') {
+                      attrDesc = attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
+                    } else {
+                      attrDesc = attrVal['name'];
+                    }
+                    
                     return (
                       <Typography key={att} variant="body2">
                         {`${attrName.replace(/_/g, ' ')}: ${attrDesc}`}
@@ -85,17 +109,7 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
                     );
                   })}
               <br />
-              {selectedItem.description &&
-              selectedItem.description !== 'undefined' ? (
-                <Typography variant="body2">
-                  {selectedItem.description.charAt(0).toUpperCase() +
-                    selectedItem.description.slice(1)}
-                </Typography>
-              ) : (
-                <Typography variant="body2">
-                  Description not available.
-                </Typography>
-              )}
+              
             </Box>
           </CardContent>
           <CardActions>
