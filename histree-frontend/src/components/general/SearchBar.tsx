@@ -1,10 +1,11 @@
 import React, { SyntheticEvent } from 'react';
-import { TextField, Autocomplete } from '@mui/material';
+import { TextField, Autocomplete, Box, Typography, Divider } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { debounce } from 'lodash';
 import './SearchBar.scss';
 import {
 	AppDispatch,
+	getRenderContent,
 	getSearchSuggestions,
 	resetSearch,
 	setResultServiceState,
@@ -18,7 +19,6 @@ export const SearchBar = () => {
 	const { searchTerm, searchSuggestions } = useSelector(getSearchSuggestions);
 	const appDispatch = useDispatch<AppDispatch>();
 	const handleChangeWithDebounce = debounce(async (e) => {
-		dispatch(setSearchValue((e.target as HTMLInputElement).value))
 		handleAutocomplete(e);
 	}, 1000);
 	const handleAutocomplete = (e: SyntheticEvent) => {
@@ -33,19 +33,17 @@ export const SearchBar = () => {
 	};
 
 	const handleSearch = (e: SyntheticEvent, value?: string | AutoCompleteData) => {
-		console.log('handleSearch');
-		console.log(value);
-		if (value && typeof value === 'string' && searchSuggestions[value]) {
+		var id = (value as string);
+		if (value && typeof value !== 'string') {
+			id = value.id
+		}
+		if (id && searchTerm === value) {
+			return;
+		}
+		if (id && searchSuggestions[id]) {
 			dispatch(setResultServiceState({ status: 'Loading' }));
-			console.log(searchSuggestions[value]);
-			appDispatch(fetchSearchResults(searchSuggestions[value].id));
-		} else if (value && typeof value !== 'string' && searchSuggestions[value.id]) {
-			dispatch(setResultServiceState({ status: 'Loading' }));
-			console.log(searchSuggestions[value.id]);
-			appDispatch(fetchSearchResults(searchSuggestions[value.id].id));
-		} else {
-			console.log('Resetting');
-			dispatch(resetSearch());
+			console.log(searchSuggestions[id]);
+			appDispatch(fetchSearchResults(searchSuggestions[id].id));
 		}
 	};
 	return (
@@ -53,11 +51,26 @@ export const SearchBar = () => {
 			<Autocomplete
 				onChange={(e, v) => handleSearch(e, v ? v : undefined)}
 				value={searchTerm}
-				style={{
+				sx={{
 					height: '100%'
 				}}
 				freeSolo
+				autoHighlight
 				options={Object.values(searchSuggestions)}
+				renderOption={(params, option) =>
+					<div key={`${option.id}`}>
+						<li {...params} style={{
+							display: 'flex',
+							flexDirection: 'column',
+							justifyContent: 'flex-start',
+							alignItems: 'flex-start'
+						}}>
+							<Typography variant='h6'>{option.label}</Typography>
+							<Typography variant='subtitle1'>{option.description}</Typography>
+						</li>
+						<Divider />
+					</div>
+				}
 				renderInput={(params) => (
 					<TextField
 						onChange={(e) => {
@@ -74,6 +87,6 @@ export const SearchBar = () => {
 					/>
 				)}
 			/>
-		</div>
+		</div >
 	);
 };

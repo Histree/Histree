@@ -1,25 +1,22 @@
-import React, { useEffect, useRef } from 'react';
+import React, { CSSProperties, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
 	setSelected,
 	getRenderContent,
 	getNodeLookup,
 	setNodeLookup,
-	AppDispatch,
 	setNodeLookupDown,
 	setNodeLookupUp,
 	getRenderMode,
 	setComparisonNode,
 	setEdgeInfo,
 	getCompareNodes,
-	setRelationship,
-	setNodeOnScreen
+	setNodeOnScreen,
+	getEdgeInfo
 } from '../stores/base';
-import { AdjList, HandleStatus, NodeInfo, RenderContent } from '../models';
+import { HandleStatus, NodeId, NodeInfo } from '../models';
 import './TreeNode.scss';
 import { Handle, Position } from 'reactflow';
-import { DataSuccess, fetchRelationship, fetchSelectedExpansion } from '../services';
-import { cleanseBranches, findPathBetweenTwoNodes } from '../utils/utils';
 import { useIsInViewport } from '../utils/viewport';
 
 const nodeClassMap: Record<HandleStatus, string> = {
@@ -38,7 +35,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 	const comparisonNodes = useSelector(getCompareNodes);
 	const renderContent = useSelector(getRenderContent);
 	const nodeLookup = useSelector(getNodeLookup);
-	const appDispatch = useDispatch<AppDispatch>();
+	const edgeInfo = useSelector(getEdgeInfo);
 
 	useEffect(() => {
 		if (isInView) {
@@ -122,26 +119,19 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 		}
 	};
 
-	useEffect(() => {
-		if (
-			comparisonNodes.first !== undefined &&
-			comparisonNodes.second !== undefined
-		) {
-			const result = findPathBetweenTwoNodes(
-				comparisonNodes.first.id,
-				comparisonNodes.second.id,
-				cleanseBranches((renderContent as DataSuccess<RenderContent>).content?.branches, nodeLookup)
-			);
-			console.log(result);
-			dispatch(setEdgeInfo(result));
-			appDispatch(fetchRelationship(comparisonNodes));
-		} else {
-			dispatch(setRelationship({ status: 'Initial' }));
+	const getNodeStyle = (nodeid: NodeId): CSSProperties => {
+		if (comparisonNodes.first && comparisonNodes.first.id === nodeid ||
+			comparisonNodes.second && comparisonNodes.second.id === nodeid ||
+			edgeInfo[nodeid] !== undefined) {
+			return { color: 'orange', borderColor: 'orange' };
+		} else if (data.matchedFilter === false) {
+			return { color: 'lightgray', borderColor: 'lightgray' };
 		}
-	}, [comparisonNodes]);
+		return {}
+	}
 
 	return (
-		<div ref={ref}>
+		<div ref={ref} className="tree-node" style={getNodeStyle(data.id)}>
 			{nodeLookup[data.id].visible ? <>
 				<Handle
 					className={nodeClassMap[nodeLookup[data.id].upExpanded]}
@@ -150,8 +140,8 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 					isConnectable
 					onClick={handleExpandParents}
 				/>
-				<div className="treenodecard" onClick={handleNodeClick}>
-					<div className="treenodechild">{data.name}</div>
+				<div className="tree-node-card" onClick={handleNodeClick}>
+					<div className="tree-node-child">{data.name}</div>
 				</div>
 
 				<Handle

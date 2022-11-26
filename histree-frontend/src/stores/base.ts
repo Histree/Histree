@@ -5,6 +5,7 @@ import {
   createSelector,
 } from "@reduxjs/toolkit";
 import {
+  AutoCompleteData,
   EdgeInfo,
   ExpandInfo,
   HandleStatus,
@@ -34,7 +35,6 @@ interface HistreeState {
   renderMode: RenderMode;
   renderContent: ServiceStatus<RenderContent>;
   selected?: Selected;
-  searchTerm?: string;
   searchSuggestions: SearchBarInfo;
   nodeLookup: NodeLookup;
   edgeInfo: EdgeInfo;
@@ -160,6 +160,7 @@ export const histreeState = createSlice({
           lookup[f.id] = f;
           lookup[f.id].visible = f.id === successData.content.searchedQid;
           lookup[f.id].searched = f.id === successData.content.searchedQid;
+          lookup[f.id].matchedFilter = true;
         });
         state.renderContent.content.branches = successData.content.branches;
         state.nodeLookup = lookup;
@@ -187,6 +188,7 @@ export const histreeState = createSlice({
             lookup[f.id] = f;
             lookup[f.id].visible = f.id === searchedQid;
             lookup[f.id].searched = f.id === searchedQid;
+            lookup[f.id].matchedFilter = true;
           }
           if (!stateContent.flowers.includes(f)) {
             stateContent.flowers.push(f);
