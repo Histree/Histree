@@ -1,6 +1,5 @@
 from abc import abstractmethod
 from typing import Dict, List, Tuple
-from qwikidata.entity import WikidataItem
 
 
 class WikiFlower:
@@ -26,6 +25,12 @@ class WikiFlower:
         if for_db:
             json_dict["branched_up"] = self.branched_up
             json_dict["branched_down"] = self.branched_down
+
+            # Only return id for nested properties as db can only handle primitives
+            for k, v in json_dict["petals"].items():
+                if isinstance(v, dict):
+                    json_dict["petals"][k] = v["id"]
+
         if self.description:
             json_dict["description"] = self.description
         return json_dict
@@ -49,18 +54,36 @@ class WikiPetal:
     undefined = "undefined"
 
     def __init__(
-        self, id: str, label: str, optional: bool = True, sample: bool = False
+        self,
+        id: str,
+        label: str,
+        optional: bool = True,
+        sample: bool = False,
+        label_only: bool = False,
+        lazy_seed: "WikiSeed" = None,
     ):
+        """
+        id:             wikidata property id
+        label:          property label
+        optional:       specifies if entries MUST have this attribute
+        sample:         specifies if only a sample of possibly many should be taken
+        lazy_seed:      specifies the seed of how the attribute is to be queried further
+        label_only:     specifies if attribute is given by an id but only label is required
+        """
         self.id = id
         self.label = label
         self.optional = optional
         self.sample = sample
+        self.lazy_seed = lazy_seed
+        self.label_only = label_only
 
     def to_dict_pair(self) -> Tuple[str, Dict[str, any]]:
         return self.label, {
             "id": self.id,
             "optional": self.optional,
             "sample": self.sample,
+            "lazy_seed": self.lazy_seed,
+            "label_only": self.label_only,
         }
 
     @abstractmethod

@@ -28,7 +28,11 @@ class SPARQLBuilder:
         )
         header_bindings = " ".join(
             ("OPTIONAL{%s}" if config["optional"] else "%s")
-            % f"?item wdt:{config['id']} ?{header}."
+            % (
+                f"?{header}_item ^wdt:{config['id']} item; rdfs:label ?{header}."
+                if config["label_only"]
+                else f"?item wdt:{config['id']} ?{header}."
+            )
             for (header, config) in self.headers.items()
             if config["id"] != self._hidden_header_id
         )

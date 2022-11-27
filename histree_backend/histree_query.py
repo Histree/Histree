@@ -69,7 +69,7 @@ class HistreeQuery:
         branch_down_levels: int = 1,
     ) -> Dict[str, any]:
         tree = WikiTree(seed)
-        tree.grow_levels(qids, branch_up_levels, branch_down_levels)
+        tree.grow_levels(qids, branch_up_levels, branch_down_levels, is_entry_point=True)
         tree.write_to_database()
         return tree.to_json()
 
