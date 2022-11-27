@@ -214,7 +214,7 @@ class WikiTree:
 
                 # Need to have a caller petal here to distinguish results
                 sub_tree = {
-                    sub_flower.petals["caller"]: sub_flower.to_json()
+                    sub_flower.petals["caller"]: sub_flower.to_json(flatten=True)
                     for sub_flower in sub_flowers
                 }
                 for flower in rel_flowers:
