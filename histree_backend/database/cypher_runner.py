@@ -52,7 +52,6 @@ def merge_nodes_into_db(tx, json_data, fcreates, ptcreates):
         [f"node.{label} = petal.{label}" for label in ptcreates]
         )
     json_data = json_data.replace("'", "\\'")
-    print(json_data)
     query = (
             f"WITH apoc.convert.fromJsonMap(\'{json_data}\') AS document "
             "UNWIND document.flowers AS flower "
