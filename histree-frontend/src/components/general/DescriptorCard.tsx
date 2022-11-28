@@ -1,6 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import * as React from 'react';
+import React, {forwardRef} from 'react';
 import {
   Box,
   Button,
@@ -11,14 +11,16 @@ import {
   CardMedia,
   IconButton,
   IconButtonProps,
-  Typography
+  Typography,
+  Link
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelected, getSelected } from '../../stores/base';
-import { Selected } from '../../models';
+import { CardLocation, Selected } from '../../models';
 import './DescriptorCard.scss';
 import { styled } from '@mui/material/styles';
 import Collapse from '@mui/material/Collapse';
+import { mapsURL } from '../../utils/utils';
 
 
 
@@ -44,7 +46,7 @@ interface DescriptorCardProps {
   selectedItem: Selected;
 }
 
-export const DescriptorCard = React.forwardRef<HTMLDivElement, DescriptorCardProps>(
+export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
   (props, ref) => {
     const { selectedItem } = props;
 
@@ -151,6 +153,7 @@ export const DescriptorCard = React.forwardRef<HTMLDivElement, DescriptorCardPro
                   );
                 })}
             </>
+            <Typography paragraph>Relevant locations</Typography>
             <ExpandMore
               expand={expanded}
               onClick={handleExpandClick}
@@ -162,7 +165,12 @@ export const DescriptorCard = React.forwardRef<HTMLDivElement, DescriptorCardPro
           </CardActions>
           <Collapse in={expanded} timeout="auto" unmountOnExit>
             <CardContent>
-              <Typography paragraph>Click to see relevant locations</Typography>
+              <Typography paragraph>Hi</Typography>
+              {selectedItem.attributes &&
+                selectedItem.attributes['place_of_birth'] &&
+                selectedItem.attributes['place_of_birth'] !== 'undefined' && (
+                  <Link href={mapsURL(selectedItem.attributes['place_of_birth'] as unknown as CardLocation)}>Place of birth</Link>
+                )}
             </CardContent>
           </Collapse>
         </Card>
