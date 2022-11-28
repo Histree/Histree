@@ -218,9 +218,12 @@ class WikiTree:
                     for sub_flower in sub_flowers
                 }
                 for flower in rel_flowers:
-                    flower.petals[lazy_petal.label] = sub_tree[
-                        flower.petals[lazy_petal.label]
-                    ]
+                    if flower.petals[lazy_petal.label] in sub_tree:
+                        flower.petals[lazy_petal.label] = sub_tree[
+                            flower.petals[lazy_petal.label]
+                        ]
+                    else:
+                        del flower.petals[lazy_petal.label]
 
     def watering(self, ids, db_query, wiki_query, branching=True):
         # Combine multiple queries
@@ -264,7 +267,7 @@ class WikiTree:
         return data
 
     def write_to_database(self) -> None:
-        flabels = {"name", "description", "branched_up", "branched_down"}
+        flabels = {"name", "description", "article", "branched_up", "branched_down"}
         json_data = json.dumps(self.to_json(for_db=True))
         self.db.write_db(merge_nodes_into_db, json_data, flabels, self.seed.petal_map)
         self.db.write_db(merge_relation_into_db, json_data)

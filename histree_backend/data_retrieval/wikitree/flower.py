@@ -4,12 +4,13 @@ from typing import Dict, List, Tuple
 
 class WikiFlower:
     _hidden_petals = {"caller", "father", "mother"}
-    _defaults = {"name", "description", "branched_up", "branched_down"}
+    _defaults = {"name", "description", "article", "branched_up", "branched_down"}
 
     def __init__(self, id: str, petals: Dict[str, str]):
         self.id = id
         self.name = ""
         self.description = ""
+        self.article = ""
         self.petals = petals
         self.branched_up = False
         self.branched_down = False
@@ -35,6 +36,8 @@ class WikiFlower:
 
         if self.description:
             json_dict["description"] = self.description
+        if self.article:
+            json_dict["article"] = self.article
         return json_dict
 
 
