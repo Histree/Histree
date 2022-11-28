@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import Flow from '../components/Flow';
 import { getSelected, getRenderContent, getRenderMode, setSelected } from '../stores/base';
 import { useDispatch, useSelector } from 'react-redux';
-import { ComparisonCard, ComparisonToggle, DescriptorCard, SearchBar, HelpDialog } from '../components';
+import { ComparisonCard, ComparisonToggle, DescriptorCard, SearchBar, HelpDialog, FilterCard } from '../components';
 import { ReactFlowProvider } from 'reactflow';
 import { Alert, Box, CircularProgress, Snackbar } from '@mui/material';
 import { useOnClickOutside } from 'usehooks-ts';
@@ -57,6 +57,7 @@ const TreePage = () => {
 				<ComparisonToggle />
 				{renderMode === 'View' && <SearchBar />}
 				{renderMode === 'Compare' && <ComparisonCard />}
+				<FilterCard />
 			</div>
 			{selected !== undefined && <DescriptorCard ref={expandedRef} selectedItem={selected} />}
 		</div>
