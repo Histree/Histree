@@ -267,7 +267,6 @@ class WikiTree:
         return data
 
     def write_to_database(self) -> None:
-        flabels = {"name", "description", "article", "branched_up", "branched_down"}
         json_data = json.dumps(self.to_json(for_db=True))
-        self.db.write_db(merge_nodes_into_db, json_data, flabels, self.seed.petal_map)
+        self.db.write_db(merge_nodes_into_db, json_data, WikiFlower._defaults, self.seed.petal_map)
         self.db.write_db(merge_relation_into_db, json_data)
