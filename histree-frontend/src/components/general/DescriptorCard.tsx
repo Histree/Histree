@@ -93,6 +93,7 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
                     } else if (typeof attrVal === 'string') {
                       attrDesc = attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
                     } else {
+                      // case for locations with their own sub-jsons
                       attrDesc = attrVal['name'];
                     }
                     
