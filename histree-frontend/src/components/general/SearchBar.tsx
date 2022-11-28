@@ -1,5 +1,5 @@
-import React, { SyntheticEvent } from 'react';
-import { TextField, Autocomplete, Box, Typography, Divider } from '@mui/material';
+import React, { SyntheticEvent, useEffect, useRef, useState } from 'react';
+import { TextField, Typography, Divider, AutocompleteChangeReason, Autocomplete } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { debounce } from 'lodash';
 import './SearchBar.scss';
@@ -12,7 +12,7 @@ import {
 	setSearchValue
 } from '../../stores';
 import { fetchSearchResults, fetchSearchSuggestions } from '../../services';
-import { AutoCompleteData } from '../../models';
+import { AutoCompleteData, SearchBarInfo } from '../../models';
 
 export const SearchBar = () => {
 	const dispatch = useDispatch();
@@ -44,18 +44,30 @@ export const SearchBar = () => {
 			dispatch(setResultServiceState({ status: 'Loading' }));
 			console.log(searchSuggestions[id]);
 			appDispatch(fetchSearchResults(searchSuggestions[id].id));
-		}
-	};
+		};
+		dispatch(resetSearch())
+	}
+
+
 	return (
 		<div className="search_container">
 			<Autocomplete
-				onChange={(e, v) => handleSearch(e, v ? v : undefined)}
+				onChange={(e, v, r) => handleSearch(e, v ? v : undefined)}
+				// onKeyDown={(e) => {
+				// 	if (e.key === 'Enter' && Object.values(searchSuggestions).length > 0) {
+				// 		e.defaultMuiPrevented
+				// 		const v = (e.target as HTMLInputElement).value
+				// 		console.log(v);
+				// 		// handleSearch(v)
+				// 	}
+				// }}
 				value={searchTerm}
 				sx={{
 					height: '100%'
 				}}
 				freeSolo
 				autoHighlight
+				disableCloseOnSelect
 				options={Object.values(searchSuggestions)}
 				renderOption={(params, option) =>
 					<div key={`${option.id}`}>
