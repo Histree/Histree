@@ -58,10 +58,22 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
               </IconButton>
             }
             title={selectedItem.name}
+            subheader={selectedItem.description &&
+              selectedItem.description !== 'undefined' ? (
+                <Typography variant="body2" color="text.secondary">
+                  {selectedItem.description.charAt(0).toUpperCase() +
+                    selectedItem.description.slice(1)}
+                </Typography>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Description not available.
+                </Typography>
+            )}
           />
 
           <CardContent>
             <Box className="descriptor-container-body">
+              
               {selectedItem.attributes &&
                 Object.keys(selectedItem.attributes)
                   .filter((att) => {
@@ -73,29 +85,26 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
                   .map((att) => {
                     const attrName = att.charAt(0).toUpperCase() + att.slice(1);
                     const attrVal = selectedItem.attributes![att];
-                    const attrDesc =
-                      attrVal === 'undefined'
-                        ? 'Unknown'
-                        : attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
-
+                    // make this nicer code
+                    var attrDesc = ''
+                  
+                    if (attrVal === 'undefined') {
+                      attrDesc = 'Unknown'
+                    } else if (typeof attrVal === 'string') {
+                      attrDesc = attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
+                    } else {
+                      // case for locations with their own sub-jsons
+                      attrDesc = attrVal['name'];
+                    }
+                    
                     return (
                       <Typography key={att} variant="body2">
-                        {`${attrName}: ${attrDesc}`}
+                        {`${attrName.replace(/_/g, ' ')}: ${attrDesc}`}
                       </Typography>
                     );
                   })}
               <br />
-              {selectedItem.description &&
-              selectedItem.description !== 'undefined' ? (
-                <Typography variant="body2">
-                  {selectedItem.description.charAt(0).toUpperCase() +
-                    selectedItem.description.slice(1)}
-                </Typography>
-              ) : (
-                <Typography variant="body2">
-                  Description not available.
-                </Typography>
-              )}
+              
             </Box>
           </CardContent>
           <CardActions>
