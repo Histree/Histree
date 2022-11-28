@@ -25,7 +25,8 @@ class RelationshipCalculator:
 
         try:
             return RelationshipCalculator.cached_table[distance1][distance2].get(gender1, RelationshipCalculator.cached_table[distance1][distance2]["default"])
-        except IndexError:
+        except (IndexError, KeyError) as error:
+            print(error)
             return "has no close relationship with"
 
 
@@ -52,6 +53,7 @@ class RelationshipCalculator:
 
         table[1][2]["male"] = "uncle"
         table[1][2]["female"] = "aunt"
+        table[1][2]["default"] = "auncle"
 
         table[2][1]["male"] = "nephew"
         table[2][1]["female"] = "niece"
@@ -59,17 +61,16 @@ class RelationshipCalculator:
 
         table[3][1]["male"] = "great nephew"
         table[3][1]["female"] = "great niece"
+        table[3][1]["default"] = "great nibling"
         table[1][3]["male"] = "great uncle"
         table[1][3]["female"] = "great aunt"
+        table[1][3]["default"] = "great auncle"
 
-        table[2][2]["male"] = "first cousin"
-        table[2][2]["female"] = "first cousin"
-        table[3][3]["male"] = "second cousin"
-        table[3][3]["female"] = "second cousin"
-        table[4][4]["male"] = "third cousin"
-        table[4][4]["female"] = "third cousin"
-        table[5][5]["male"] = "fourth cousin"
-        table[5][5]["female"] = "fourth cousin"
+        table[2][2]["default"] = "first cousin"
+        table[3][3]["default"] = "second cousin"
+        table[4][4]["default"] = "third cousin"
+        table[5][5]["default"] = "fourth cousin"
+
 
         RelationshipCalculator.iterate_great_up(table, "grandfather", "grandmother", "grandparent", 0, 2, 8)
         RelationshipCalculator.iterate_great_down(table, "grandson", "granddaughter", "grandchild", 0, 2, 8)

@@ -1,6 +1,6 @@
 import { AdjList, NodeId, NodeInfo } from "./graphInfo";
 
-export type RenderMode = "View" | "Compare";
+export type RenderMode = "View" | "Compare" | "Children";
 
 export interface RenderContent {
   searchedQid: NodeId;

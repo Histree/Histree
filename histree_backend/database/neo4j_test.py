@@ -29,11 +29,12 @@ def test_relationship_table():
     assert table[2][0]["male"] == "grandson"
     assert table[1][1]["female"] == "sister"
     assert table[3][0]["female"] == "great granddaughter"
-    assert table[4][4]["male"] == "third cousin"
+    assert table[4][4]["default"] == "third cousin"
     assert table[0][5]["male"] == "great great great grandfather"
     assert table[4][0]["female"] == "great great granddaughter"
     assert table[1][1]["default"] == "sibling"
     assert table[5][0]["default"] == "great great great grandchild"
+    
 
 
 
@@ -45,4 +46,13 @@ def test_relationship_calculator(db_connection):
     # Elizabeth is the grandmother of Charles
     relationship = RelationshipCalculator.calculate_relationship(db_connection, "Q10633", "Q43274")
     assert relationship == "grandmother"
+
+    # Lilibet Mountbatten-Windsor is the cousin of George of Wales 
+    relationship = RelationshipCalculator.calculate_relationship(db_connection, "Q107125551", "Q13590412")
+    assert relationship == "first cousin"
+
+    # Anne is the aunt of Beatrice
+    relationship = RelationshipCalculator.calculate_relationship(db_connection, "Q151754", "Q165657")
+    assert relationship == "aunt"
+
 

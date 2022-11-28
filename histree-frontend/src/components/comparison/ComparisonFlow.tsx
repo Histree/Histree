@@ -4,7 +4,7 @@ import ReactFlow, { Position, Node } from 'reactflow';
 import { RelationshipInfo } from '../../models';
 import { CompareNodes } from '../../models/compareInfo';
 import { ServiceStatus } from '../../services';
-import { getCompareNodes, getRelationship } from '../../stores';
+import { getCompareNodes, getRelationship, getRenderContent } from '../../stores';
 import './ComparisonFlow.scss';
 
 const comparisonFlowNodeBase: Partial<Node> = {
