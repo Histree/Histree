@@ -1,5 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close';
-import React, { forwardRef } from 'react';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import * as React from 'react';
 import {
   Box,
   Button,
@@ -9,19 +10,41 @@ import {
   CardHeader,
   CardMedia,
   IconButton,
+  IconButtonProps,
   Typography
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelected, getSelected } from '../../stores/base';
 import { Selected } from '../../models';
 import './DescriptorCard.scss';
+import { styled } from '@mui/material/styles';
+import Collapse from '@mui/material/Collapse';
+
+
+
+interface ExpandMoreProps extends IconButtonProps {
+  expand: boolean;
+}
+
+const ExpandMore = styled((props: ExpandMoreProps) => {
+  const { expand, ...other } = props;
+  return <IconButton {...other} />;
+})(({ theme, expand }) => ({
+  transform: !expand ? 'rotate(0deg)' : 'rotate(180deg)',
+  marginLeft: 'auto',
+  transition: theme.transitions.create('transform', {
+    duration: theme.transitions.duration.shortest,
+  }),
+}));
+
+
 
 interface DescriptorCardProps {
   children?: React.ReactNode;
   selectedItem: Selected;
 }
 
-export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
+export const DescriptorCard = React.forwardRef<HTMLDivElement, DescriptorCardProps>(
   (props, ref) => {
     const { selectedItem } = props;
 
@@ -30,6 +53,12 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
     const closeWindow = () => {
       dispatch(setSelected(undefined));
     };
+
+    const [expanded, setExpanded] = React.useState(false);
+
+    const handleExpandClick = () => {
+      setExpanded(!expanded);
+    }
 
     return (
       <div ref={ref} className="descriptor-container">
@@ -122,9 +151,23 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
                   );
                 })}
             </>
+            <ExpandMore
+              expand={expanded}
+              onClick={handleExpandClick}
+              aria-expanded={expanded}
+              aria-label="View relevant locations"
+            >
+              <ExpandMoreIcon />
+            </ExpandMore>
           </CardActions>
+          <Collapse in={expanded} timeout="auto" unmountOnExit>
+            <CardContent>
+              <Typography paragraph>Click to see relevant locations</Typography>
+            </CardContent>
+          </Collapse>
         </Card>
       </div>
     );
   }
 );
+
