@@ -35,7 +35,7 @@ class WikiFlower:
                     json_dict["petals"][k] = v["id"]
 
         if self.description:
-            json_dict["description"] = self.description
+            json_dict["description"] = self.description.replace('"', '\\"')
         if self.article:
             json_dict["article"] = self.article
         return json_dict
