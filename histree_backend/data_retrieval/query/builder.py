@@ -48,7 +48,7 @@ class SPARQLBuilder:
                     f"FILTER NOT EXISTS {{?item wdt:{property} ?filter_{property}.}}."
                 )
         return f"""
-            SELECT ?item ?label ?description {header_selections}
+            SELECT ?item ?label ?description ?article {header_selections}
             WHERE {{
                 {"SELECT * WHERE {" if self.order_by else ""}
                     {self.values}
@@ -57,12 +57,13 @@ class SPARQLBuilder:
                     ?item {self.predicate}
                         rdfs:label ?label;
                         schema:description ?description.
+                    OPTIONAL{{?item ^schema:about ?article. FILTER REGEX(STR(?article), "{self.language}.wikipedia.org/wiki/") .}}
                     {header_bindings}
                     {filtering}
                     {self.other_filters}
                     FILTER(lang(?label) = "{self.language}" && lang(?description) = "{self.language}")
                 }}
-                GROUP BY ?item ?label ?description ?num {header_access}
+                GROUP BY ?item ?label ?description ?article ?num {header_access}
             {"}" if self.order_by else ""}
             {self.order_by}
             {f"LIMIT {self.limit}" if self.limit is not None else ""}

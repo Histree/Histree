@@ -18,11 +18,11 @@ class WikiResult:
 
     def parse(self, petal_map: Dict[str, WikiPetal]) -> List[WikiFlower]:
         flowers = []
-        defaults = ("item", "label", "description")
+        defaults = ("item", "label", "description", "article")
 
         for item_dict in self.info:
 
-            id, name, description = map(item_dict.get, defaults)
+            id, name, description, article = map(item_dict.get, defaults)
             flower = WikiFlower(
                 id.split("/")[-1],
                 {
@@ -33,6 +33,7 @@ class WikiResult:
             )
             flower.name = name
             flower.description = description
+            flower.article = article
             flowers.append(flower)
         return flowers
 
@@ -57,9 +58,9 @@ class DBResult:
 
 
     def _parse_flower(raw_flower: dict, petal_map: Dict[str, WikiPetal], caller_id: str) -> WikiFlower:
-        defaults = ("id", "name", "description", "branched_up", "branched_down")
+        defaults = ("id", "name", "description", "article", "branched_up", "branched_down")
 
-        id, name, description, _, _ = map(raw_flower.get, defaults)
+        id, name, description, article, _, _ = map(raw_flower.get, defaults)
         flower = WikiFlower(
             id,
             {
@@ -71,4 +72,5 @@ class DBResult:
         flower.petals["caller"] = caller_id
         flower.name = name
         flower.description = description
+        flower.article = article
         return flower
