@@ -1,3 +1,4 @@
+from typing import List
 from data_retrieval.wikitree.flower import WikiPetal
 from data_retrieval.wikitree_instance.familytree.property import PROPERTY_MAP
 from data_retrieval.wikitree_instance.locationtree.seed import LocationSeed
@@ -124,3 +125,14 @@ class MotherPetal(RelationPetal):
     def __init__(self):
         label = "mother"
         super().__init__(PROPERTY_MAP["stems"][label], label)
+
+
+class SpousePetal(WikiPetal):
+    def __init__(self):
+        label = "spouse"
+        super().__init__(PROPERTY_MAP["stems"][label], label)
+
+    def parse(self, value: str) -> List[str]:
+        if not value:
+            return []
+        return [id_str.split("/")[-1] for id_str in value.split(",")]

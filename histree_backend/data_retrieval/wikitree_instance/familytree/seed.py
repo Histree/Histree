@@ -19,6 +19,7 @@ class FamilySeed(WikiSeed):
                 DeathDatePetal.instance(),
                 DeathPlacePetal.instance(),
                 ImagePetal.instance(),
+                SpousePetal.instance()
             ],
         )
 
