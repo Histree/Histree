@@ -218,9 +218,12 @@ class WikiTree:
                     for sub_flower in sub_flowers
                 }
                 for flower in rel_flowers:
-                    flower.petals[lazy_petal.label] = sub_tree[
-                        flower.petals[lazy_petal.label]
-                    ]
+                    if flower.petals[lazy_petal.label] in sub_tree:
+                        flower.petals[lazy_petal.label] = sub_tree[
+                            flower.petals[lazy_petal.label]
+                        ]
+                    else:
+                        del flower.petals[lazy_petal.label]
 
     def watering(self, ids, db_query, wiki_query, branching=True):
         # Combine multiple queries
