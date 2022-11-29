@@ -85,44 +85,30 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
                   .map((att) => {
                     const attrName = att.charAt(0).toUpperCase() + att.slice(1);
                     const attrVal = selectedItem.attributes![att];
-                    // make this nicer code
                     var attrDesc = ''
                   
                     if (attrVal === 'undefined') {
                       attrDesc = 'Unknown'
-                    } else if (typeof attrVal === 'string') {
-                      attrDesc = attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
-                    } else {
-                      // case for locations with their own sub-jsons
+                    } else if (typeof attrVal === 'object') {
+                      // For locations: when att = 'place_of_birth' or 'place_of_death'
+                      // and contains sub-JSONs
                       attrDesc = attrVal['name'];
+                    } else {
+                      attrDesc = attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
                     }
-                    
+
                     return (
                       <Typography key={att} variant="body2">
-                        {`${attrName.replace(/_/g, ' ')}: ${attrDesc}`}
+                        <b>{attrName.replace(/_/g, ' ')}:</b> {attrDesc}
                       </Typography>
                     );
                   })}
-              <br />
-              
             </Box>
           </CardContent>
           <CardActions>
-            <>
-              {selectedItem.links &&
-                Object.keys(selectedItem.links).map((linkName) => {
-                  return (
-                    <Button
-                      key={linkName}
-                      size="small"
-                      href={selectedItem.links![linkName]}
-                    >
-                      {linkName}
-                    </Button>
-                  );
-                })}
-            </>
+            <Button href={selectedItem.article} target="_blank">Learn More</Button>
           </CardActions>
+          
         </Card>
       </div>
     );

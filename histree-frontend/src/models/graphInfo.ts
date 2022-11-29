@@ -3,6 +3,7 @@ export type NodeId = string;
 export type HandleStatus = "None" | "Loading" | "Complete" | "NoData";
 
 export type NodeInfo = {
+  article: string;
   name: string;
   id: NodeId;
   description?: string;

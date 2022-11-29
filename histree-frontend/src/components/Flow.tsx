@@ -75,12 +75,13 @@ const Flow = (props: { content: RenderContent }) => {
 		const positions: NodePositions = {};
 		Object.keys(nodes).forEach((node) => {
 			// if (nodes[node].visible) {
-			const { id, name, petals, description } = nodes[node];
+			const { id, name, petals, description, article } = nodes[node];
 			graph.setNode(id, {
 				label: name,
 				qid: id,
 				petals: petals,
 				description: description,
+				article: article,
 				width: NODE_BOX_WIDTH,
 				height: NODE_BOX_HEIGHT
 			});
@@ -113,7 +114,8 @@ const Flow = (props: { content: RenderContent }) => {
 						name: nodeObj.label,
 						description: nodeObj.description,
 						id: n,
-						petals: nodeObj.petals
+						petals: nodeObj.petals,
+						article: nodeObj.article
 					},
 					// hidden: !nodeLookup[n].visible,
 					position: { x: nodeObj.x, y: nodeObj.y },
