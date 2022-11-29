@@ -64,6 +64,7 @@ class WikiPetal:
         label: str,
         optional: bool = True,
         sample: bool = False,
+        grouped: bool = False,
         label_only: bool = False,
         lazy_seed: "WikiSeed" = None,
     ):
@@ -79,6 +80,7 @@ class WikiPetal:
         self.label = label
         self.optional = optional
         self.sample = sample
+        self.grouped = grouped
         self.lazy_seed = lazy_seed
         self.label_only = label_only
 
@@ -87,6 +89,7 @@ class WikiPetal:
             "id": self.id,
             "optional": self.optional,
             "sample": self.sample,
+            "grouped": self.grouped,
             "lazy_seed": self.lazy_seed,
             "label_only": self.label_only,
         }

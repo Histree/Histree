@@ -6,7 +6,7 @@ from data_retrieval.wikitree_instance.locationtree.seed import LocationSeed
 # Date Attributes
 class DatePetal(WikiPetal):
     def __init__(self, id, label):
-        super().__init__(id, label, optional=True)
+        super().__init__(id, label, optional=True, sample=True)
 
     def parse(self, value: str) -> str:
         if not value:
@@ -130,7 +130,7 @@ class MotherPetal(RelationPetal):
 class SpousePetal(WikiPetal):
     def __init__(self):
         label = "spouse"
-        super().__init__(PROPERTY_MAP["stems"][label], label)
+        super().__init__(PROPERTY_MAP["stems"][label], label, grouped=True)
 
     def parse(self, value: str) -> List[str]:
         if not value:
