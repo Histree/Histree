@@ -95,7 +95,7 @@ class WikiPetal:
         }
 
     @abstractmethod
-    def parse(self, value: str) -> str:
+    def parse(self, value: str, from_db: bool=False) -> str:
         pass
 
     @classmethod

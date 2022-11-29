@@ -81,7 +81,7 @@ class DBResult:
         flower = WikiFlower(
             id,
             {
-                label: petal_map[label].parse(value)
+                label: petal_map[label].parse(value, from_db=True)
                 for (label, value) in raw_flower.items()
                 if label not in defaults
             },

@@ -8,7 +8,7 @@ class DatePetal(WikiPetal):
     def __init__(self, id, label):
         super().__init__(id, label, optional=True, sample=True)
 
-    def parse(self, value: str) -> str:
+    def parse(self, value: str, from_db: bool=False) -> str:
         if not value:
             return self.undefined
         return value.split("T")[0]
@@ -31,7 +31,7 @@ class LocationPetal(WikiPetal):
     def __init__(self, id, label):
         super().__init__(id, label, optional=True, lazy_seed=LocationSeed.instance())
 
-    def parse(self, value: str) -> str:
+    def parse(self, value: str, from_db: bool=False) -> str:
         if not value:
             return self.undefined
         return value.split("/")[-1]
@@ -68,7 +68,7 @@ class GenderPetal(WikiPetal):
             PROPERTY_MAP["petals"][label], label, optional=True, sample=True
         )
 
-    def parse(self, value: str) -> str:
+    def parse(self, value: str, from_db: bool=False) -> str:
         if value in self.genders:
             return value
         id = value.split("/")[-1]
@@ -82,7 +82,7 @@ class BirthNamePetal(WikiPetal):
             PROPERTY_MAP["petals"][label], label, optional=True, sample=True
         )
 
-    def parse(self, value: str) -> str:
+    def parse(self, value: str, from_db: bool=False) -> str:
         return value
 
 
@@ -94,7 +94,7 @@ class ImagePetal(WikiPetal):
             PROPERTY_MAP["petals"][label], label, optional=True, sample=True
         )
 
-    def parse(self, value: str) -> str:
+    def parse(self, value: str, from_db: bool=False) -> str:
         return value
 
 
@@ -102,7 +102,7 @@ class CallerPetal(WikiPetal):
     def __init__(self):
         super().__init__(-1, "caller")
 
-    def parse(self, value: str) -> str:
+    def parse(self, value: str, from_db: bool=False) -> str:
         return value.split("/")[-1]
 
 
@@ -111,7 +111,7 @@ class RelationPetal(WikiPetal):
     def __init__(self, id, label):
         super().__init__(id, label, optional=True, sample=True)
 
-    def parse(self, value: str) -> str:
+    def parse(self, value: str, from_db: bool=False) -> str:
         return value.split("/")[-1]
 
 
@@ -132,7 +132,9 @@ class SpousePetal(WikiPetal):
         label = "spouse"
         super().__init__(PROPERTY_MAP["stems"][label], label, grouped=True)
 
-    def parse(self, value: str) -> List[str]:
+    def parse(self, value: any, from_db: bool=False) -> List[str]:
         if not value:
             return []
+        if from_db:
+            return value
         return [id_str.split("/")[-1] for id_str in value.split(",")]
