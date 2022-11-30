@@ -6,9 +6,9 @@ import { ComparisonCard, ModelIcons, DescriptorCard, SearchBar, HelpDialog, Chil
 import { ReactFlowProvider } from 'reactflow';
 import { Alert, Box, CircularProgress, Snackbar } from '@mui/material';
 import { useOnClickOutside } from 'usehooks-ts';
-import './TreePage.scss';
 import { CenterSearched } from '../components/general/CenterSearched';
 import '../components/TreeNode.scss'
+import './TreePage.scss';
 
 const TreePage = () => {
 	const selected = useSelector(getSelected);
@@ -59,7 +59,7 @@ const TreePage = () => {
 					{renderMode === 'View' && <SearchBar />}
 					{renderMode === 'Compare' && <ComparisonCard />}
 					{renderMode === 'Children' && <ChildrenFinderCard />}
-					<FilterCard />
+					{renderMode === 'Filter' && <FilterCard />}
 				</div>
 				<CenterSearched />
 				{selected !== undefined && <DescriptorCard ref={expandedRef} selectedItem={selected} />}

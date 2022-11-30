@@ -1,30 +1,31 @@
 import { Button, Card, CardActions, CardContent, CardHeader, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { setFilterInfo } from "../../stores";
+import { useDispatch, useSelector } from "react-redux";
+import { getFilterInfo, setFilterInfo } from "../../stores";
 import "./FilterCard.scss";
 
 export const FilterCard = () => {
     const dispatch = useDispatch();
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+    const filterInfo = useSelector(getFilterInfo);
+    const [startDate, setStartDate] = useState(filterInfo.bornBetween.startDate);
+    const [endDate, setEndDate] = useState(filterInfo.bornBetween.endDate);
 
-    const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setStartDate(e.target.value);
-    }
+    const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => setStartDate(e.target.value);
+    const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => setEndDate(e.target.value);
 
-    const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEndDate(e.target.value);
-    }
+    const handleApplyFilters = () => 
+        dispatch(setFilterInfo(
+            { filtered: startDate !== "" && endDate !== "", bornBetween: { startDate: startDate, endDate: endDate } }
+        ));
 
-    const handleApplyFilters = () => {
-        console.log(startDate);
-        console.log(endDate);
-        dispatch(setFilterInfo({ bornBetween: { startDate: startDate, endDate: endDate } }))
+    const handleClear = () => {
+        dispatch(setFilterInfo({ filtered: false, bornBetween: { startDate: "", endDate: "" } }))
+        setStartDate("");
+        setEndDate("")
     }
 
     return (
-		<div>
+		<div className="filter-container">
 			<Card>
 				<CardHeader style={{ padding: '1em 0 0 1em', margin: 0 }} title="Filter" />
 				<CardContent>
@@ -53,6 +54,7 @@ export const FilterCard = () => {
                     </div>
                 </CardContent>
                 <CardActions sx={{display: "flex", justifyContent: "flex-end"}}>
+                    <Button onClick={handleClear}>Clear</Button>
                     <Button onClick={handleApplyFilters}>Apply Filters</Button>
                 </CardActions>
 			</Card>

@@ -54,7 +54,7 @@ const initialState: HistreeState = {
   compareNodes: {},
   relationship: { status: "Initial" },
   currViewport: { x: 0, y: 0, zoom: 2 },
-  filterInfo: { bornBetween: {} },
+  filterInfo: { filtered: false, bornBetween: { startDate: "", endDate: "" } },
 };
 
 export const histreeState = createSlice({
@@ -146,33 +146,40 @@ export const histreeState = createSlice({
     },
     setFilterInfo: (state, action: PayloadAction<FilterInfo>) => {
       state.filterInfo = action.payload;
-      Object.keys(state.nodeLookup).forEach((id) => {
-        let matchesFilter = false;
-        const petals = state.nodeLookup[id].petals;
 
-        if (petals) {
-          if (petals.date_of_birth) {
-            const birthDate = new Date(petals.date_of_birth);
-            const bornBetweenStart = state.filterInfo.bornBetween.startDate;
-            const bornBetweenEnd = state.filterInfo.bornBetween.endDate;
+      if (state.filterInfo.filtered) {
+        Object.keys(state.nodeLookup).forEach((id) => {
+          let matchesFilter = false;
+          const petals = state.nodeLookup[id].petals;
 
-            if (bornBetweenStart && bornBetweenStart !== "") {
-              const startDate = new Date(bornBetweenStart);
+          if (petals) {
+            if (petals.date_of_birth) {
+              const birthDate = new Date(petals.date_of_birth);
+              const bornBetweenStart = state.filterInfo.bornBetween.startDate;
+              const bornBetweenEnd = state.filterInfo.bornBetween.endDate;
 
-              matchesFilter = birthDate >= startDate;
+              if (bornBetweenStart !== "") {
+                const startDate = new Date(bornBetweenStart);
 
-              if (bornBetweenEnd && bornBetweenEnd !== "") {
+                matchesFilter = birthDate >= startDate;
+
+                if (bornBetweenEnd !== "") {
+                  const endDate = new Date(bornBetweenEnd);
+                  matchesFilter = matchesFilter && birthDate <= endDate;
+                }
+              } else if (bornBetweenEnd !== "") {
                 const endDate = new Date(bornBetweenEnd);
-                matchesFilter = matchesFilter && birthDate <= endDate;
+                matchesFilter = birthDate <= endDate;
               }
-            } else if (bornBetweenEnd && bornBetweenEnd !== "") {
-              const endDate = new Date(bornBetweenEnd);
-              matchesFilter = birthDate <= endDate;
             }
           }
-        }
-        state.nodeLookup[id].matchedFilter = matchesFilter;
-      });
+          state.nodeLookup[id].matchedFilter = matchesFilter;
+        });
+      } else {
+        Object.keys(state.nodeLookup).forEach((id) => {
+          state.nodeLookup[id].matchedFilter = true;
+        });
+      }
     },
   },
   extraReducers: (builder) => {
