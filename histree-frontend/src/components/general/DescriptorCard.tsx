@@ -1,5 +1,5 @@
 import CloseIcon from '@mui/icons-material/Close';
-import React, { forwardRef } from 'react';
+import React, {forwardRef} from 'react';
 import {
   Box,
   Button,
@@ -9,12 +9,20 @@ import {
   CardHeader,
   CardMedia,
   IconButton,
-  Typography
+  IconButtonProps,
+  Typography,
+  Link
 } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSelected, getSelected } from '../../stores/base';
-import { Selected } from '../../models';
+import { CardLocation, Selected } from '../../models';
 import './DescriptorCard.scss';
+import { styled } from '@mui/material/styles';
+import { mapsURL } from '../../utils/utils';
+
+
+
+
 
 interface DescriptorCardProps {
   children?: React.ReactNode;
@@ -30,6 +38,44 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
     const closeWindow = () => {
       dispatch(setSelected(undefined));
     };
+
+    const displayLocationURL = (name: string) => {
+      if (selectedItem.attributes &&
+        selectedItem.attributes[name] &&
+        selectedItem.attributes[name] !== undefined
+      )
+        {
+            const location = selectedItem.attributes[name] as unknown as CardLocation
+            return <Link href={mapsURL(location)} target="_blank">{location.name}</Link>;
+
+          }
+        return (<Typography>No data found</Typography>);
+
+    }
+
+    const renderCardInfo = (att: string, attrName: string, attrVal: any, attrDesc: string) => {
+      if (attrVal === 'undefined') {
+        return <></>
+      } else if (typeof attrVal === 'object') {
+        // For locations: when att = 'place_of_birth' or 'place_of_death', containing sub-JSONs
+         //attrDesc = attrVal['name'];
+        return (
+          <div style={{display: 'flex'}}>
+            <Typography key={att} variant="body2">
+              <b>{attrName.replace(/_/g, ' ')}:</b>
+            </Typography>
+            &nbsp;
+            {displayLocationURL(att)}
+          </div>
+        );
+      } else {
+        return (
+          <Typography key={att} variant="body2">
+            <b>{attrName.replace(/_/g, ' ')}:</b> {attrDesc}
+          </Typography>
+        );
+      }
+    }
 
     return (
       <div ref={ref} className="descriptor-container">
@@ -91,24 +137,36 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
                       attrDesc = 'Unknown'
                     } else if (typeof attrVal === 'object') {
                       // For locations: when att = 'place_of_birth' or 'place_of_death'
-                      // and contains sub-JSONs
                       attrDesc = attrVal['name'];
                     } else {
                       attrDesc = attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
                     }
 
-                    return (
-                      <Typography key={att} variant="body2">
-                        <b>{attrName.replace(/_/g, ' ')}:</b> {attrDesc}
-                      </Typography>
-                    );
+                    return renderCardInfo(att, attrName, attrVal, attrDesc);
+                    
                   })}
+                
             </Box>
           </CardContent>
           <CardActions>
             <Button href={selectedItem.article} target="_blank">Learn More</Button>
           </CardActions>
-          
+          <CardActions>
+            <>
+              {selectedItem.links &&
+                Object.keys(selectedItem.links).map((linkName) => {
+                  return (
+                    <Button
+                      key={linkName}
+                      size="small"
+                      href={selectedItem.links![linkName]}
+                    >
+                      {linkName}
+                    </Button>
+                  );
+                })}
+            </>
+          </CardActions>
         </Card>
       </div>
     );
