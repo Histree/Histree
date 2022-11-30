@@ -26,7 +26,7 @@ const nodeClassMap: Record<HandleStatus, string> = {
 	None: 'handle'
 };
 
-const TreeNode = ({ data }: { data: NodeInfo }) => {
+const TreeNode = ({ id }: { id: NodeId }) => {
 	const ref = useRef<HTMLInputElement>(null);
 
 	const isInView = useIsInViewport(ref);
@@ -37,9 +37,11 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 	const nodeLookup = useSelector(getNodeLookup);
 	const edgeInfo = useSelector(getEdgeInfo);
 
+	const data = nodeLookup[id];
+
 	useEffect(() => {
 		if (isInView) {
-			dispatch(setNodeOnScreen({ id: data.id, onScreen: isInView }))
+			dispatch(setNodeOnScreen({ id: id, onScreen: isInView }))
 		}
 	}, [isInView])
 
@@ -130,7 +132,9 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 				case 'Compare':
 					return { color: 'orange', borderColor: 'orange' };
 			}
-		} else if (data.matchedFilter === false) {
+		}
+		
+		if (data.matchedFilter === false) {
 			return { color: 'lightgray', borderColor: 'lightgray' };
 		}
 		return {}

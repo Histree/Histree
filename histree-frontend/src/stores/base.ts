@@ -147,28 +147,30 @@ export const histreeState = createSlice({
     setFilterInfo: (state, action: PayloadAction<FilterInfo>) => {
       state.filterInfo = action.payload;
       Object.keys(state.nodeLookup).forEach((id) => {
-        let matchesFilter = true;
+        let matchesFilter = false;
+        const petals = state.nodeLookup[id].petals;
 
-        if (state.nodeLookup[id].date_of_birth) {
-          const birthDate = new Date(state.nodeLookup[id].date_of_birth);
-          const bornBetweenStart = state.filterInfo.bornBetween.startDate;
-          const bornBetweenEnd = state.filterInfo.bornBetween.endDate;
+        if (petals) {
+          if (petals.date_of_birth) {
+            const birthDate = new Date(petals.date_of_birth);
+            const bornBetweenStart = state.filterInfo.bornBetween.startDate;
+            const bornBetweenEnd = state.filterInfo.bornBetween.endDate;
 
-          if (bornBetweenStart && bornBetweenStart !== "") {
-            const startDate = new Date(bornBetweenStart);
-            if (birthDate < startDate) {
-              matchesFilter = false;
-            }
-          }
+            if (bornBetweenStart && bornBetweenStart !== "") {
+              const startDate = new Date(bornBetweenStart);
 
-          if (bornBetweenEnd && bornBetweenEnd !== "") {
-            const endDate = new Date(bornBetweenEnd);
-            if (birthDate > endDate) {
-              matchesFilter = false;
+              matchesFilter = birthDate >= startDate;
+
+              if (bornBetweenEnd && bornBetweenEnd !== "") {
+                const endDate = new Date(bornBetweenEnd);
+                matchesFilter = matchesFilter && birthDate <= endDate;
+              }
+            } else if (bornBetweenEnd && bornBetweenEnd !== "") {
+              const endDate = new Date(bornBetweenEnd);
+              matchesFilter = birthDate <= endDate;
             }
           }
         }
-        // console.log(`${state.nodeLookup[id].name} matches filter: ${matchesFilter}`)
         state.nodeLookup[id].matchedFilter = matchesFilter;
       });
     },
