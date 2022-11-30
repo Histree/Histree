@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useMemo } from 'react';
+import React, { CSSProperties, useEffect, useMemo, useState } from 'react';
 import ReactFlow, {
 	Controls,
 	Background,
@@ -11,7 +11,7 @@ import { NodeLookup, AdjList, RenderContent, NodePositions, NodeId } from '../mo
 import TreeNode from './TreeNode';
 import dagre, { graphlib } from 'dagre';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, getCompareNodes, getCurrentViewport, getEdgeInfo, getNodeLookup, getRenderMode, setEdgeInfo, setRelationship, setSelected } from '../stores';
+import { AppDispatch, getCompareNodes, getCurrentViewport, getEdgeInfo, getNodeLookup, getRenderContent, getRenderMode, getSearchSuggestions, setEdgeInfo, setRelationship, setSelected } from '../stores';
 import InvisibleConnectionLine from './general/InvisibleConnectionLine';
 import { addChildrenNode, findNodeChildren, findPathBetweenTwoNodes } from '../utils/utils';
 import { DataSuccess, fetchRelationship } from '../services';
@@ -25,6 +25,7 @@ const NODE_BOX_HEIGHT = 50;
 
 const Flow = (props: { content: RenderContent }) => {
 	const { content } = props;
+	const renderContent = useSelector(getRenderContent);
 	const nodeLookup = useSelector(getNodeLookup);
 	const renderMode = useSelector(getRenderMode);
 	const comparisonNodes = useSelector(getCompareNodes);
@@ -149,16 +150,21 @@ const Flow = (props: { content: RenderContent }) => {
 		return completeEdges;
 	};
 
-	const flowNodes = dagreToFlowNodes(graph, content.branches)
+	const [flowNodes, setFlowNodes] = useState(dagreToFlowNodes(graph, content.branches));
 
 	useEffect(() => {
-		if (viewportInitialized) {
+		if (viewportInitialized && renderContent.status === 'Success') {
+			console.log(renderContent.content);
 			setCenter(
-				flowNodes[content.searchedQid].position.x,
-				flowNodes[content.searchedQid].position.y,
+				flowNodes[renderContent.content.searchedQid].position.x,
+				flowNodes[renderContent.content.searchedQid].position.y,
 				{ zoom: 2, duration: 300 })
 		}
 	}, [viewportInitialized])
+
+	useEffect(() => {
+		setFlowNodes(dagreToFlowNodes(graph, content.branches));
+	}, [graph, content.branches])
 
 	useEffect(() => {
 		if (

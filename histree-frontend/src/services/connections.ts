@@ -7,7 +7,8 @@ export type ServiceStatus<T> =
   | DataInitial
   | DataLoading
   | DataFail
-  | DataSuccess<T>;
+  | DataSuccess<T>
+  | DataExpand<T>;
 export interface DataInitial {
   status: "Initial";
 }
@@ -19,6 +20,10 @@ export interface DataFail {
   error: string;
 }
 
+export interface DataExpand<T> {
+  status: "Expanding";
+  content: T;
+}
 export interface DataSuccess<T> {
   status: "Success";
   content: T;
@@ -71,7 +76,7 @@ export const fetchSelectedExpansion = createAsyncThunk(
   }): Promise<DataSuccess<RenderContent> | DataFail> => {
     try {
       const response = await axios.get<RenderContent>(
-        `https://histree.fly.dev/person_info/${qid}?depth_up=5&depth_down=5`
+        `https://histree.fly.dev/person_info/${qid}`
       );
       return {
         status: "Success",

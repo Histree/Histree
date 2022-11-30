@@ -17,7 +17,6 @@ import { AutoCompleteData, SearchBarInfo } from '../../models';
 export const SearchBar = () => {
 	const dispatch = useDispatch();
 	const { searchTerm, searchSuggestions } = useSelector(getSearchSuggestions);
-	console.log(searchTerm);
 	const appDispatch = useDispatch<AppDispatch>();
 	const handleChangeWithDebounce = debounce(async (e) => {
 		handleAutocomplete(e);
