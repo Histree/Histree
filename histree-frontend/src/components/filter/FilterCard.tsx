@@ -1,14 +1,13 @@
 import { Button, Card, CardActions, CardContent, CardHeader, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { getFilterInfo, setFilterInfo } from "../../stores";
+import { useDispatch } from "react-redux";
+import { setFilterInfo } from "../../stores";
 import "./FilterCard.scss";
 
 export const FilterCard = () => {
     const dispatch = useDispatch();
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const filterInfo = useSelector(getFilterInfo);
 
     const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setStartDate(e.target.value);
@@ -34,10 +33,22 @@ export const FilterCard = () => {
                     </div>
                     <div className="filter-born-container">
                         <div className="filter-input">
-                            <TextField type="date" label="Start" InputLabelProps={{shrink: true}} value={startDate} onChange={handleStartDateChange} />
+                            <TextField 
+                                type="date" 
+                                label="Start" 
+                                InputLabelProps={{shrink: true}} 
+                                value={startDate} 
+                                onChange={handleStartDateChange} 
+                            />
                         </div>
                         <div className="filter-input">
-                            <TextField type="date" label="End" InputLabelProps={{shrink: true}} value={endDate} onChange={handleEndDateChange} />
+                            <TextField 
+                                type="date" 
+                                label="End" 
+                                InputLabelProps={{shrink: true}} 
+                                value={endDate} 
+                                onChange={handleEndDateChange}
+                            />
                         </div>
                     </div>
                 </CardContent>

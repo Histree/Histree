@@ -148,6 +148,31 @@ export const histreeState = createSlice({
     },
     setFilterInfo: (state, action: PayloadAction<FilterInfo>) => {
       state.filterInfo = action.payload;
+      Object.keys(state.nodeLookup).forEach((id) => {
+        let matchesFilter = true;
+
+        if (state.nodeLookup[id].date_of_birth) {
+          const birthDate = new Date(state.nodeLookup[id].date_of_birth);
+          const bornBetweenStart = state.filterInfo.bornBetween.startDate;
+          const bornBetweenEnd = state.filterInfo.bornBetween.endDate;
+
+          if (bornBetweenStart && bornBetweenStart !== "") {
+            const startDate = new Date(bornBetweenStart);
+            if (birthDate < startDate) {
+              matchesFilter = false;
+            }
+          }
+
+          if (bornBetweenEnd && bornBetweenEnd !== "") {
+            const endDate = new Date(bornBetweenEnd);
+            if (birthDate > endDate) {
+              matchesFilter = false;
+            }
+          }
+        }
+        // console.log(`${state.nodeLookup[id].name} matches filter: ${matchesFilter}`)
+        state.nodeLookup[id].matchedFilter = matchesFilter;
+      });
     },
   },
   extraReducers: (builder) => {

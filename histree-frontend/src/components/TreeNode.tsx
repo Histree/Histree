@@ -124,7 +124,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 			comparisonNodes.second && comparisonNodes.second.id === nodeid ||
 			edgeInfo[nodeid] !== undefined) {
 			return { color: 'orange', borderColor: 'orange' };
-		} else if (!data.matchedFilter) {
+		} else if (data.matchedFilter === false) {
 			return { color: 'lightgray', borderColor: 'lightgray' };
 		}
 		return {}
