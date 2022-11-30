@@ -2,11 +2,7 @@ import React, { useRef } from 'react';
 import Flow from '../components/Flow';
 import { getSelected, getRenderContent, getRenderMode, setSelected } from '../stores/base';
 import { useDispatch, useSelector } from 'react-redux';
-<<<<<<< HEAD
-import { ComparisonCard, ComparisonToggle, DescriptorCard, SearchBar, HelpDialog, FilterCard } from '../components';
-=======
-import { ComparisonCard, ModelIcons, DescriptorCard, SearchBar, HelpDialog, ChildrenFinderCard } from '../components';
->>>>>>> master
+import { ComparisonCard, ModelIcons, DescriptorCard, SearchBar, HelpDialog, ChildrenFinderCard, FilterCard } from '../components';
 import { ReactFlowProvider } from 'reactflow';
 import { Alert, Box, CircularProgress, Snackbar } from '@mui/material';
 import { useOnClickOutside } from 'usehooks-ts';
