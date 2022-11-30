@@ -11,9 +11,9 @@ import { NodeLookup, AdjList, RenderContent, NodePositions, NodeId } from '../mo
 import TreeNode from './TreeNode';
 import dagre, { graphlib } from 'dagre';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, getCompareNodes, getCurrentViewport, getEdgeInfo, getNodeLookup, setEdgeInfo, setRelationship, setSelected } from '../stores';
+import { AppDispatch, getCompareNodes, getCurrentViewport, getEdgeInfo, getNodeLookup, getRenderMode, setEdgeInfo, setRelationship, setSelected } from '../stores';
 import InvisibleConnectionLine from './general/InvisibleConnectionLine';
-import { findPathBetweenTwoNodes } from '../utils/utils';
+import { addChildrenNode, findNodeChildren, findPathBetweenTwoNodes } from '../utils/utils';
 import { DataSuccess, fetchRelationship } from '../services';
 import TreeEdge from './TreeEdge';
 
@@ -26,30 +26,27 @@ const NODE_BOX_HEIGHT = 50;
 const Flow = (props: { content: RenderContent }) => {
 	const { content } = props;
 	const nodeLookup = useSelector(getNodeLookup);
+	const renderMode = useSelector(getRenderMode);
 	const comparisonNodes = useSelector(getCompareNodes);
 	const edgeInfo = useSelector(getEdgeInfo);
 	const dispatch = useDispatch();
 	const appDispatch = useDispatch<AppDispatch>();
 	const closeWindow = () => dispatch(setSelected(undefined));
 
-	const { setCenter, getZoom, viewportInitialized } = useReactFlow();
+	const { setCenter, viewportInitialized } = useReactFlow();
 	const getEdgeAnimation = (first: NodeId, second: NodeId): boolean => {
 		// console.log(`Getting Edge Style for ${first} and ${second}`);
 		// Check if edgeinfo contains 'first' as key
 		var sourceObject = edgeInfo[first];
 		if (sourceObject !== undefined) {
-			const sourceKey = Object.keys(sourceObject)[0];
-			// Check if object contained within 'first' has correct key
-			// i.e. nested key is === second
-			if (sourceKey === second) {
+			if (sourceObject[second]) {
 				return true;
 			}
 		}
 		// If the above condition fails to hold, check if edgeinfo contains 'second' as key
 		sourceObject = edgeInfo[second];
 		if (sourceObject !== undefined) {
-			const sourceKey = Object.keys(sourceObject)[0];
-			if (sourceKey === first) {
+			if (sourceObject[first] !== undefined) {
 				// Edge is styled, return
 				return true;
 			}
@@ -166,15 +163,22 @@ const Flow = (props: { content: RenderContent }) => {
 			comparisonNodes.first !== undefined &&
 			comparisonNodes.second !== undefined
 		) {
-			const result = findPathBetweenTwoNodes(
-				comparisonNodes.first.id,
-				comparisonNodes.second.id,
-				// cleanseBranches(content?.branches, nodeLookup)
-				content?.branches
-			);
-			console.log(result);
-			dispatch(setEdgeInfo(result));
-			appDispatch(fetchRelationship(comparisonNodes));
+			if (renderMode === 'Compare') {
+				const result = findPathBetweenTwoNodes(
+					comparisonNodes.first.id,
+					comparisonNodes.second.id,
+					// cleanseBranches(content?.branches, nodeLookup)
+					content?.branches
+				);
+				dispatch(setEdgeInfo(result));
+				appDispatch(fetchRelationship(comparisonNodes));
+			} else if (renderMode === 'Children') {
+				const result = findNodeChildren(
+					comparisonNodes.first.id,
+					comparisonNodes.second.id,
+					addChildrenNode(content?.branches));
+				dispatch(setEdgeInfo(result));
+			}
 		} else {
 			dispatch(setRelationship({ status: 'Initial' }));
 		}

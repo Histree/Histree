@@ -3,6 +3,7 @@ import { AdjList, NodeId, NodeInfo } from "./graphInfo";
 export type RenderMode = "View" | "Compare" | "Children";
 
 export interface RenderContent {
+  searchedName: string;
   searchedQid: NodeId;
   branches: AdjList;
   flowers: NodeInfo[];
