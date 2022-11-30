@@ -86,6 +86,14 @@ class WikiSeed:
                         tree.branches[parent_id] = set()
                     tree.branches[parent_id].add(child.id)
 
+        # Add spouses without children
+        for id in ids:
+            unseen_parent_ids.update(
+                spouse
+                for spouse in tree.flowers[id].petals.get("spouse", [])
+                if spouse not in tree.flowers
+            )
+
         # Find information about parents not in tree
         if unseen_parent_ids:
             self.sprout(list(unseen_parent_ids), tree)
@@ -267,7 +275,8 @@ class WikiTree:
         return data
 
     def write_to_database(self) -> None:
-        flabels = {"name", "description", "article", "branched_up", "branched_down"}
         json_data = json.dumps(self.to_json(for_db=True))
-        self.db.write_db(merge_nodes_into_db, json_data, flabels, self.seed.petal_map)
+        self.db.write_db(
+            merge_nodes_into_db, json_data, WikiFlower._defaults, self.seed.petal_map
+        )
         self.db.write_db(merge_relation_into_db, json_data)
