@@ -50,21 +50,20 @@ const TreeEdge = ({
 		// Check if edgeinfo contains 'first' as key
 		var sourceObject = edgeInfo[source];
 		if (sourceObject !== undefined) {
-			const sourceKey = Object.keys(sourceObject)[0];
-			// Check if object contained within 'first' has correct key
-			// i.e. nested key is === second
-			if (sourceKey === target) {
+			console.log(source, target);
+			console.log(sourceObject);
+			if (sourceObject[target] !== undefined) {
 				return sourceObject[target];
-			}
+			};
 		}
 		// If the above condition fails to hold, check if edgeinfo contains 'second' as key
 		sourceObject = edgeInfo[target];
-		if (sourceObject === undefined) {
-			// Edge is not styled, move on
-			return {};
+		if (sourceObject !== undefined) {
+			console.log(source, target);
+			console.log(sourceObject);
+			return sourceObject[source] !== undefined ? sourceObject[source] : {};
 		}
-		// Edge is styled, return
-		return sourceObject[source];
+		return {};
 	}
 	const style = getEdgeStyle();
 	return (

@@ -1,0 +1,12 @@
+.comparison-container {
+	margin: 1em;
+	width: 400px;
+	height: fit-content;
+	display: flex;
+	flex-direction: column;
+
+	&-inner {
+		height: 200px;
+		width: auto;
+	}
+}

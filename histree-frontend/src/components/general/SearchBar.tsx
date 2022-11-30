@@ -17,6 +17,7 @@ import { AutoCompleteData, SearchBarInfo } from '../../models';
 export const SearchBar = () => {
 	const dispatch = useDispatch();
 	const { searchTerm, searchSuggestions } = useSelector(getSearchSuggestions);
+	console.log(searchTerm);
 	const appDispatch = useDispatch<AppDispatch>();
 	const handleChangeWithDebounce = debounce(async (e) => {
 		handleAutocomplete(e);
@@ -43,7 +44,7 @@ export const SearchBar = () => {
 		if (id && searchSuggestions[id]) {
 			dispatch(setResultServiceState({ status: 'Loading' }));
 			console.log(searchSuggestions[id]);
-			appDispatch(fetchSearchResults(searchSuggestions[id].id));
+			appDispatch(fetchSearchResults({ qid: searchSuggestions[id].id, name: searchSuggestions[id].label }));
 		};
 		dispatch(resetSearch())
 	}
