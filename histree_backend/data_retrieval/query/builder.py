@@ -3,6 +3,7 @@ from typing import Dict, List
 
 class SPARQLBuilder:
     _hidden_header_id = -1
+    _separator = ","
 
     def __init__(
         self, headers: Dict[str, Dict[str, any]] = dict(), language: str = "en"
@@ -23,7 +24,11 @@ class SPARQLBuilder:
             f"BIND({value} as {variable})" for (variable, value) in self.bounds.items()
         )
         header_selections = " ".join(
-            f"(SAMPLE(?{header}) as ?{header}_)" if config["sample"] else f"?{header}"
+            f"(SAMPLE(?{header}) as ?{header}_)"
+            if config["sample"]
+            else f'(GROUP_CONCAT(DISTINCT ?{header}; separator="{self._separator}") as ?{header}_)'
+            if config["grouped"]
+            else f"?{header}"
             for (header, config) in self.headers.items()
         )
         header_bindings = " ".join(
@@ -37,7 +42,7 @@ class SPARQLBuilder:
             if config["id"] != self._hidden_header_id
         )
         header_access = " ".join(
-            f"?{header}" + ("_" if config["sample"] else "")
+            f"?{header}" + ("_" if config["grouped"] or config["sample"] else "")
             for (header, config) in self.headers.items()
         )
         filtering = ""
@@ -48,7 +53,7 @@ class SPARQLBuilder:
                     f"FILTER NOT EXISTS {{?item wdt:{property} ?filter_{property}.}}."
                 )
         return f"""
-            SELECT ?item ?label ?description {header_selections}
+            SELECT ?item ?label ?description ?article {header_selections}
             WHERE {{
                 {"SELECT * WHERE {" if self.order_by else ""}
                     {self.values}
@@ -57,12 +62,13 @@ class SPARQLBuilder:
                     ?item {self.predicate}
                         rdfs:label ?label;
                         schema:description ?description.
+                    OPTIONAL{{?item ^schema:about ?article. FILTER REGEX(STR(?article), "{self.language}.wikipedia.org/wiki/") .}}
                     {header_bindings}
                     {filtering}
                     {self.other_filters}
                     FILTER(lang(?label) = "{self.language}" && lang(?description) = "{self.language}")
                 }}
-                GROUP BY ?item ?label ?description ?num {header_access}
+                GROUP BY ?item ?label ?description ?article ?num {header_access}
             {"}" if self.order_by else ""}
             {self.order_by}
             {f"LIMIT {self.limit}" if self.limit is not None else ""}
