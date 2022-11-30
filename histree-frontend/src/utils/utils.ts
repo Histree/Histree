@@ -1,5 +1,6 @@
 import {
   AdjList,
+  CardLocation,
   EdgeChildInfo,
   EdgeInfo,
   NodeId,
@@ -140,3 +141,11 @@ const buildPath = (target: NodeId, path: Map<NodeId, NodeId>): EdgeInfo => {
 
   return result;
 };
+
+export const mapsURL = (loc: CardLocation) => {
+  const lat = loc.coordinate_location.latitude;
+  const long = loc.coordinate_location.longitude;
+  const url = "https://www.google.com/maps/search/?api=1&query=" + lat + "%2C" + long;
+  return url;
+}
+
