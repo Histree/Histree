@@ -62,7 +62,7 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
       )
         {
             const location = selectedItem.attributes[name] as unknown as CardLocation
-            return <Link href={mapsURL(location)}>{location.name}</Link>;
+            return <Link href={mapsURL(location)} target="_blank">{location.name}</Link>;
 
           }
         return (<Typography>No data found</Typography>);
@@ -70,14 +70,17 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
     }
 
     const renderCardInfo = (att: string, attrName: string, attrVal: any, attrDesc: string) => {
-      if (typeof attrVal === 'object') {
+      if (attrVal === 'undefined') {
+        return <></>
+      } else if (typeof attrVal === 'object') {
         // For locations: when att = 'place_of_birth' or 'place_of_death', containing sub-JSONs
-        //attrDesc = attrVal['name'];
+         //attrDesc = attrVal['name'];
         return (
           <div style={{display: 'flex'}}>
             <Typography key={att} variant="body2">
               <b>{attrName.replace(/_/g, ' ')}:</b>
             </Typography>
+            &nbsp;
             {displayLocationURL(att)}
           </div>
         );
