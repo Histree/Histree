@@ -1,10 +1,4 @@
-import {
-  AdjList,
-  EdgeChildInfo,
-  EdgeInfo,
-  NodeId,
-  NodeLookup,
-} from "../models";
+import { AdjList, EdgeChildInfo, EdgeInfo, NodeId } from "../models";
 
 // export const cleanseBranches = (
 //   adjList: AdjList | undefined,

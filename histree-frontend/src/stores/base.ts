@@ -7,7 +7,6 @@ import {
 import {
   CompareNodes,
   EdgeInfo,
-  ExpandInfo,
   FilterInfo,
   HandleStatus,
   NodeId,
@@ -28,8 +27,9 @@ import {
   DataFail,
   DataSuccess,
 } from "../services";
-import { uniq, isEqual } from "lodash";
+import { uniq } from "lodash";
 import { Viewport } from "reactflow";
+import { matchesFilter } from "../utils/filter";
 
 interface HistreeState {
   renderMode: RenderMode;
@@ -147,39 +147,12 @@ export const histreeState = createSlice({
     setFilterInfo: (state, action: PayloadAction<FilterInfo>) => {
       state.filterInfo = action.payload;
 
-      if (state.filterInfo.filtered) {
-        Object.keys(state.nodeLookup).forEach((id) => {
-          let matchesFilter = false;
-          const petals = state.nodeLookup[id].petals;
-
-          if (petals) {
-            if (petals.date_of_birth) {
-              const birthDate = new Date(petals.date_of_birth);
-              const bornBetweenStart = state.filterInfo.bornBetween.startDate;
-              const bornBetweenEnd = state.filterInfo.bornBetween.endDate;
-
-              if (bornBetweenStart !== "") {
-                const startDate = new Date(bornBetweenStart);
-
-                matchesFilter = birthDate >= startDate;
-
-                if (bornBetweenEnd !== "") {
-                  const endDate = new Date(bornBetweenEnd);
-                  matchesFilter = matchesFilter && birthDate <= endDate;
-                }
-              } else if (bornBetweenEnd !== "") {
-                const endDate = new Date(bornBetweenEnd);
-                matchesFilter = birthDate <= endDate;
-              }
-            }
-          }
-          state.nodeLookup[id].matchedFilter = matchesFilter;
-        });
-      } else {
-        Object.keys(state.nodeLookup).forEach((id) => {
-          state.nodeLookup[id].matchedFilter = true;
-        });
-      }
+      Object.keys(state.nodeLookup).forEach((id) => {
+        state.nodeLookup[id].matchedFilter = matchesFilter(
+          state.nodeLookup[id],
+          state.filterInfo
+        );
+      });
     },
   },
   extraReducers: (builder) => {
@@ -209,62 +182,42 @@ export const histreeState = createSlice({
       fetchSelectedExpansion.fulfilled,
       (
         state: HistreeState,
-        action: PayloadAction<
-          DataSuccess<RenderContent & ExpandInfo> | DataFail
-        >
+        action: PayloadAction<DataSuccess<RenderContent> | DataFail>
       ) => {
-        const response = action.payload as DataSuccess<
-          RenderContent & ExpandInfo
-        >;
+        const response = action.payload as DataSuccess<RenderContent>;
         const lookup = { ...state.nodeLookup };
-        const { branches, flowers, direction, searchedQid } = response.content;
-        const stateContent = (
-          state.renderContent as DataSuccess<RenderContent & ExpandInfo>
-        ).content;
+        const { branches, flowers, searchedQid, searchedName } =
+          response.content;
+        const stateContent = state.renderContent as DataSuccess<RenderContent>;
+        stateContent.content.searchedName = searchedName;
+        stateContent.content.searchedQid = searchedQid;
+        stateContent.status = "Success";
+        // state.renderContent = response;
         flowers.forEach((f) => {
           if (lookup[f.id] === undefined) {
             lookup[f.id] = f;
-            lookup[f.id].visible = f.id === searchedQid;
+            lookup[f.id].visible = true;
             lookup[f.id].searched = f.id === searchedQid;
-            lookup[f.id].matchedFilter = true;
+            lookup[f.id].matchedFilter = matchesFilter(
+              lookup[f.id],
+              state.filterInfo
+            );
           }
-          if (!stateContent.flowers.includes(f)) {
-            stateContent.flowers.push(f);
+          if (!stateContent.content.flowers.includes(f)) {
+            stateContent.content.flowers.push(f);
           }
         });
 
         Object.keys(branches).forEach((b) => {
-          const individualBranch = stateContent.branches[b];
+          const individualBranch = stateContent.content.branches[b];
           const newBranch =
             individualBranch !== undefined
               ? uniq([...individualBranch, ...branches[b]])
               : branches[b];
-          stateContent.branches[b] = newBranch;
+          stateContent.content.branches[b] = newBranch;
         });
-
-        if (direction !== "down") {
-          Object.keys(branches).forEach((parentId) => {
-            if (branches[parentId].includes(searchedQid)) {
-              lookup[parentId].visible = true;
-            }
-          });
-          lookup[searchedQid].upExpanded = "Complete";
-        }
-        if (direction !== "up") {
-          if (branches[searchedQid] !== undefined) {
-            branches[searchedQid].forEach((childId) => {
-              if (lookup[childId] !== undefined) {
-                lookup[childId].visible = true;
-              }
-            });
-          }
-          lookup[searchedQid].downExpanded = "Complete";
-        }
-        if (!isEqual(state.nodeLookup, lookup)) {
-          state.nodeLookup = lookup;
-        } else {
-          console.log("lookup is unchanged");
-        }
+        state.nodeLookup = lookup;
+        state.renderContent = stateContent;
       }
     );
 
