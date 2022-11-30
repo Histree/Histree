@@ -9,12 +9,14 @@ import { useOnClickOutside } from 'usehooks-ts';
 import './TreePage.scss';
 import { CenterSearched } from '../components/general/CenterSearched';
 import '../components/TreeNode.scss'
+import { FrontPageHelp } from '../components/help/FrontPageHelp';
 
 const TreePage = () => {
 	const selected = useSelector(getSelected);
 	const renderContent = useSelector(getRenderContent);
 	const renderMode = useSelector(getRenderMode);
 	const expandedRef = useRef<HTMLDivElement>(null);
+	const cardRef = useRef<HTMLDivElement>(null);
 	const dispatch = useDispatch();
 
 	const handleClickOutside = () => {
@@ -25,13 +27,28 @@ const TreePage = () => {
 
 	return (
 		<div className="treepage">
+			{selected !== undefined && <>
+				<DescriptorCard ref={expandedRef} selectedItem={selected} />
+			</>}
 			<HelpDialog />
 
 			<ReactFlowProvider>
 				{renderContent.status === 'Success' && (
 					<Flow content={renderContent.content!} />
 				)}
-
+				{renderContent.status === 'Initial' && (
+					<Box
+						sx={{
+							display: 'flex',
+							width: '100%',
+							height: '100%',
+							alignItems: 'center',
+							justifyContent: 'center'
+						}}
+					>
+						<FrontPageHelp />
+					</Box>
+				)}
 				{(renderContent.status === 'Loading' || renderContent.status === 'Expanding') && (
 					<Box
 						sx={{
@@ -61,10 +78,6 @@ const TreePage = () => {
 					{renderMode === 'Children' && <ChildrenFinderCard />}
 				</div>
 				<CenterSearched />
-				{selected !== undefined && <>
-					<DescriptorCard ref={expandedRef} selectedItem={selected} />
-					<Expander ref={expandedRef} />
-				</>}
 			</ReactFlowProvider>
 		</div>
 	);
