@@ -5,22 +5,21 @@ import { RelationshipInfo } from '../../models';
 import { CompareNodes } from '../../models/compareInfo';
 import { ServiceStatus } from '../../services';
 import { getCompareNodes, getRelationship, getRenderContent } from '../../stores';
-import './ComparisonFlow.scss';
+import './ChildrenFinderFlow.scss';
 
-const comparisonFlowNodeBase: Partial<Node> = {
+const childrenFinderFlowNodeBase: Partial<Node> = {
 	style: { fontSize: '1em' },
 	draggable: false,
 	connectable: false,
 	deletable: false
 }
 
-const ComparisonFlow = () => {
+const ChildrenFinderFlow = () => {
 	const selected: CompareNodes = useSelector(getCompareNodes);
 	const relationshipStatus: ServiceStatus<RelationshipInfo | undefined> =
 		useSelector(getRelationship);
 
 	const src: Position = Position.Right;
-	const dst: Position = Position.Left;
 
 	const person1Label = selected.first ? selected.first.name : '?';
 	const person2Label = selected.second ? selected.second.name : '?';
@@ -32,52 +31,28 @@ const ComparisonFlow = () => {
 
 	const nodes: Node[] = [
 		{
-			...comparisonFlowNodeBase,
+			...childrenFinderFlowNodeBase,
 			id: 'person-1',
-			sourcePosition: src,
 			data: { label: person1Label },
 			position: { x: 100, y: 0 },
 			type: 'input'
 		},
 		{
-			...comparisonFlowNodeBase,
+			...childrenFinderFlowNodeBase,
 			id: 'person-2',
-			sourcePosition: src,
 			data: { label: person2Label },
-			position: { x: 100, y: 100 },
+			position: { x: 300, y: 0 },
 			type: 'input'
 		},
-		{
-			...comparisonFlowNodeBase,
-			id: 'relationship',
-			targetPosition: dst,
-			data: { label: relationshipLabel },
-			position: { x: 400, y: 50 },
-			type: 'output',
-		}
 	];
 
 	const isAnimated = person1Label === '?' || person2Label === '?';
-	const edges = [
-		{
-			id: '1',
-			source: 'person-1',
-			target: 'relationship',
-			animated: isAnimated
-		},
-		{
-			id: '2',
-			source: 'person-2',
-			target: 'relationship',
-			animated: isAnimated
-		}
-	];
 
 	return (
 		<div className="comparison-flow">
 			<ReactFlow
 				nodes={nodes}
-				edges={edges}
+				edges={[]}
 				panOnDrag={false}
 				panOnScroll={false}
 				zoomOnScroll={false}
@@ -89,4 +64,4 @@ const ComparisonFlow = () => {
 	);
 };
 
-export default ComparisonFlow;
+export default ChildrenFinderFlow;

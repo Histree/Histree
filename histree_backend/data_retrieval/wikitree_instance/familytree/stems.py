@@ -2,7 +2,7 @@ from typing import Dict, List
 from data_retrieval.query.builder import SPARQLBuilder
 from data_retrieval.wikitree.flower import WikiStem, UpWikiStem, DownWikiStem
 from data_retrieval.wikitree_instance.familytree.property import PROPERTY_MAP
-from .petals import FatherPetal, MotherPetal, CallerPetal
+from data_retrieval.wikitree_instance.familytree.petals import FatherPetal, MotherPetal, CallerPetal
 
 
 class SelfStem(WikiStem):

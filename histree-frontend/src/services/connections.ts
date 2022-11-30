@@ -41,14 +41,20 @@ export const fetchSearchSuggestions = createAsyncThunk(
 
 export const fetchSearchResults = createAsyncThunk(
   "search/fetchResults",
-  async (qid: string): Promise<DataSuccess<RenderContent> | DataFail> => {
+  async ({
+    qid,
+    name,
+  }: {
+    qid: string;
+    name: string;
+  }): Promise<DataSuccess<RenderContent> | DataFail> => {
     try {
       const response = await axios.get<RenderContent>(
         `https://histree.fly.dev/person_info/${qid}?depth_up=5&depth_down=5`
       );
       return {
         status: "Success",
-        content: { ...response.data, searchedQid: qid },
+        content: { ...response.data, searchedQid: qid, searchedName: name },
       };
     } catch (e) {
       return {
@@ -66,7 +72,7 @@ export const fetchSelectedExpansion = createAsyncThunk(
   ): Promise<DataSuccess<RenderContent & ExpandInfo> | DataFail> => {
     try {
       const response = await axios.get<RenderContent>(
-        `https://histree.fly.dev/person_info/${info.searchedQid}`
+        `https://histree.fly.dev/person_info/${info.searchedQid}?depth_up=5&depth_down=5`
       );
       return {
         status: "Success",

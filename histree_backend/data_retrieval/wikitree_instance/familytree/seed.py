@@ -12,11 +12,14 @@ class FamilySeed(WikiSeed):
             up_stem=ParentStem.instance(),
             down_stem=ChildStem.instance(),
             petals=[
+                BirthNamePetal.instance(),
                 GenderPetal.instance(),
                 BirthDatePetal.instance(),
+                BirthPlacePetal.instance(),
                 DeathDatePetal.instance(),
-                BirthNamePetal.instance(),
+                DeathPlacePetal.instance(),
                 ImagePetal.instance(),
+                SpousePetal.instance()
             ],
         )
 

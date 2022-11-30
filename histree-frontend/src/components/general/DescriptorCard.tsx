@@ -58,10 +58,22 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
               </IconButton>
             }
             title={selectedItem.name}
+            subheader={selectedItem.description &&
+              selectedItem.description !== 'undefined' ? (
+                <Typography variant="body2" color="text.secondary">
+                  {selectedItem.description.charAt(0).toUpperCase() +
+                    selectedItem.description.slice(1)}
+                </Typography>
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  Description not available.
+                </Typography>
+            )}
           />
 
           <CardContent>
             <Box className="descriptor-container-body">
+              
               {selectedItem.attributes &&
                 Object.keys(selectedItem.attributes)
                   .filter((att) => {
@@ -73,47 +85,30 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
                   .map((att) => {
                     const attrName = att.charAt(0).toUpperCase() + att.slice(1);
                     const attrVal = selectedItem.attributes![att];
-                    const attrDesc =
-                      attrVal === 'undefined'
-                        ? 'Unknown'
-                        : attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
+                    var attrDesc = ''
+                  
+                    if (attrVal === 'undefined') {
+                      attrDesc = 'Unknown'
+                    } else if (typeof attrVal === 'object') {
+                      // For locations: when att = 'place_of_birth' or 'place_of_death'
+                      // and contains sub-JSONs
+                      attrDesc = attrVal['name'];
+                    } else {
+                      attrDesc = attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
+                    }
 
                     return (
                       <Typography key={att} variant="body2">
-                        {`${attrName}: ${attrDesc}`}
+                        <b>{attrName.replace(/_/g, ' ')}:</b> {attrDesc}
                       </Typography>
                     );
                   })}
-              <br />
-              {selectedItem.description &&
-              selectedItem.description !== 'undefined' ? (
-                <Typography variant="body2">
-                  {selectedItem.description.charAt(0).toUpperCase() +
-                    selectedItem.description.slice(1)}
-                </Typography>
-              ) : (
-                <Typography variant="body2">
-                  Description not available.
-                </Typography>
-              )}
             </Box>
           </CardContent>
           <CardActions>
-            <>
-              {selectedItem.links &&
-                Object.keys(selectedItem.links).map((linkName) => {
-                  return (
-                    <Button
-                      key={linkName}
-                      size="small"
-                      href={selectedItem.links![linkName]}
-                    >
-                      {linkName}
-                    </Button>
-                  );
-                })}
-            </>
+            <Button href={selectedItem.article} target="_blank">Learn More</Button>
           </CardActions>
+          
         </Card>
       </div>
     );

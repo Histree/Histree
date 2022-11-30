@@ -70,10 +70,8 @@ export const histreeState = createSlice({
       }
     },
     setRenderMode: (state, action: PayloadAction<RenderMode>) => {
-      if (action.payload === "View") {
-        state.edgeInfo = {};
-        state.compareNodes = {};
-      }
+      state.compareNodes = {};
+      state.edgeInfo = {};
       state.renderMode = action.payload;
     },
     setNodeLookupDown: (
@@ -194,6 +192,7 @@ export const histreeState = createSlice({
         });
         state.renderContent.content.branches = successData.content.branches;
         state.nodeLookup = lookup;
+        state.searchSuggestions.searchTerm = successData.content.searchedName;
       }
     );
 

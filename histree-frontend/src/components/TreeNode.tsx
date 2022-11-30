@@ -47,6 +47,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 		if (renderMode === 'View') {
 			dispatch(
 				setSelected({
+					article: data.article,
 					name: data.name,
 					image: data?.image,
 					attributes: data.petals,
@@ -54,7 +55,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 					// links: details?.links,
 				})
 			);
-		} else if (renderMode === 'Compare') {
+		} else if (renderMode === 'Compare' || renderMode === 'Children') {
 			dispatch(setEdgeInfo({}));
 			dispatch(setComparisonNode(data));
 		}
@@ -123,7 +124,12 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 		if (comparisonNodes.first && comparisonNodes.first.id === nodeid ||
 			comparisonNodes.second && comparisonNodes.second.id === nodeid ||
 			edgeInfo[nodeid] !== undefined) {
-			return { color: 'orange', borderColor: 'orange' };
+			switch (renderMode) {
+				case 'Children':
+					return { color: 'red', borderColor: 'red' };
+				case 'Compare':
+					return { color: 'orange', borderColor: 'orange' };
+			}
 		} else if (data.matchedFilter === false) {
 			return { color: 'lightgray', borderColor: 'lightgray' };
 		}
@@ -138,7 +144,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 					type="target"
 					position={Position.Top}
 					isConnectable
-					onClick={handleExpandParents}
+				// onClick={handleExpandParents}
 				/>
 				<div className="tree-node-card" onClick={handleNodeClick}>
 					<div className="tree-node-child">{data.name}</div>
@@ -149,7 +155,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 					type="source"
 					position={Position.Bottom}
 					isConnectable
-					onClick={handleExpandChildren}
+				// onClick={handleExpandChildren}
 				/>
 			</> : <div></div>}
 		</div>

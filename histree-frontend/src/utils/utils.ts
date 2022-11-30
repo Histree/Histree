@@ -40,6 +40,7 @@ export const addChildrenNode = (adjList: AdjList): AdjList => {
   });
   return newAdjList;
 };
+
 export const convertToUndirected = (adjList: AdjList): AdjList => {
   const newAdjList = { ...adjList };
   Object.entries(adjList).forEach(([parent, children]) => {
@@ -57,6 +58,29 @@ export const convertToUndirected = (adjList: AdjList): AdjList => {
   });
   return newAdjList;
 };
+export const findNodeChildren = (
+  node1: NodeId,
+  node2: NodeId,
+  adjList: AdjList
+): EdgeInfo => {
+  const node1Children = adjList[node1];
+  const node2Children = adjList[node2];
+  console.log(node1Children);
+  console.log(node2Children);
+  const edgeInfo: EdgeInfo = {};
+  node1Children.forEach((child) => {
+    console.log(child);
+    if (node2Children.includes(child)) {
+      const node2CSS: EdgeChildInfo = {};
+      const node1CSS: EdgeChildInfo = {};
+      node2CSS[node2] = { stroke: "red", strokeWidth: "0.1em" };
+      node1CSS[node1] = { stroke: "red", strokeWidth: "0.1em" };
+      edgeInfo[child] = { ...node1CSS, ...node2CSS };
+    }
+  });
+  return edgeInfo;
+};
+
 export const findPathBetweenTwoNodes = (
   node1: NodeId,
   node2: NodeId,
