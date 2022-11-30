@@ -1,4 +1,5 @@
 import re
+import concurrent.futures
 from typing import Dict, List
 from data_retrieval.query.name_query import NameQueryBuilder
 from data_retrieval.wikitree.tree import WikiSeed, WikiTree
@@ -33,31 +34,38 @@ class HistreeQuery:
 
     @staticmethod
     def search_matching_names(
-        name: str, instance: str = "Q5", language: str = "en"
+        name: str,
+        instance: str = "Q5",
+        pages: int = 3,
+        language: str = "en",
     ) -> Dict[int, Dict[str, str]]:
         # Check if name has been queried before in db and return if so
 
         # Otherwise, query wikidata directly
-        query = (
-            NameQueryBuilder()
-            .with_instance(instance)
+        queries = [
+            NameQueryBuilder(pagination=i)
             .with_name(name)
+            .with_instance(instance)
             .matches_regex(name)
             .ordered_by("?num")
-            .with_limit(10)
             .build()
-        )
+            for i in range(pages)
+        ]
 
-        res = return_sparql_query_results(query)
+        results = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=pages) as executor:
+            results = executor.map(return_sparql_query_results, queries)
 
-        qid_label_map = dict()
-
-        for (i, row) in enumerate(res["results"]["bindings"]):
-            qid_label_map[i] = {
-                "id": row["item"]["value"].split("/")[-1],
-                "label": row["label"]["value"],
-                "description": row["description"]["value"],
-            }
+        qid_label_map = []
+        for res in results:
+            for row in res["results"]["bindings"]:
+                qid_label_map.append(
+                    {
+                        "id": row["item"]["value"].split("/")[-1],
+                        "label": row["label"]["value"],
+                        "description": row["description"]["value"],
+                    }
+                )
 
         return qid_label_map
 
