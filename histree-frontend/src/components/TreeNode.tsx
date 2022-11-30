@@ -37,6 +37,7 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 		if (renderMode === 'View') {
 			dispatch(
 				setSelected({
+					id: data.id,
 					article: data.article,
 					name: data.name,
 					image: data?.image,

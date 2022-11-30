@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import Flow from '../components/Flow';
 import { getSelected, getRenderContent, getRenderMode, setSelected } from '../stores/base';
 import { useDispatch, useSelector } from 'react-redux';
-import { ComparisonCard, ModelIcons, DescriptorCard, SearchBar, HelpDialog, ChildrenFinderCard } from '../components';
+import { ComparisonCard, ModelIcons, DescriptorCard, SearchBar, HelpDialog, ChildrenFinderCard, Expander } from '../components';
 import { ReactFlowProvider } from 'reactflow';
 import { Alert, Box, CircularProgress, Snackbar } from '@mui/material';
 import { useOnClickOutside } from 'usehooks-ts';
@@ -32,7 +32,7 @@ const TreePage = () => {
 					<Flow content={renderContent.content!} />
 				)}
 
-				{renderContent.status === 'Loading' && (
+				{(renderContent.status === 'Loading' || renderContent.status === 'Expanding') && (
 					<Box
 						sx={{
 							display: 'flex',
@@ -61,7 +61,10 @@ const TreePage = () => {
 					{renderMode === 'Children' && <ChildrenFinderCard />}
 				</div>
 				<CenterSearched />
-				{selected !== undefined && <DescriptorCard ref={expandedRef} selectedItem={selected} />}
+				{selected !== undefined && <>
+					<DescriptorCard ref={expandedRef} selectedItem={selected} />
+					<Expander ref={expandedRef} />
+				</>}
 			</ReactFlowProvider>
 		</div>
 	);
