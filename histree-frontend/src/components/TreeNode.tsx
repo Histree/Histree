@@ -4,14 +4,10 @@ import {
 	setSelected,
 	getRenderContent,
 	getNodeLookup,
-	setNodeLookup,
-	setNodeLookupDown,
-	setNodeLookupUp,
 	getRenderMode,
 	setComparisonNode,
 	setEdgeInfo,
 	getCompareNodes,
-	setNodeOnScreen,
 	getEdgeInfo
 } from '../stores/base';
 import { HandleStatus, NodeId, NodeInfo } from '../models';
@@ -37,12 +33,6 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 	const nodeLookup = useSelector(getNodeLookup);
 	const edgeInfo = useSelector(getEdgeInfo);
 
-	useEffect(() => {
-		if (isInView) {
-			dispatch(setNodeOnScreen({ id: data.id, onScreen: isInView }))
-		}
-	}, [isInView])
-
 	const handleNodeClick = () => {
 		if (renderMode === 'View') {
 			dispatch(
@@ -58,65 +48,6 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 		} else if (renderMode === 'Compare' || renderMode === 'Children') {
 			dispatch(setEdgeInfo({}));
 			dispatch(setComparisonNode(data));
-		}
-	};
-
-	const handleExpandParents = (): void => {
-		if (nodeLookup[data.id] !== undefined && nodeLookup[data.id].searched) {
-			return;
-		}
-		dispatch(setNodeLookupUp({ searchedQid: data.id, status: 'Loading' }));
-		if (renderContent.status === 'Success') {
-			const { branches } = renderContent.content!;
-			const nodes = { ...nodeLookup };
-
-			// if (!nodes[data.id].searched) {
-			// 	appDispatch(
-			// 		fetchSelectedExpansion({ searchedQid: data.id, direction: 'up' })
-			// 	);
-			// } else {
-			if (branches[data.id]) {
-				Object.keys(branches).forEach((parentId) => {
-					if (branches[parentId].includes(data.id)) {
-						const parent = { ...nodes[parentId] };
-						parent.visible = true;
-						nodes[parentId] = parent;
-					}
-				});
-				dispatch(setNodeLookup(nodes));
-				// }
-				dispatch(setNodeLookupUp({ searchedQid: data.id, status: 'Complete' }));
-			}
-		}
-	};
-
-	const handleExpandChildren = (): void => {
-		if (nodeLookup[data.id] !== undefined && nodeLookup[data.id].searched) {
-			return;
-		}
-		dispatch(setNodeLookupDown({ searchedQid: data.id, status: 'Loading' }));
-		if (renderContent.status === 'Success') {
-			const { branches } = renderContent.content!;
-			const nodes = { ...nodeLookup };
-
-			// if (!nodes[data.id].searched) {
-			// 	appDispatch(
-			// 		fetchSelectedExpansion({ searchedQid: data.id, direction: 'down' })
-			// 	);
-			// } else {
-			if (branches[data.id]) {
-				branches[data.id].forEach((childId) => {
-					console.log(nodes[childId]);
-					const child = { ...nodes[childId] };
-					child.visible = true;
-					nodes[childId] = child;
-				});
-				dispatch(setNodeLookup(nodes));
-			}
-			dispatch(
-				setNodeLookupDown({ searchedQid: data.id, status: 'Complete' })
-			);
-			// }
 		}
 	};
 
@@ -138,26 +69,22 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 
 	return (
 		<div ref={ref} className="tree-node" style={getNodeStyle(data.id)}>
-			{nodeLookup[data.id].visible ? <>
-				<Handle
-					className={nodeClassMap[nodeLookup[data.id].upExpanded]}
-					type="target"
-					position={Position.Top}
-					isConnectable
-				// onClick={handleExpandParents}
-				/>
-				<div className="tree-node-card" onClick={handleNodeClick}>
-					<div className="tree-node-child">{data.name}</div>
-				</div>
+			<Handle
+				className={nodeClassMap[nodeLookup[data.id].upExpanded]}
+				type="target"
+				position={Position.Top}
+				isConnectable
+			/>
+			<div className="tree-node-card" onClick={handleNodeClick}>
+				<div className="tree-node-child">{data.name}</div>
+			</div>
 
-				<Handle
-					className={nodeClassMap[nodeLookup[data.id].downExpanded]}
-					type="source"
-					position={Position.Bottom}
-					isConnectable
-				// onClick={handleExpandChildren}
-				/>
-			</> : <div></div>}
+			<Handle
+				className={nodeClassMap[nodeLookup[data.id].downExpanded]}
+				type="source"
+				position={Position.Bottom}
+				isConnectable
+			/>
 		</div>
 	);
 };
