@@ -41,6 +41,7 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
 
 
 
+
 interface DescriptorCardProps {
   children?: React.ReactNode;
   selectedItem: Selected;
@@ -60,6 +61,20 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
 
     const handleExpandClick = () => {
       setExpanded(!expanded);
+    }
+
+    const displayLocationURL = (name: string) => {
+      if (selectedItem.attributes &&
+        selectedItem.attributes[name] &&
+        selectedItem.attributes[name] !== undefined
+      )
+        {
+            const location = selectedItem.attributes[name] as unknown as CardLocation
+            return (<Link href={mapsURL(location)}>{location.name}</Link>)
+
+          }
+        return <></>
+
     }
 
     return (
@@ -165,12 +180,10 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
           </CardActions>
           <Collapse in={expanded} timeout="auto" unmountOnExit>
             <CardContent>
-              <Typography paragraph>Hi</Typography>
-              {selectedItem.attributes &&
-                selectedItem.attributes['place_of_birth'] &&
-                selectedItem.attributes['place_of_birth'] !== 'undefined' && (
-                  <Link href={mapsURL(selectedItem.attributes['place_of_birth'] as unknown as CardLocation)}>Place of birth</Link>
-                )}
+              <Typography paragraph>Place of birth: </Typography>
+              {displayLocationURL("place_of_birth")}
+              <Typography paragraph>Place of death: </Typography>
+              {displayLocationURL("place_of_death")}
             </CardContent>
           </Collapse>
         </Card>
