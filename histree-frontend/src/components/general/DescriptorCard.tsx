@@ -78,7 +78,6 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
             <Typography key={att} variant="body2">
               <b>{attrName.replace(/_/g, ' ')}:</b>
             </Typography>
-            &nbsp;
             {displayLocationURL(att)}
           </div>
         );
