@@ -7,7 +7,6 @@ import {
 import {
   AutoCompleteData,
   EdgeInfo,
-  ExpandInfo,
   HandleStatus,
   NodeId,
   NodeInfo,
@@ -170,22 +169,17 @@ export const histreeState = createSlice({
       fetchSelectedExpansion.fulfilled,
       (
         state: HistreeState,
-        action: PayloadAction<
-          DataSuccess<RenderContent & ExpandInfo> | DataFail
-        >
+        action: PayloadAction<DataSuccess<RenderContent> | DataFail>
       ) => {
-        const response = action.payload as DataSuccess<
-          RenderContent & ExpandInfo
-        >;
+        const response = action.payload as DataSuccess<RenderContent>;
         const lookup = { ...state.nodeLookup };
-        const { branches, flowers, direction, searchedQid } = response.content;
-        const stateContent = (
-          state.renderContent as DataSuccess<RenderContent & ExpandInfo>
-        ).content;
+        const { branches, flowers, searchedQid } = response.content;
+        const stateContent = (state.renderContent as DataSuccess<RenderContent>)
+          .content;
         flowers.forEach((f) => {
           if (lookup[f.id] === undefined) {
             lookup[f.id] = f;
-            lookup[f.id].visible = f.id === searchedQid;
+            lookup[f.id].visible = true;
             lookup[f.id].searched = f.id === searchedQid;
             lookup[f.id].matchedFilter = true;
           }
@@ -202,25 +196,6 @@ export const histreeState = createSlice({
               : branches[b];
           stateContent.branches[b] = newBranch;
         });
-
-        if (direction !== "down") {
-          Object.keys(branches).forEach((parentId) => {
-            if (branches[parentId].includes(searchedQid)) {
-              lookup[parentId].visible = true;
-            }
-          });
-          lookup[searchedQid].upExpanded = "Complete";
-        }
-        if (direction !== "up") {
-          if (branches[searchedQid] !== undefined) {
-            branches[searchedQid].forEach((childId) => {
-              if (lookup[childId] !== undefined) {
-                lookup[childId].visible = true;
-              }
-            });
-          }
-          lookup[searchedQid].downExpanded = "Complete";
-        }
         if (!isEqual(state.nodeLookup, lookup)) {
           state.nodeLookup = lookup;
         } else {
