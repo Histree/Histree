@@ -22,19 +22,19 @@ const nodeClassMap: Record<HandleStatus, string> = {
 	None: 'handle'
 };
 
-const TreeNode = ({ data }: { data: NodeInfo }) => {
+const TreeNode = ({ id }: { id: NodeId }) => {
 	const ref = useRef<HTMLInputElement>(null);
 
-	const isInView = useIsInViewport(ref);
 	const dispatch = useDispatch();
 	const renderMode = useSelector(getRenderMode);
 	const comparisonNodes = useSelector(getCompareNodes);
-	const renderContent = useSelector(getRenderContent);
 	const nodeLookup = useSelector(getNodeLookup);
 	const edgeInfo = useSelector(getEdgeInfo);
 
+	const data = nodeLookup[id];
+
 	const handleNodeClick = () => {
-		if (renderMode === 'View') {
+		if (renderMode === 'View' || renderMode === 'Filter') {
 			dispatch(
 				setSelected({
 					id: data.id,
@@ -62,7 +62,9 @@ const TreeNode = ({ data }: { data: NodeInfo }) => {
 				case 'Compare':
 					return { color: 'orange', borderColor: 'orange' };
 			}
-		} else if (data.matchedFilter === false) {
+		}
+		
+		if (data.matchedFilter === false) {
 			return { color: 'lightgray', borderColor: 'lightgray' };
 		}
 		return {}

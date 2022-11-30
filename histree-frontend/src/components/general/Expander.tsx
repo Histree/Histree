@@ -1,5 +1,5 @@
-import React, { forwardRef, SyntheticEvent } from "react";
-import { Button, IconButton, Tooltip } from "@mui/material";
+import React, { forwardRef } from "react";
+import { Button } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import './Expander.scss'
 import {
@@ -10,7 +10,6 @@ import {
 import { MyLocation } from "@mui/icons-material";
 import { DataSuccess, fetchSelectedExpansion } from "../../services";
 import { RenderContent, Selected } from "../../models";
-import { render } from "react-dom";
 
 export const Expander = forwardRef<HTMLDivElement>((_, ref) => {
 	const renderContent = useSelector(getRenderContent);

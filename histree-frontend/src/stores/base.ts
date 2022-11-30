@@ -5,8 +5,9 @@ import {
   createSelector,
 } from "@reduxjs/toolkit";
 import {
-  AutoCompleteData,
+  CompareNodes,
   EdgeInfo,
+  FilterInfo,
   HandleStatus,
   NodeId,
   NodeInfo,
@@ -26,9 +27,9 @@ import {
   DataFail,
   DataSuccess,
 } from "../services";
-import { uniq, isEqual } from "lodash";
-import { CompareNodes } from "../models/compareInfo";
+import { uniq } from "lodash";
 import { Viewport } from "reactflow";
+import { matchesFilter } from "../utils/filter";
 
 interface HistreeState {
   renderMode: RenderMode;
@@ -40,6 +41,7 @@ interface HistreeState {
   compareNodes: CompareNodes;
   relationship: ServiceStatus<RelationshipInfo | undefined>;
   currViewport: Viewport;
+  filterInfo: FilterInfo;
 }
 
 const initialState: HistreeState = {
@@ -52,6 +54,7 @@ const initialState: HistreeState = {
   compareNodes: {},
   relationship: { status: "Initial" },
   currViewport: { x: 0, y: 0, zoom: 2 },
+  filterInfo: { filtered: false, bornBetween: { startDate: "", endDate: "" } },
 };
 
 export const histreeState = createSlice({
@@ -141,6 +144,16 @@ export const histreeState = createSlice({
     ) => {
       state.relationship = action.payload;
     },
+    setFilterInfo: (state, action: PayloadAction<FilterInfo>) => {
+      state.filterInfo = action.payload;
+
+      Object.keys(state.nodeLookup).forEach((id) => {
+        state.nodeLookup[id].matchedFilter = matchesFilter(
+          state.nodeLookup[id],
+          state.filterInfo
+        );
+      });
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchSearchSuggestions.fulfilled, (state, action) => {
@@ -185,7 +198,10 @@ export const histreeState = createSlice({
             lookup[f.id] = f;
             lookup[f.id].visible = true;
             lookup[f.id].searched = f.id === searchedQid;
-            lookup[f.id].matchedFilter = true;
+            lookup[f.id].matchedFilter = matchesFilter(
+              lookup[f.id],
+              state.filterInfo
+            );
           }
           if (!stateContent.content.flowers.includes(f)) {
             stateContent.content.flowers.push(f);
@@ -274,6 +290,12 @@ export const getRelationship = createSelector(
   },
   (x) => x
 );
+export const getFilterInfo = createSelector(
+  (state: HistreeState) => {
+    return state.filterInfo;
+  },
+  (x) => x
+);
 
 export const {
   setSelected,
@@ -289,6 +311,7 @@ export const {
   setRelationship,
   setNodeOnScreen,
   setSearchValue,
+  setFilterInfo,
 } = histreeState.actions;
 
 export const store = configureStore({

@@ -1,8 +1,9 @@
-import React, { SyntheticEvent } from "react";
+import React from "react";
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import PeopleIcon from '@mui/icons-material/People';
-import { Button, IconButton, Tooltip } from "@mui/material";
+import TuneIcon from '@mui/icons-material/Tune';
+import { IconButton, Tooltip } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import './ModeIcons.scss';
 import {
@@ -41,6 +42,13 @@ export const ModelIcons = () => {
 					onClick={() => handleIconClick('Children')}
 					style={{ padding: '0.4em 0.25em' }}>
 					<PeopleIcon />
+				</IconButton>
+			</Tooltip>
+			<Tooltip placement="right" title="Filter">
+				<IconButton color={renderMode === 'Filter' ? 'info' : 'default'}
+					onClick={() => handleIconClick('Filter')}
+					style={{ padding: '0.4em 0.25em' }}>
+					<TuneIcon />
 				</IconButton>
 			</Tooltip>
 		</div >
