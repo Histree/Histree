@@ -45,7 +45,7 @@ class RelationshipCalculator:
 
         path2 = [id2]
         if ca_id != id2:
-            properties = db.read_db(shortest_path_properties, id2, ca_id)[0]
+            properties = db.read_db(shortest_path_properties, id2, ca_id)
             # list of tuples of dictionaries
             path2 = [item[0]["id"] for item in properties]
 
