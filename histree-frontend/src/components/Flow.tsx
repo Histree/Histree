@@ -1,4 +1,4 @@
-import React, { CSSProperties, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import ReactFlow, {
 	Controls,
 	Background,
@@ -11,17 +11,25 @@ import { NodeLookup, AdjList, RenderContent, NodePositions, NodeId } from '../mo
 import TreeNode from './TreeNode';
 import dagre, { graphlib } from 'dagre';
 import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, getCompareNodes, getCurrentViewport, getEdgeInfo, getNodeLookup, getRenderContent, getRenderMode, getSearchSuggestions, setEdgeInfo, setRelationship, setSelected } from '../stores';
+import { 
+	AppDispatch, 
+	getCompareNodes, 
+	getEdgeInfo, 
+	getNodeLookup, 
+	getRenderContent, 
+	getRenderMode, 
+	setEdgeInfo, 
+	setRelationship, 
+	setSelected 
+} from '../stores';
 import InvisibleConnectionLine from './general/InvisibleConnectionLine';
-import { addChildrenNode, findNodeChildren, findPathBetweenTwoNodes } from '../utils/utils';
-import { DataSuccess, fetchRelationship } from '../services';
+import { addChildrenNode, buildSpousesAdjList, findNodeChildren, findPathBetweenTwoNodes } from '../utils/utils';
+import {  fetchRelationship } from '../services';
 import TreeEdge from './TreeEdge';
+import SpouseEdge from './SpouseEdge';
 
-// const CENTER_X = 800;
-// const CENTER_Y = 400;
 const NODE_BOX_WIDTH = 155;
 const NODE_BOX_HEIGHT = 50;
-
 
 const Flow = (props: { content: RenderContent }) => {
 	const { content } = props;
@@ -57,7 +65,7 @@ const Flow = (props: { content: RenderContent }) => {
 	}
 
 	const nodeTypes = useMemo(() => ({ dataNode: TreeNode }), []);
-	const edgeTypes = useMemo(() => ({ dataEdge: TreeEdge }), []);
+	const edgeTypes = useMemo(() => ({ dataEdge: TreeEdge, spouseEdge: SpouseEdge }), []);
 	var graph: graphlib.Graph = new graphlib.Graph();
 	graph.setGraph({});
 	graph.setDefaultEdgeLabel(function () {
@@ -103,7 +111,6 @@ const Flow = (props: { content: RenderContent }) => {
 		/* eslint-disable  @typescript-eslint/no-explicit-any */
 		dagreNodes.forEach((n: any) => {
 			const nodeObj: any = graph.node(n);
-
 			if (nodeObj) {
 				const flowNode: Node = {
 					id: n,
@@ -130,23 +137,39 @@ const Flow = (props: { content: RenderContent }) => {
 	const positions = populateGraph(nodeLookup, content.branches, graph);
 
 	// Converts adjacency list to list of Edges for React Flow rendering.
-	const layoutEdges = (adjList: AdjList): Edge[] => {
+	const layoutEdges = (treeEdges: AdjList, spouseEdges: AdjList): Edge[] => {
 		const completeEdges: Edge[] = [];
-		const comparisonEdges: Edge[] = [];
 
-		Object.keys(adjList).forEach((source) => {
-			adjList[source].forEach((target) => {
+		Object.keys(treeEdges).forEach((source) => {
+			treeEdges[source].forEach((target) => {
 				const edge: Edge = {
 					id: `${source}-${target}`,
 					source: source,
 					target: target,
 					type: 'dataEdge',
-					animated: getEdgeAnimation(source, target)
+					animated: getEdgeAnimation(source, target),
+					sourceHandle: 'tree-source-handle',
+					targetHandle: 'tree-target-handle',
 				};
 				completeEdges.push(edge)
 			});
 		});
 
+		Object.keys(spouseEdges).forEach((source) => {
+			spouseEdges[source].forEach((target) => {
+				const edge: Edge = {
+					id: `spouse-${source}-${target}`,
+					source: source,
+					target: target,
+					type: 'spouseEdge',
+					animated: true,
+					style: { stroke: 'darkgray' },
+					sourceHandle: 'spouse-source-handle',
+					targetHandle: 'spouse-target-handle',
+				}
+				completeEdges.push(edge);
+			});
+		});
 		return completeEdges;
 	};
 
@@ -192,13 +215,12 @@ const Flow = (props: { content: RenderContent }) => {
 		}
 	}, [comparisonNodes]);
 
-
 	return (
 		<div style={{ height: '100%' }}>
 			<ReactFlow
 				className="flow"
 				nodes={Object.values(flowNodes)}
-				edges={layoutEdges(content.branches)}
+				edges={layoutEdges(content.branches, buildSpousesAdjList(nodeLookup))}
 				nodeTypes={nodeTypes}
 				edgeTypes={edgeTypes}
 				connectionLineComponent={InvisibleConnectionLine}

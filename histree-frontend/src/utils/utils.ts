@@ -154,17 +154,30 @@ export const mapsURL = (loc: CardLocation): Url => {
 export const buildSpousesAdjList = (nodeLookup: NodeLookup): AdjList => {
   const adjList: AdjList = {};
   Object.keys(nodeLookup).forEach((id) => {
+    adjList[id] = [];
     const petals = nodeLookup[id].petals;
     if (petals) {
       const spouses: Record<number, NodeId> = petals.spouse;
       if (spouses) {
         Object.values(spouses).forEach((s) => {
-          if (!Object.keys(adjList).includes(s) && !adjList[id].includes(s)) {
+          if (!adjList[s]) {
             adjList[id].push(s);
           }
         });
       }
     }
   });
+
   return adjList;
+};
+
+export const getArcPath = (
+  sourceX: number,
+  sourceY: number,
+  targetX: number,
+  targetY: number
+): string => {
+  const controlX = (sourceX + targetX) / 2;
+  const controlY = Math.max(sourceY, targetY) - 50;
+  return `M${sourceX},${sourceY} Q${controlX},${controlY} ${targetX},${targetY}`;
 };
