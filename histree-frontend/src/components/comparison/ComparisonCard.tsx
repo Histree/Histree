@@ -1,10 +1,10 @@
 import React from 'react';
-import { Card, CardHeader, CardContent } from '@mui/material';
-import './ComparisonCard.scss';
+import { Card, CardHeader, CardContent, Typography } from '@mui/material';
 import ComparisonFlow from './ComparisonFlow';
 import { ReactFlowProvider } from 'reactflow';
 import { useSelector } from 'react-redux';
 import { getRenderContent } from '../../stores';
+import './ComparisonCard.scss';
 
 export const ComparisonCard = () => {
 	const renderContent = useSelector(getRenderContent);
@@ -19,7 +19,10 @@ export const ComparisonCard = () => {
 								<ComparisonFlow />
 							</ReactFlowProvider>
 						</div>
-					</CardContent> : <CardContent><p>No data detected. Please search for someone.</p></CardContent>}
+					</CardContent> : 
+					<CardContent>
+						<Typography>No data detected. Please search for someone.</Typography>
+					</CardContent>}
 			</Card>
 		</div>
 	);
