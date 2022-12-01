@@ -36,7 +36,7 @@ class HistreeQuery:
     def search_matching_names(
         name: str,
         instance: str = "Q5",
-        pages: int = 3,
+        pages: int = 2,
         language: str = "en",
     ) -> Dict[int, Dict[str, str]]:
         # Check if name has been queried before in db and return if so
