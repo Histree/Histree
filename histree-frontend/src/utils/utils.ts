@@ -4,6 +4,7 @@ import {
   EdgeChildInfo,
   EdgeInfo,
   NodeId,
+  NodeLookup,
   Url,
 } from "../models";
 
@@ -148,4 +149,22 @@ export const mapsURL = (loc: CardLocation): Url => {
   const url =
     "https://www.google.com/maps/search/?api=1&query=" + lat + "%2C" + long;
   return url;
+};
+
+export const buildSpousesAdjList = (nodeLookup: NodeLookup): AdjList => {
+  const adjList: AdjList = {};
+  Object.keys(nodeLookup).forEach((id) => {
+    const petals = nodeLookup[id].petals;
+    if (petals) {
+      const spouses: Record<number, NodeId> = petals.spouse;
+      if (spouses) {
+        Object.values(spouses).forEach((s) => {
+          if (!Object.keys(adjList).includes(s) && !adjList[id].includes(s)) {
+            adjList[id].push(s);
+          }
+        });
+      }
+    }
+  });
+  return adjList;
 };
