@@ -99,7 +99,26 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
 									alt={selectedItem.attributes!['image']}
 								/>
 							)}
-
+						<CardHeader
+							onClick={closeWindow}
+							action={
+								<IconButton aria-label="close">
+									<CloseIcon></CloseIcon>
+								</IconButton>
+							}
+							title={selectedItem.name}
+							subheader={selectedItem.description &&
+								selectedItem.description !== 'undefined' ? (
+								<Typography variant="body2" color="text.secondary">
+									{selectedItem.description.charAt(0).toUpperCase() +
+										selectedItem.description.slice(1)}
+								</Typography>
+							) : (
+								<Typography variant="body2" color="text.secondary">
+									Description not available.
+								</Typography>
+							)}
+						/>
 						<CardContent>
 							<Box className="descriptor-container-body">
 
