@@ -112,7 +112,7 @@ def shortest_path_properties(tx, person_id1, person_id2):
     query = (
         "MATCH (p1:Person {id: \'" + person_id1 + "\'}), "
         "(p2:Person {id: \'" + person_id2 + "\'}), "
-        "path = shortestPath((p1)-[PARENT_OF*]-(p2)) "
+        "path = shortestPath((p1)<-[PARENT_OF*]-(p2)) "
         "WITH reduce(output = [], n in nodes(path) | output + n) as nodeCollection "
         "UNWIND nodeCollection as route "
         "RETURN properties(route) AS properties"

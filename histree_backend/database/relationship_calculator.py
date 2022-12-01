@@ -1,4 +1,4 @@
-from .cypher_runner import common_ancestor, shortest_distance, gender
+from .cypher_runner import common_ancestor, shortest_distance, gender, shortest_path_properties
 
 class RelationshipCalculator:
 
@@ -24,10 +24,35 @@ class RelationshipCalculator:
             RelationshipCalculator.cached_table = RelationshipCalculator.relationship_table()
 
         try:
-            return RelationshipCalculator.cached_table[distance1][distance2].get(gender1, RelationshipCalculator.cached_table[distance1][distance2]["default"])
+            relationship = RelationshipCalculator.cached_table[distance1][distance2].get(gender1, RelationshipCalculator.cached_table[distance1][distance2]["default"])
+            return relationship
         except (IndexError, KeyError) as error:
             print(error)
             return "has no close relationship with"
+
+
+    @staticmethod
+    def path_through_common_ancestor(db, id1, id2, ca_id):
+        '''Returns the single shortest path from id1 to id2 through ca_id'''
+        path1 = [id1]
+        if ca_id != id1:
+            properties = db.read_db(shortest_path_properties, id1, ca_id)
+            # list of tuples of dictionaries
+            path1 = [item[0]["id"] for item in properties]
+
+
+        print(f"Path 1: {path1}")
+
+        path2 = [id2]
+        if ca_id != id2:
+            properties = db.read_db(shortest_path_properties, id2, ca_id)[0]
+            # list of tuples of dictionaries
+            path2 = [item[0]["id"] for item in properties]
+
+        print(f"Path 2: {path2}")
+
+        path2.reverse()
+        return path1[:-1] + path2
 
 
     @staticmethod
