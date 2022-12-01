@@ -1,3 +1,3 @@
 export * from "./ComparisonCard";
-export * from "./ModeIcons";
+export * from "../general/ModeIcons";
 export * from "./ComparisonFlow";

@@ -1,0 +1,21 @@
+.filter {
+    &-container {
+        margin: 1em;
+        height: fit-content;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    &-input {
+        padding: 0 0.5em 0 0.5em;
+    }
+
+    &-born-container {
+        display: flex;
+        flex-direction: row;
+    }
+
+    &-title-container {
+        padding-bottom: 1em;
+    }
+}
