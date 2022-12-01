@@ -16,8 +16,19 @@ RETURN a.id AS id
 ORDER BY length(path)
 LIMIT 1
 
-Philip: id: Q80976    is father of    Edward id: Q154920
+Philip: id: Q80976    is father of    Edward id: Q80976
 MATCH (p1:Person {id: 'Q43274'}), 
-(p2:Person {id: 'Q151754'}), 
+(p2:Person {id: 'Q43274'}), 
 path = shortestPath((p1)-[*]-(p2)) 
 RETURN length(path) AS length
+
+
+Path from Edward to Philip just contains those 2
+
+MATCH (p1:Person {id: 'Q80976'}),
+(p2:Person {id: 'Q80976'}),
+path = shortestPath((p1)-[PARENT_OF*]-(p2))
+WITH reduce(output = [], n in nodes(path) | output + n) as nodeCollection
+UNWIND nodeCollection as route
+RETURN properties(route)
+
