@@ -11,7 +11,7 @@ import { MyLocation } from "@mui/icons-material";
 import { DataSuccess, fetchSelectedExpansion } from "../../services";
 import { RenderContent, Selected } from "../../models";
 
-export const Expander = forwardRef<HTMLDivElement>((_, ref) => {
+export const Expander = () => {
 	const renderContent = useSelector(getRenderContent);
 	const selected = useSelector(getSelected) as Selected;
 	const nodeLookup = useSelector(getNodeLookup);
@@ -29,10 +29,10 @@ export const Expander = forwardRef<HTMLDivElement>((_, ref) => {
 	}
 
 	return renderContent.status === 'Success' && !nodeLookup[selected.id].searched ?
-		<div ref={ref} className="expander_container">
+		<div className="expander_container">
 			<Button variant="contained" onClick={handleClick} startIcon={<MyLocation />}>
 				Expand
 			</Button>
 		</div > : <></>
 
-});
+};
