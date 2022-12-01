@@ -1,5 +1,5 @@
-import React, { forwardRef, SyntheticEvent } from "react";
-import { Button, IconButton, Tooltip } from "@mui/material";
+import React, { forwardRef } from "react";
+import { Button } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import './Expander.scss'
 import {
@@ -10,9 +10,8 @@ import {
 import { MyLocation } from "@mui/icons-material";
 import { DataSuccess, fetchSelectedExpansion } from "../../services";
 import { RenderContent, Selected } from "../../models";
-import { render } from "react-dom";
 
-export const Expander = forwardRef<HTMLDivElement>((_, ref) => {
+export const Expander = () => {
 	const renderContent = useSelector(getRenderContent);
 	const selected = useSelector(getSelected) as Selected;
 	const nodeLookup = useSelector(getNodeLookup);
@@ -30,10 +29,10 @@ export const Expander = forwardRef<HTMLDivElement>((_, ref) => {
 	}
 
 	return renderContent.status === 'Success' && !nodeLookup[selected.id].searched ?
-		<div ref={ref} className="expander_container">
+		<div className="expander_container">
 			<Button variant="contained" onClick={handleClick} startIcon={<MyLocation />}>
 				Expand
 			</Button>
 		</div > : <></>
 
-});
+};

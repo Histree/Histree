@@ -17,11 +17,11 @@ export interface Selected {
 export interface CardLocation {
   article: string;
   coordinate_location: {
-    latitude: string,
-    longitude: string
-  }
+    latitude: string;
+    longitude: string;
+  };
   description: string;
   id: string;
   image: string;
-  name: string;  
+  name: string;
 }

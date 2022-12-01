@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setSelected, getSelected } from '../../stores/base';
 import { CardLocation, Selected } from '../../models';
 import './DescriptorCard.scss';
+import { Expander } from '.';
 import { styled } from '@mui/material/styles';
 import { mapsURL } from '../../utils/utils';
 
@@ -79,96 +80,78 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
 		}
 
 		return (
-			<div ref={ref} className="descriptor-container">
-				<Card
-					className="descriptor-card"
-					style={{ height: '100%', overflowY: 'scroll' }}
-					variant="outlined"
-				>
-					{selectedItem.attributes &&
-						selectedItem.attributes!['image'] &&
-						selectedItem.attributes!['image'] !== 'undefined' && (
-							<CardMedia
-								className="descriptor-card-media"
-								component="img"
-								height="350"
-								image={selectedItem.attributes!['image']}
-								alt={selectedItem.attributes!['image']}
-							/>
-						)}
+			<div ref={ref} >
+				<Expander />
+				<div className="descriptor-container">
+					<Card
+						className="descriptor-card"
+						style={{ height: '100%', overflowY: 'scroll' }}
+						variant="outlined"
+					>
+						{selectedItem.attributes &&
+							selectedItem.attributes!['image'] &&
+							selectedItem.attributes!['image'] !== 'undefined' && (
+								<CardMedia
+									className="descriptor-card-media"
+									component="img"
+									height="350"
+									image={selectedItem.attributes!['image']}
+									alt={selectedItem.attributes!['image']}
+								/>
+							)}
 
-					<CardHeader
-						onClick={closeWindow}
-						action={
-							<IconButton aria-label="close">
-								<CloseIcon></CloseIcon>
-							</IconButton>
-						}
-						title={selectedItem.name}
-						subheader={selectedItem.description &&
-							selectedItem.description !== 'undefined' ? (
-							<Typography variant="body2" color="text.secondary">
-								{selectedItem.description.charAt(0).toUpperCase() +
-									selectedItem.description.slice(1)}
-							</Typography>
-						) : (
-							<Typography variant="body2" color="text.secondary">
-								Description not available.
-							</Typography>
-						)}
-					/>
+						<CardContent>
+							<Box className="descriptor-container-body">
 
-					<CardContent>
-						<Box className="descriptor-container-body">
+								{selectedItem.attributes &&
+									Object.keys(selectedItem.attributes)
+										.filter((att) => {
+											return (
+												selectedItem.attributes![att] !== 'undefined' &&
+												att !== 'image'
+											);
+										})
+										.map((att) => {
+											const attrName = att.charAt(0).toUpperCase() + att.slice(1);
+											const attrVal = selectedItem.attributes![att];
+											var attrDesc = ''
 
-							{selectedItem.attributes &&
-								Object.keys(selectedItem.attributes)
-									.filter((att) => {
+											if (attrVal === 'undefined') {
+												attrDesc = 'Unknown'
+											} else if (typeof attrVal === 'object') {
+												// For locations: when att = 'place_of_birth' or 'place_of_death'
+												attrDesc = attrVal['name'];
+											} else {
+												attrDesc = attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
+											}
+
+											return renderCardInfo(att, attrName, attrVal, attrDesc);
+
+										})}
+
+							</Box>
+						</CardContent>
+						<CardActions>
+							<Button href={selectedItem.article} target="_blank">Learn More</Button>
+						</CardActions>
+						<CardActions>
+							<>
+								{selectedItem.links &&
+									Object.keys(selectedItem.links).map((linkName) => {
 										return (
-											selectedItem.attributes![att] !== 'undefined' &&
-											att !== 'image'
+											<Button
+												key={linkName}
+												size="small"
+												href={selectedItem.links![linkName]}
+											>
+												{linkName}
+											</Button>
 										);
-									})
-									.map((att) => {
-										const attrName = att.charAt(0).toUpperCase() + att.slice(1);
-										const attrVal = selectedItem.attributes![att];
-										var attrDesc = ''
-
-										if (attrVal === 'undefined') {
-											attrDesc = 'Unknown'
-										} else if (typeof attrVal === 'object') {
-											// For locations: when att = 'place_of_birth' or 'place_of_death'
-											attrDesc = attrVal['name'];
-										} else {
-											attrDesc = attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
-										}
-
-										return renderCardInfo(att, attrName, attrVal, attrDesc);
-
 									})}
-
-						</Box>
-					</CardContent>
-					<CardActions>
-						<Button href={selectedItem.article} target="_blank">Learn More</Button>
-					</CardActions>
-					<CardActions>
-						<>
-							{selectedItem.links &&
-								Object.keys(selectedItem.links).map((linkName) => {
-									return (
-										<Button
-											key={linkName}
-											size="small"
-											href={selectedItem.links![linkName]}
-										>
-											{linkName}
-										</Button>
-									);
-								})}
-						</>
-					</CardActions>
-				</Card>
+							</>
+						</CardActions>
+					</Card>
+				</div>
 			</div>
 		);
 	}
