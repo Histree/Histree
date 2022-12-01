@@ -46,7 +46,9 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
 				selectedItem.attributes[name] !== undefined
 			) {
 				const location = selectedItem.attributes[name] as unknown as CardLocation
-				return <Link href={mapsURL(location)} target="_blank">{location.name}</Link>;
+				if (location.coordinate_location !== undefined) {
+					return <Link href={mapsURL(location)} target="_blank">{location.name}</Link>;
+				}
 
 			}
 			return (<Typography>No data found</Typography>);

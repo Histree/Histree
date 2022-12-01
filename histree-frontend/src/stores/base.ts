@@ -161,8 +161,23 @@ export const histreeState = createSlice({
     });
 
     builder.addCase(
+      fetchSearchResults.rejected,
+      (state: HistreeState, action) => {
+        const errorContent: DataFail<RenderContent> = {
+          status: "Failure",
+          error: action.error.message as string,
+        };
+        state.renderContent = errorContent;
+      }
+    );
+    builder.addCase(
       fetchSearchResults.fulfilled,
-      (state, action: PayloadAction<DataSuccess<RenderContent> | DataFail>) => {
+      (
+        state,
+        action: PayloadAction<
+          DataSuccess<RenderContent> | DataFail<RenderContent>
+        >
+      ) => {
         const lookup: NodeLookup = {};
         const successData = action.payload as DataSuccess<RenderContent>;
         state.renderContent = successData;
@@ -177,12 +192,23 @@ export const histreeState = createSlice({
         state.searchSuggestions.searchTerm = successData.content.searchedName;
       }
     );
-
+    builder.addCase(
+      fetchSelectedExpansion.rejected,
+      (state: HistreeState, action) => {
+        state.renderContent = {
+          ...state.renderContent,
+          status: "Failure",
+          error: action.error.message as string,
+        };
+      }
+    );
     builder.addCase(
       fetchSelectedExpansion.fulfilled,
       (
         state: HistreeState,
-        action: PayloadAction<DataSuccess<RenderContent> | DataFail>
+        action: PayloadAction<
+          DataSuccess<RenderContent> | DataFail<RenderContent>
+        >
       ) => {
         const response = action.payload as DataSuccess<RenderContent>;
         const lookup = { ...state.nodeLookup };
@@ -221,6 +247,9 @@ export const histreeState = createSlice({
       }
     );
 
+    builder.addCase(fetchRelationship.rejected, (state: HistreeState) => {
+      state.renderContent.status = "Failure";
+    });
     builder.addCase(fetchRelationship.fulfilled, (state, action) => {
       state.relationship = action.payload;
     });

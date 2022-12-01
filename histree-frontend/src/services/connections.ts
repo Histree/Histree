@@ -6,7 +6,7 @@ import { CompareNodes } from "../models/compareInfo";
 export type ServiceStatus<T> =
   | DataInitial
   | DataLoading
-  | DataFail
+  | DataFail<T>
   | DataSuccess<T>
   | DataExpand<T>;
 export interface DataInitial {
@@ -15,9 +15,10 @@ export interface DataInitial {
 export interface DataLoading {
   status: "Loading";
 }
-export interface DataFail {
+export interface DataFail<T> {
   status: "Failure";
   error: string;
+  content?: T;
 }
 
 export interface DataExpand<T> {
@@ -47,7 +48,7 @@ export const fetchSearchResults = createAsyncThunk(
   }: {
     qid: string;
     name: string;
-  }): Promise<DataSuccess<RenderContent> | DataFail> => {
+  }): Promise<DataSuccess<RenderContent> | DataFail<RenderContent>> => {
     try {
       const response = await axios.get<RenderContent>(
         `https://histree.fly.dev/person_info/${qid}?depth_up=5&depth_down=5`
@@ -57,10 +58,7 @@ export const fetchSearchResults = createAsyncThunk(
         content: { ...response.data, searchedQid: qid, searchedName: name },
       };
     } catch (e) {
-      return {
-        status: "Failure",
-        error: (e as AxiosError).message,
-      };
+      throw e as AxiosError;
     }
   }
 );
@@ -73,7 +71,7 @@ export const fetchSelectedExpansion = createAsyncThunk(
   }: {
     qid: string;
     name: string;
-  }): Promise<DataSuccess<RenderContent> | DataFail> => {
+  }): Promise<DataSuccess<RenderContent> | DataFail<RenderContent>> => {
     try {
       const response = await axios.get<RenderContent>(
         `https://histree.fly.dev/person_info/${qid}`
@@ -87,10 +85,7 @@ export const fetchSelectedExpansion = createAsyncThunk(
         },
       };
     } catch (e) {
-      return {
-        status: "Failure",
-        error: (e as AxiosError).message,
-      };
+      throw e as AxiosError;
     }
   }
 );
@@ -114,10 +109,7 @@ export const fetchRelationship = createAsyncThunk(
         content: { ...response.data },
       };
     } catch (e) {
-      return {
-        status: "Failure",
-        error: (e as Error).message,
-      };
+      throw e as AxiosError;
     }
   }
 );
