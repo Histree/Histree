@@ -14,6 +14,8 @@ class WikiFlower:
         self.petals = petals
         self.branched_up = False
         self.branched_down = False
+        self._is_entry_point = False
+        self._for_storage = False
 
     def to_json(self, flatten: bool = False, for_db: bool = False) -> Dict[str, any]:
         json_dict = {"id": self.id, "name": self.name}
