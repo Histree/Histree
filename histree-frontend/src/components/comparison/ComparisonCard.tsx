@@ -4,6 +4,7 @@ import ComparisonFlow from './ComparisonFlow';
 import { ReactFlowProvider } from 'reactflow';
 import { useSelector } from 'react-redux';
 import { getRenderContent } from '../../stores';
+import { isContentAvail } from '../../utils/utils';
 import './ComparisonCard.scss';
 
 export const ComparisonCard = () => {
@@ -12,14 +13,14 @@ export const ComparisonCard = () => {
 		<div className="comparison-container">
 			<Card>
 				<CardHeader style={{ padding: '1em 0 0 1em', margin: 0 }} title="Relationship Search" />
-				{renderContent.status === 'Success' ?
+				{isContentAvail(renderContent) ?
 					<CardContent>
 						<div className="comparison-container-inner">
 							<ReactFlowProvider>
 								<ComparisonFlow />
 							</ReactFlowProvider>
 						</div>
-					</CardContent> : 
+					</CardContent> :
 					<CardContent>
 						<Typography>No data detected. Please search for someone.</Typography>
 					</CardContent>}

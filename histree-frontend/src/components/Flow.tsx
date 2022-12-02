@@ -195,13 +195,6 @@ const Flow = (props: { content: RenderContent }) => {
 			comparisonNodes.second !== undefined
 		) {
 			if (renderMode === 'Compare') {
-				const result = findPathBetweenTwoNodes(
-					comparisonNodes.first.id,
-					comparisonNodes.second.id,
-					// cleanseBranches(content?.branches, nodeLookup)
-					content?.branches
-				);
-				dispatch(setEdgeInfo(result));
 				appDispatch(fetchRelationship(comparisonNodes));
 			} else if (renderMode === 'Children') {
 				const result = findNodeChildren(
@@ -224,11 +217,9 @@ const Flow = (props: { content: RenderContent }) => {
 				nodeTypes={nodeTypes}
 				edgeTypes={edgeTypes}
 				connectionLineComponent={InvisibleConnectionLine}
-				// fitView
 				onPaneClick={closeWindow}
 			>
 				<Background />
-				<Controls />
 			</ReactFlow>
 		</div >
 	);

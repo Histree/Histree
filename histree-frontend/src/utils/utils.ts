@@ -5,8 +5,10 @@ import {
   EdgeInfo,
   NodeId,
   NodeLookup,
+  RenderContent,
   Url,
 } from "../models";
+import { ServiceStatus } from "../services";
 
 // export const cleanseBranches = (
 //   adjList: AdjList | undefined,
@@ -180,4 +182,14 @@ export const getArcPath = (
   const controlX = (sourceX + targetX) / 2;
   const controlY = Math.max(sourceY, targetY) - 50;
   return `M${sourceX},${sourceY} Q${controlX},${controlY} ${targetX},${targetY}`;
+};
+
+export const isContentAvail = (
+  renderContent: ServiceStatus<RenderContent>
+): boolean => {
+  return (
+    (renderContent.status === "Success" ||
+      renderContent.status === "Failure") &&
+    renderContent.content !== undefined
+  );
 };

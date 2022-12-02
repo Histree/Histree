@@ -11,16 +11,22 @@ import {
 } from '../../stores';
 import { MyLocation } from "@mui/icons-material";
 import { useReactFlow } from "reactflow";
+import { isContentAvail } from "../../utils/utils";
+import { DataFail, DataSuccess } from "../../services";
+import { RenderContent } from "../../models";
 
 export const CenterSearched = () => {
 	const renderContent = useSelector(getRenderContent)
 	const { setCenter, getNode, getZoom } = useReactFlow();
 
 	const handleCenterClick = () => {
-		if (renderContent.status === 'Success') {
-			const node = getNode(renderContent.content.searchedQid);
-			if (node !== undefined) {
-				setCenter(node?.position.x, node?.position.y, { duration: 800, zoom: getZoom() });
+		if (isContentAvail(renderContent)) {
+			const centerId = (renderContent as DataSuccess<RenderContent> | DataFail<RenderContent>).content?.searchedQid;
+			if (centerId !== undefined) {
+				const node = getNode(centerId);
+				if (node !== undefined) {
+					setCenter(node?.position.x, node?.position.y, { duration: 800, zoom: getZoom() });
+				}
 			}
 		}
 	}

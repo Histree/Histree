@@ -4,17 +4,28 @@ from .builder import SPARQLBuilder
 
 class NameQueryBuilder(SPARQLBuilder):
     def __init__(
-        self, language: str = "en", headers: Dict[str, Dict[str, any]] = dict()
+        self,
+        pagination: int = 0,
+        search_limit: int = 50,
+        language: str = "en",
+        headers: Dict[str, Dict[str, any]] = dict(),
     ):
         super().__init__(language=language, headers=headers)
+
+        # Note: this limit corresponds to MediaWiki search results
+        # By their conventions, results are capped at 50.
+        self.search_limit = search_limit
+        self.pagination = pagination
 
     def with_name(self, name: str) -> "NameQueryBuilder":
         self.other = f"""
                 SERVICE wikibase:mwapi {{
-                    bd:serviceParam wikibase:api "EntitySearch" .
-                    bd:serviceParam wikibase:endpoint "www.wikidata.org" .
-                    bd:serviceParam mwapi:search "{name}" .
-                    bd:serviceParam mwapi:language "{self.language}" .
+                    bd:serviceParam wikibase:api "EntitySearch";
+                                    wikibase:endpoint "www.wikidata.org";
+                                    mwapi:search "{name}";
+                                    mwapi:language "{self.language}";
+                                    mwapi:limit {self.search_limit} ;
+                                    mwapi:continue {self.search_limit * self.pagination} .
                     ?item wikibase:apiOutputItem mwapi:item .
                     ?num wikibase:apiOrdinal true .
                 }}
