@@ -4,6 +4,7 @@ import {
   EdgeChildInfo,
   EdgeInfo,
   NodeId,
+  NodeLookup,
   RenderContent,
   Url,
 } from "../models";
@@ -150,6 +151,38 @@ export const mapsURL = (loc: CardLocation): Url => {
   const url =
     "https://www.google.com/maps/search/?api=1&query=" + lat + "%2C" + long;
   return url;
+};
+
+export const buildSpousesAdjList = (nodeLookup: NodeLookup): AdjList => {
+  const adjList: AdjList = {};
+  const id = Object.keys(nodeLookup)[0];
+
+  // Object.keys(nodeLookup).forEach((id) => {
+  adjList[id] = [];
+  const petals = nodeLookup[id].petals;
+  if (petals) {
+    const spouses: Record<number, NodeId> = petals.spouse;
+    if (spouses) {
+      Object.values(spouses).forEach((s) => {
+        if (!adjList[s]) {
+          adjList[id].push(s);
+        }
+      });
+    }
+  }
+  // });
+  return adjList;
+};
+
+export const getArcPath = (
+  sourceX: number,
+  sourceY: number,
+  targetX: number,
+  targetY: number
+): string => {
+  const controlX = (sourceX + targetX) / 2;
+  const controlY = Math.min(sourceY, targetY) - 50;
+  return `M${sourceX},${sourceY} Q${controlX},${controlY} ${targetX},${targetY}`;
 };
 
 export const isContentAvail = (

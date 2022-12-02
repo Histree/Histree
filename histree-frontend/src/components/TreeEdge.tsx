@@ -1,14 +1,10 @@
 import React, { CSSProperties } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import {
-	getRenderContent,
-	getNodeLookup,
-	getRenderMode,
-	getCompareNodes,
 	getEdgeInfo
 } from '../stores/base';
 import './TreeEdge.scss';
-import { EdgeProps, getBezierPath, getSmoothStepPath } from 'reactflow';
+import { EdgeProps, getBezierPath } from 'reactflow';
 
 // sourceX: number;
 // sourceY: number;
@@ -32,11 +28,6 @@ const TreeEdge = ({
 	targetPosition,
 	markerEnd,
 }: EdgeProps) => {
-	const dispatch = useDispatch();
-	const renderMode = useSelector(getRenderMode);
-	const comparisonNodes = useSelector(getCompareNodes);
-	const renderContent = useSelector(getRenderContent);
-	const nodeLookup = useSelector(getNodeLookup);
 	const edgeInfo = useSelector(getEdgeInfo);
 	const [edgePath] = getBezierPath({
 		sourceX,

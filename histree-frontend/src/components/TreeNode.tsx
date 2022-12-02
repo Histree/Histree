@@ -1,8 +1,7 @@
-import React, { CSSProperties, useEffect, useRef } from 'react';
+import React, { CSSProperties, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
 	setSelected,
-	getRenderContent,
 	getNodeLookup,
 	getRenderMode,
 	setComparisonNode,
@@ -12,10 +11,11 @@ import {
 	getRelationship
 } from '../stores/base';
 import { HandleStatus, NodeId, NodeInfo, RelationshipInfo } from '../models';
-import './TreeNode.scss';
 import { Handle, Position } from 'reactflow';
 import { useIsInViewport } from '../utils/viewport';
 import { DataSuccess } from '../services';
+import { withTheme } from '@emotion/react';
+import './TreeNode.scss';
 
 const nodeClassMap: Record<HandleStatus, string> = {
 	Loading: 'handle_loading',
@@ -80,16 +80,29 @@ const TreeNode = ({ id }: { id: NodeId }) => {
 	return (
 		<div ref={ref} className="tree-node" style={getNodeStyle(data.id)}>
 			<Handle
+				id="tree-target-handle"
 				className={nodeClassMap[nodeLookup[data.id].upExpanded]}
 				type="target"
+				position={Position.Top}
+				isConnectable
+			/>
+			<Handle
+				id="spouse-target-handle"
+				type="target"
+				position={Position.Top}
+				isConnectable
+			/>
+			<Handle
+				id="spouse-source-handle"
+				type="source"
 				position={Position.Top}
 				isConnectable
 			/>
 			<div className="tree-node-card" onClick={handleNodeClick}>
 				<div className="tree-node-child">{data.name}</div>
 			</div>
-
 			<Handle
+				id="tree-source-handle"
 				className={nodeClassMap[nodeLookup[data.id].downExpanded]}
 				type="source"
 				position={Position.Bottom}
