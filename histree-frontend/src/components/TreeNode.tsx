@@ -10,18 +10,12 @@ import {
 	getEdgeInfo,
 	getRelationship
 } from '../stores/base';
-<<<<<<< HEAD
-import { HandleStatus, NodeId } from '../models';
-import './TreeNode.scss';
-import { Handle, Position } from 'reactflow';
-import { withTheme } from '@emotion/react';
-=======
 import { HandleStatus, NodeId, NodeInfo, RelationshipInfo } from '../models';
-import './TreeNode.scss';
 import { Handle, Position } from 'reactflow';
 import { useIsInViewport } from '../utils/viewport';
 import { DataSuccess } from '../services';
->>>>>>> master
+import { withTheme } from '@emotion/react';
+import './TreeNode.scss';
 
 const nodeClassMap: Record<HandleStatus, string> = {
 	Loading: 'handle_loading',
