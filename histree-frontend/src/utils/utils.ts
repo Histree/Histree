@@ -4,8 +4,10 @@ import {
   EdgeChildInfo,
   EdgeInfo,
   NodeId,
+  RenderContent,
   Url,
 } from "../models";
+import { ServiceStatus } from "../services";
 
 // export const cleanseBranches = (
 //   adjList: AdjList | undefined,
@@ -148,4 +150,14 @@ export const mapsURL = (loc: CardLocation): Url => {
   const url =
     "https://www.google.com/maps/search/?api=1&query=" + lat + "%2C" + long;
   return url;
+};
+
+export const isContentAvail = (
+  renderContent: ServiceStatus<RenderContent>
+): boolean => {
+  return (
+    (renderContent.status === "Success" ||
+      renderContent.status === "Failure") &&
+    renderContent.content !== undefined
+  );
 };

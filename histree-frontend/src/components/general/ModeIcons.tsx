@@ -12,7 +12,7 @@ import {
 } from '../../stores';
 import { RenderMode } from "../../models";
 
-export const ModelIcons = () => {
+export const ModeIcons = () => {
 	const dispatch = useDispatch();
 	const renderMode = useSelector(getRenderMode);
 
