@@ -122,8 +122,6 @@ def shortest_path_properties(tx, person_id1, person_id2):
     return query, label
 
 
-
-
 @cypher_runner
 def shortest_distance(tx, person_id1, person_id2):
     query = (
