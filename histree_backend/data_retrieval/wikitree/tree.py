@@ -86,17 +86,25 @@ class WikiSeed:
                         tree.branches[parent_id] = set()
                     tree.branches[parent_id].add(child.id)
 
+        # Find information about parents not in tree
+        if unseen_parent_ids:
+            self.sprout(list(unseen_parent_ids), tree)
+
+        unseen_spouse_ids = set()
+        # If one ID is an entry point, all IDs must also be entry points
+        spouses_only_for_storage = ids and not tree.flowers[ids[0]]._is_entry_point
+
         # Add spouses without children
+        # Note: no need to check in unseen_parent_ids as they are now in the tree
         for id in ids:
-            unseen_parent_ids.update(
+            unseen_spouse_ids.update(
                 spouse
                 for spouse in tree.flowers[id].petals.get("spouse", [])
                 if spouse not in tree.flowers
             )
 
-        # Find information about parents not in tree
-        if unseen_parent_ids:
-            self.sprout(list(unseen_parent_ids), tree)
+        if unseen_spouse_ids:
+            self.sprout(list(unseen_spouse_ids), tree, for_storage=spouses_only_for_storage)
 
         for child in children:
             child.branched_up = True
@@ -106,11 +114,19 @@ class WikiSeed:
 
         return children
 
-    def sprout(self, ids: List[str], tree: "WikiTree") -> List[WikiFlower]:
+    def sprout(
+        self,
+        ids: List[str],
+        tree: "WikiTree",
+        is_entry_point: bool = False,
+        for_storage: bool = False,
+    ) -> List[WikiFlower]:
         flowers = tree.watering(ids, find_flowers, self.self_stem.get_query, False)
 
         for flower in flowers:
             tree.flowers[flower.id] = flower
+            flower._is_entry_point = is_entry_point
+            flower._for_storage = for_storage
 
         return flowers
 
@@ -154,13 +170,14 @@ class WikiTree:
         ids: List[str],
         branch_up: bool = True,
         branch_down: bool = True,
+        is_entry_point: bool = False,
     ) -> Tuple[List[WikiFlower], List[WikiFlower]]:
         flowers_above, flowers_below = [], []
         # We only sprout (from db or wiki) if we don't have it in our flowers
         unseen_ids = [id for id in ids if id not in self.flowers]
         unseen_set = set(unseen_ids)
         if unseen_set:
-            self.seed.sprout(unseen_ids, self)
+            self.seed.sprout(unseen_ids, self, is_entry_point)
         # seed.sprout/seed.branch_up/seed.branch_down will give back
         # unseen_flowers/parents/children
         # They will find a source(db/wiki) themselves.
@@ -192,9 +209,7 @@ class WikiTree:
         is_entry_point: bool = False,
     ) -> None:
         above, below = self.grow(
-            ids,
-            branch_up_levels > 0,
-            branch_down_levels > 0,
+            ids, branch_up_levels > 0, branch_down_levels > 0, is_entry_point
         )
         if above and branch_up_levels - 1 > 0:
             self.grow_levels([flower.id for flower in above], branch_up_levels - 1, 0)
@@ -268,7 +283,9 @@ class WikiTree:
     def to_json(self, for_db: bool = False) -> Dict[str, any]:
         data = {
             "flowers": [
-                flower.to_json(for_db=for_db) for flower in self.flowers.values()
+                flower.to_json(for_db=for_db)
+                for flower in self.flowers.values()
+                if for_db or not flower._for_storage
             ],
             "branches": {id: list(adj_set) for (id, adj_set) in self.branches.items()},
         }
