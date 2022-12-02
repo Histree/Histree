@@ -127,7 +127,8 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
 										.filter((att) => {
 											return (
 												selectedItem.attributes![att] !== 'undefined' &&
-												att !== 'image'
+												att !== 'image' &&
+												att !== 'spouse'
 											);
 										})
 										.map((att) => {
@@ -143,11 +144,9 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
 											} else {
 												attrDesc = attrVal.charAt(0).toUpperCase() + attrVal.slice(1);
 											}
-
 											return renderCardInfo(att, attrName, attrVal, attrDesc);
-
-										})}
-
+										})
+								}
 							</Box>
 						</CardContent>
 						<CardActions>
