@@ -17,7 +17,7 @@ export const FilterCard = () => {
 
 	const handleApplyFilters = () =>
 		dispatch(setFilterInfo(
-			{ filtered: startDate !== "" && endDate !== "", bornBetween: { startDate: startDate, endDate: endDate } }
+			{ filtered: startDate !== "" || endDate !== "", bornBetween: { startDate: startDate, endDate: endDate } }
 		));
 
 	const handleClear = () => {

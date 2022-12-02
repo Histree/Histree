@@ -8,12 +8,14 @@ import {
 	setComparisonNode,
 	setEdgeInfo,
 	getCompareNodes,
-	getEdgeInfo
+	getEdgeInfo,
+	getRelationship
 } from '../stores/base';
-import { HandleStatus, NodeId, NodeInfo } from '../models';
+import { HandleStatus, NodeId, NodeInfo, RelationshipInfo } from '../models';
 import './TreeNode.scss';
 import { Handle, Position } from 'reactflow';
 import { useIsInViewport } from '../utils/viewport';
+import { DataSuccess } from '../services';
 
 const nodeClassMap: Record<HandleStatus, string> = {
 	Loading: 'handle_loading',
@@ -26,6 +28,7 @@ const TreeNode = ({ id }: { id: NodeId }) => {
 	const ref = useRef<HTMLInputElement>(null);
 
 	const dispatch = useDispatch();
+	const relationship = useSelector(getRelationship);
 	const renderMode = useSelector(getRenderMode);
 	const comparisonNodes = useSelector(getCompareNodes);
 	const nodeLookup = useSelector(getNodeLookup);
@@ -60,10 +63,14 @@ const TreeNode = ({ id }: { id: NodeId }) => {
 				case 'Children':
 					return { color: 'red', borderColor: 'red' };
 				case 'Compare':
+					if (relationship.status === 'Success' &&
+						nodeid === (relationship as DataSuccess<RelationshipInfo>).content.ancestor) {
+						return { color: 'orangered', borderColor: 'orangered' }
+					}
 					return { color: 'orange', borderColor: 'orange' };
 			}
 		}
-		
+
 		if (data.matchedFilter === false) {
 			return { color: 'lightgray', borderColor: 'lightgray' };
 		}

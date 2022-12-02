@@ -195,11 +195,9 @@ const Flow = (props: { content: RenderContent }) => {
 				nodeTypes={nodeTypes}
 				edgeTypes={edgeTypes}
 				connectionLineComponent={InvisibleConnectionLine}
-				// fitView
 				onPaneClick={closeWindow}
 			>
 				<Background />
-				<Controls />
 			</ReactFlow>
 		</div >
 	);
