@@ -80,7 +80,7 @@ const TreePage = () => {
 					autoHideDuration={3000}
 				>
 					<Alert severity="error">
-						Error occured while searching, please try again
+						Error occurred while searching, please try again.
 					</Alert>
 				</Snackbar>
 				<div className='topleft-container'>

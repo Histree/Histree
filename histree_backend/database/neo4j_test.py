@@ -12,7 +12,6 @@ def db_connection():
     db.close()
 
 
-
 def test_find_common_ancestor(db_connection):
     # Common ancestor of Charles and Anne is Philip or Elizabeth 
     common_ancestor_id = db_connection.read_db(common_ancestor, "Q43274", "Q151754")[0][0]
@@ -47,12 +46,17 @@ def test_relationship_calculator(db_connection):
     relationship = RelationshipCalculator.calculate_relationship(db_connection, "Q10633", "Q43274")
     assert relationship == "grandmother"
 
-    # Lilibet Mountbatten-Windsor is the cousin of George of Wales 
-    relationship = RelationshipCalculator.calculate_relationship(db_connection, "Q107125551", "Q13590412")
-    assert relationship == "first cousin"
-
     # Anne is the aunt of Beatrice
     relationship = RelationshipCalculator.calculate_relationship(db_connection, "Q151754", "Q165657")
     assert relationship == "aunt"
+
+
+def test_shortest_path_ids(db_connection):
+    path = RelationshipCalculator.path_through_common_ancestor(db_connection, "Q154920", "Q80976", "Q80976")
+    assert path == ["Q154920", "Q80976"]
+
+    # Princess Beatrice to Lady Louise Windsor through Elizabeth
+    path = RelationshipCalculator.path_through_common_ancestor(db_connection, "Q165657", "Q680304", "Q9682")
+    assert path == ["Q165657", "Q153330", "Q9682", "Q154920", "Q680304"]
 
 

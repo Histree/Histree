@@ -65,17 +65,17 @@ def persons_info():
     return response
 
 
-# Pass in the Wiki IDs of two people and return a json of their relationship
+# Pass in the Wiki IDs of two people and return a json of their relationship, common ancestor and path between them
 @app.route("/relationship", methods=["GET"])
 def relationship_calculator():
     id1 = request.args.get("id1", default="", type=str)
     id2 = request.args.get("id2", default="", type=str)
     
     db = Neo4jDB.instance()
-    relationship = RelationshipCalculator.calculate_relationship(db, id1, id2)
+    relationship, common_ancestor, path = RelationshipCalculator.calculate_relationship(db, id1, id2)
     db.close()
 
-    result = {"relationship": relationship}
+    result = {"relationship": relationship, "ancestor": common_ancestor, "path": path}
 
     try:
         response = jsonify(result)

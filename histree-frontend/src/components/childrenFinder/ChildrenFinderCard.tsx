@@ -1,11 +1,11 @@
 import React from 'react';
-import { Card, CardHeader, CardContent } from '@mui/material';
-import './ChildrenFinderCard.scss';
+import { Card, CardHeader, CardContent, Typography } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { getRenderContent } from '../../stores';
 import { ReactFlowProvider } from 'reactflow';
 import ChildrenFinderFlow from './ChildrenFinderFlow';
 import { isContentAvail } from '../../utils/utils';
+import './ChildrenFinderCard.scss';
 
 export const ChildrenFinderCard = () => {
 	const renderContent = useSelector(getRenderContent);
@@ -20,7 +20,10 @@ export const ChildrenFinderCard = () => {
 								<ChildrenFinderFlow />
 							</ReactFlowProvider>
 						</div>
-					</CardContent> : <CardContent><p>No data detected. Please search for someone.</p></CardContent>}
+					</CardContent> :
+					<CardContent>
+						<Typography>No data detected. Please search for someone.</Typography>
+					</CardContent>}
 			</Card>
 		</div>
 	);

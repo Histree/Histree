@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card, CardHeader, CardContent, Typography } from '@mui/material';
-import './ComparisonCard.scss';
 import ComparisonFlow from './ComparisonFlow';
 import { ReactFlowProvider } from 'reactflow';
 import { useSelector } from 'react-redux';
 import { getRenderContent } from '../../stores';
 import { isContentAvail } from '../../utils/utils';
+import './ComparisonCard.scss';
 
 export const ComparisonCard = () => {
 	const renderContent = useSelector(getRenderContent);
