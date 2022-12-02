@@ -6,6 +6,7 @@ import {
 } from "@reduxjs/toolkit";
 import {
   CompareNodes,
+  EdgeChildInfo,
   EdgeInfo,
   FilterInfo,
   HandleStatus,
@@ -252,6 +253,18 @@ export const histreeState = createSlice({
     });
     builder.addCase(fetchRelationship.fulfilled, (state, action) => {
       state.relationship = action.payload;
+      if (action.payload.status === "Success") {
+        const content = action.payload.content;
+        state.edgeInfo = {};
+        for (let i = 0; i < content.path.length - 1; i++) {
+          const newTip: EdgeChildInfo = {};
+          newTip[content.path[i + 1]] = {
+            stroke: "orange",
+            strokeWidth: "0.3em",
+          };
+          state.edgeInfo[content.path[i]] = newTip;
+        }
+      }
     });
   },
 });

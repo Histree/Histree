@@ -4,7 +4,7 @@ import { getSelected, getRenderContent, getRenderMode, setSelected } from '../st
 import { useDispatch, useSelector } from 'react-redux';
 import {
 	ComparisonCard,
-	ModelIcons,
+	ModeIcons,
 	DescriptorCard,
 	SearchBar,
 	HelpDialog,
@@ -19,6 +19,9 @@ import { CenterSearched } from '../components/general/CenterSearched';
 import '../components/TreeNode.scss'
 import { FrontPageHelp } from '../components/help/FrontPageHelp';
 import './TreePage.scss';
+import { isContentAvail } from '../utils/utils';
+import { DataFail, DataSuccess } from '../services';
+import { RenderContent } from '../models';
 
 const TreePage = () => {
 	const selected = useSelector(getSelected);
@@ -42,8 +45,8 @@ const TreePage = () => {
 			<HelpDialog />
 
 			<ReactFlowProvider>
-				{renderContent.status === 'Success' && (
-					<Flow content={renderContent.content!} />
+				{isContentAvail(renderContent) && (
+					<Flow content={(renderContent as DataSuccess<RenderContent> | DataFail<RenderContent>).content!} />
 				)}
 				{renderContent.status === 'Initial' && (
 					<Box
@@ -81,7 +84,7 @@ const TreePage = () => {
 					</Alert>
 				</Snackbar>
 				<div className='topleft-container'>
-					<ModelIcons />
+					<ModeIcons />
 					{renderMode === 'View' && <SearchBar />}
 					{renderMode === 'Compare' && <ComparisonCard />}
 					{renderMode === 'Children' && <ChildrenFinderCard />}
