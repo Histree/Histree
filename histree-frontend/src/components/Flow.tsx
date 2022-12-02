@@ -11,20 +11,20 @@ import { NodeLookup, AdjList, RenderContent, NodePositions, NodeId } from '../mo
 import TreeNode from './TreeNode';
 import dagre, { graphlib } from 'dagre';
 import { useDispatch, useSelector } from 'react-redux';
-import { 
-	AppDispatch, 
-	getCompareNodes, 
-	getEdgeInfo, 
-	getNodeLookup, 
-	getRenderContent, 
-	getRenderMode, 
-	setEdgeInfo, 
-	setRelationship, 
-	setSelected 
+import {
+	AppDispatch,
+	getCompareNodes,
+	getEdgeInfo,
+	getNodeLookup,
+	getRenderContent,
+	getRenderMode,
+	setEdgeInfo,
+	setRelationship,
+	setSelected
 } from '../stores';
 import InvisibleConnectionLine from './general/InvisibleConnectionLine';
 import { addChildrenNode, buildSpousesAdjList, findNodeChildren, findPathBetweenTwoNodes } from '../utils/utils';
-import {  fetchRelationship } from '../services';
+import { fetchRelationship } from '../services';
 import TreeEdge from './TreeEdge';
 import SpouseEdge from './SpouseEdge';
 
@@ -213,7 +213,13 @@ const Flow = (props: { content: RenderContent }) => {
 			<ReactFlow
 				className="flow"
 				nodes={Object.values(flowNodes)}
-				edges={layoutEdges(content.branches, buildSpousesAdjList(nodeLookup))}
+				edges={layoutEdges(
+					content.branches,
+					buildSpousesAdjList(
+						nodeLookup,
+						content.searchedQid
+					)
+				)}
 				nodeTypes={nodeTypes}
 				edgeTypes={edgeTypes}
 				connectionLineComponent={InvisibleConnectionLine}
