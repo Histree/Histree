@@ -10,29 +10,6 @@ import {
 } from "../models";
 import { ServiceStatus } from "../services";
 
-// export const cleanseBranches = (
-//   adjList: AdjList | undefined,
-//   lookup: NodeLookup
-// ): AdjList => {
-//   if (adjList === undefined) {
-//     return {};
-//   }
-//   const newAdjList = { ...adjList };
-//   Object.entries(adjList).forEach(([parent, children]) => {
-//     if (lookup[parent] !== undefined && !lookup[parent].visible) {
-//       // eslint-disable-next-line
-//       delete newAdjList[parent];
-//     } else {
-//       children.forEach((c) => {
-//         if (lookup[c] !== undefined && !lookup[c].visible) {
-//           newAdjList[parent] = newAdjList[parent].filter((i) => i !== c);
-//         }
-//       });
-//     }
-//   });
-//   return newAdjList;
-// };
-
 export const addChildrenNode = (adjList: AdjList): AdjList => {
   const newAdjList = { ...adjList };
   Object.values(adjList).forEach((children) => {
@@ -153,24 +130,23 @@ export const mapsURL = (loc: CardLocation): Url => {
   return url;
 };
 
-export const buildSpousesAdjList = (nodeLookup: NodeLookup): AdjList => {
+export const buildSpousesAdjList = (
+  nodeLookup: NodeLookup,
+  focusQid: NodeId
+): AdjList => {
   const adjList: AdjList = {};
-  const id = Object.keys(nodeLookup)[0];
-
-  // Object.keys(nodeLookup).forEach((id) => {
-  adjList[id] = [];
-  const petals = nodeLookup[id].petals;
+  adjList[focusQid] = [];
+  const petals = nodeLookup[focusQid].petals;
   if (petals) {
     const spouses: Record<number, NodeId> = petals.spouse;
     if (spouses) {
       Object.values(spouses).forEach((s) => {
         if (!adjList[s]) {
-          adjList[id].push(s);
+          adjList[focusQid].push(s);
         }
       });
     }
   }
-  // });
   return adjList;
 };
 
