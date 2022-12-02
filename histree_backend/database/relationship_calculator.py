@@ -1,4 +1,4 @@
-from .cypher_runner import common_ancestor, shortest_distance, gender
+from .cypher_runner import common_ancestor, shortest_distance, gender, shortest_path_properties
 
 class RelationshipCalculator:
 
@@ -6,6 +6,11 @@ class RelationshipCalculator:
 
     @staticmethod
     def calculate_relationship(db, id1, id2):
+        '''Takes in the IDs of 2 people
+            Returns the following:
+            - relationship between the 2 (i.e. Person 1 is the _ of Person 2
+            - ID of one of their least common ancestors
+            - the IDs in the shortest path between them'''
         common_ancestors = db.read_db(common_ancestor, id1, id2)
         if not common_ancestors: # there is no common ancestor
             return "has no close relationship with" 
@@ -20,14 +25,36 @@ class RelationshipCalculator:
             distance2 = db.read_db(shortest_distance, id2, common_ancestor_id)[0][0]
         gender1 = db.read_db(gender, id1)[0][0]
 
+        path = RelationshipCalculator.path_through_common_ancestor(db, id1, id2, common_ancestor_id)
+
         if not RelationshipCalculator.cached_table:
             RelationshipCalculator.cached_table = RelationshipCalculator.relationship_table()
 
         try:
-            return RelationshipCalculator.cached_table[distance1][distance2].get(gender1, RelationshipCalculator.cached_table[distance1][distance2]["default"])
+            relationship = RelationshipCalculator.cached_table[distance1][distance2].get(gender1, RelationshipCalculator.cached_table[distance1][distance2]["default"])
+            return relationship, common_ancestor_id, path
         except (IndexError, KeyError) as error:
             print(error)
-            return "has no close relationship with"
+            return "has no close relationship with", "no ancestor", []
+            
+
+    @staticmethod
+    def path_through_common_ancestor(db, id1, id2, ca_id):
+        '''Returns the single shortest path from id1 to id2 through ca_id'''
+        path1 = [id1]
+        if ca_id != id1:
+            properties = db.read_db(shortest_path_properties, id1, ca_id)
+            # list of tuples of dictionaries
+            path1 = [item[0]["id"] for item in properties]
+
+        path2 = [id2]
+        if ca_id != id2:
+            properties = db.read_db(shortest_path_properties, id2, ca_id)
+            # list of tuples of dictionaries
+            path2 = [item[0]["id"] for item in properties]
+
+        path2.reverse()
+        return path1[:-1] + path2
 
 
     @staticmethod
