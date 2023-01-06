@@ -19,6 +19,7 @@ from database.cypher_runner import (
     merge_nodes_into_db,
     merge_relation_into_db,
 )
+from time import sleep
 
 
 class WikiSeed:
@@ -104,7 +105,9 @@ class WikiSeed:
             )
 
         if unseen_spouse_ids:
-            self.sprout(list(unseen_spouse_ids), tree, for_storage=spouses_only_for_storage)
+            self.sprout(
+                list(unseen_spouse_ids), tree, for_storage=spouses_only_for_storage
+            )
 
         for child in children:
             child.branched_up = True
@@ -139,16 +142,28 @@ class WikiAPI:
 
 class WikidataAPI(WikiAPI):
     _instance = None
+    TOO_MANY_REQUESTS_ERROR = 429
+    headers = {"User-Agent": "HistreeBot (https://github.com/Histree/Histree)"}
+    session = requests.Session()
 
     def query(self, query_string: str) -> Dict[str, any]:
         try:
-            response = requests.get(
+            response = self.session.get(
                 "https://query.wikidata.org/sparql",
                 params={"format": "json", "query": query_string},
-            ).json()
-        except JSONDecodeError:
-            response = dict()
-        return response
+                headers=self.headers,
+            )
+            return response.json()
+        except JSONDecodeError as e:
+            if response.ok:
+                return dict()
+            if response.status_code == self.TOO_MANY_REQUESTS_ERROR:
+                wait_time = response.request.headers.get("Retry-After", 1.5)
+                sleep(wait_time)
+                return self.query(query_string)
+
+            print(f"Unhandled error: {e}")
+            return dict()
 
     @classmethod
     def instance(cls):
