@@ -55,7 +55,11 @@ const initialState: HistreeState = {
   compareNodes: {},
   relationship: { status: "Initial" },
   currViewport: { x: 0, y: 0, zoom: 2 },
-  filterInfo: { filtered: false, bornBetween: { startDate: "", endDate: "" } },
+  filterInfo: {
+    filtered: false,
+    bornBetween: { startDate: "", endDate: "" },
+    diedBetween: { startDate: "", endDate: "" },
+  },
 };
 
 export const histreeState = createSlice({

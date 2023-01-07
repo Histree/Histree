@@ -31,3 +31,12 @@ export const matchesFilter = (info: NodeInfo, filters: FilterInfo): boolean => {
   }
   return matchesFilter;
 };
+
+export const isFilterEnabled = (filters: FilterInfo): boolean => {
+  return (
+    filters.bornBetween.startDate !== "" ||
+    filters.bornBetween.endDate !== "" ||
+    filters.diedBetween.startDate !== "" ||
+    filters.diedBetween.endDate !== ""
+  );
+};

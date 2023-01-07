@@ -21,10 +21,6 @@ import { Expander } from '.';
 import { styled } from '@mui/material/styles';
 import { mapsURL } from '../../utils/utils';
 
-
-
-
-
 interface DescriptorCardProps {
 	children?: React.ReactNode;
 	selectedItem: Selected;
@@ -121,7 +117,6 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
 						/>
 						<CardContent>
 							<Box className="descriptor-container-body">
-
 								{selectedItem.attributes &&
 									Object.keys(selectedItem.attributes)
 										.filter((att) => {
