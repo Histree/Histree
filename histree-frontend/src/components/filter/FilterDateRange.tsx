@@ -1,5 +1,5 @@
-import { CardContent, TextField, Typography } from "@mui/material"
-import React from "react"
+import { CardContent, TextField, Typography } from "@mui/material";
+import React from "react";
 
 export const FilterDateRange = ({ title, startDate, endDate, setStartDate, setEndDate }: 
     { title: string, startDate: string, endDate: string, 
@@ -14,7 +14,7 @@ export const FilterDateRange = ({ title, startDate, endDate, setStartDate, setEn
             <div className="filter-title-container">
                 <Typography>{title}</Typography>
             </div>
-            <div className="filter-born-container">
+            <div className="filter-daterange-container">
                 <div className="filter-input">
                     <TextField
                         type="date"

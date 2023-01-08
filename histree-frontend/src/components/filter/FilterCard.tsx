@@ -1,4 +1,4 @@
-import { Button, Card, CardActions, CardContent, CardHeader, TextField, Typography } from "@mui/material";
+import { Button, Card, CardActions, CardContent, CardHeader, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getFilterInfo, getRenderContent, setFilterInfo } from "../../stores";
@@ -6,6 +6,7 @@ import { isFilterEnabled } from "../../utils/filter";
 import { isContentAvail } from "../../utils/utils";
 import "./FilterCard.scss";
 import { FilterDateRange } from "./FilterDateRange";
+import { FilterSwitch } from "./FilterSwitch";
 
 export const FilterCard = () => {
 	const dispatch = useDispatch();
@@ -15,24 +16,28 @@ export const FilterCard = () => {
 	const [bornBetweenEnd, setBornBetweenEnd] = useState(filterInfo.bornBetween.endDate);
 	const [diedBetweenStart, setDiedBetweenStart] = useState(filterInfo.diedBetween.startDate);
 	const [diedBetweenEnd, setDiedBetweenEnd] = useState(filterInfo.diedBetween.endDate);
+	const [hasChildren, setHasChildren] = useState(filterInfo.hasChildren);
 
 	const handleApplyFilters = () =>
 		dispatch(setFilterInfo({ 
 			filtered: isFilterEnabled(filterInfo), 
 			bornBetween: { startDate: bornBetweenStart, endDate: bornBetweenEnd },
-			diedBetween: { startDate: diedBetweenStart, endDate: diedBetweenEnd }
+			diedBetween: { startDate: diedBetweenStart, endDate: diedBetweenEnd },
+			hasChildren: hasChildren
 		}));
 
 	const handleClear = () => {
 		dispatch(setFilterInfo({ 
 			filtered: false,
 			bornBetween: { startDate: "", endDate: "" }, 
-			diedBetween: { startDate: "", endDate: ""}
+			diedBetween: { startDate: "", endDate: ""},
+			hasChildren: undefined,
 		}));
 		setBornBetweenStart("");
 		setBornBetweenEnd("");
 		setDiedBetweenStart("");
 		setDiedBetweenEnd("");
+		setHasChildren(undefined);
 	}
 
 	return (
@@ -54,6 +59,11 @@ export const FilterCard = () => {
 							endDate={diedBetweenEnd}
 							setStartDate={setDiedBetweenStart}
 							setEndDate={setDiedBetweenEnd}
+						/>
+						<FilterSwitch 
+							title="Has children"
+							value={hasChildren}
+							setValue={setHasChildren}
 						/>
 						<CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
 							<Button onClick={handleClear}>Clear</Button>
