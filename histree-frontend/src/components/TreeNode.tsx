@@ -46,7 +46,6 @@ const TreeNode = ({ id }: { id: NodeId }) => {
 					image: data?.image,
 					attributes: data.petals,
 					description: data?.description
-					// links: details?.links,
 				})
 			);
 		} else if (renderMode === 'Compare' || renderMode === 'Children') {
