@@ -8,6 +8,8 @@ import "./FilterCard.scss";
 import { FilterDateRange } from "./FilterDateRange";
 import { FilterSwitch } from "./FilterSwitch";
 import { FilterText } from "./FilterText";
+import { FilterInfo } from "../../models";
+import { FilterToggle } from "./FilterToggle";
 
 export const FilterCard = () => {
 	const dispatch = useDispatch();
@@ -18,28 +20,36 @@ export const FilterCard = () => {
 	const [diedBetweenStart, setDiedBetweenStart] = useState(filterInfo.diedBetween.startDate);
 	const [diedBetweenEnd, setDiedBetweenEnd] = useState(filterInfo.diedBetween.endDate);
 	const [searchTerm, setSearchTerm] = useState(filterInfo.searchTerm);
-
-	const handleApplyFilters = () =>
-		dispatch(setFilterInfo({ 
+	const [marriageStatus, setMarriageStatus] = useState(filterInfo.marriageStatus);
+	
+	const handleApplyFilters = () => {
+		const filters: FilterInfo = { 
 			filtered: isFilterEnabled(filterInfo), 
 			bornBetween: { startDate: bornBetweenStart, endDate: bornBetweenEnd },
 			diedBetween: { startDate: diedBetweenStart, endDate: diedBetweenEnd },
-			searchTerm: searchTerm
-		}));
+			searchTerm: searchTerm,
+			marriageStatus: marriageStatus
+		}
+		dispatch(setFilterInfo(filters));
+	}
 
 	const handleClear = () => {
 		dispatch(setFilterInfo({ 
 			filtered: false,
 			bornBetween: { startDate: "", endDate: "" }, 
 			diedBetween: { startDate: "", endDate: ""},
-			searchTerm: undefined
+			searchTerm: undefined,
+			marriageStatus: "Off"
 		}));
 		setBornBetweenStart("");
 		setBornBetweenEnd("");
 		setDiedBetweenStart("");
 		setDiedBetweenEnd("");
 		setSearchTerm(undefined);
+		setMarriageStatus("Off");
 	}
+
+	const marriageStatusValues = ["Married", "Unmarried"];
 
 	return (
 		<div className="filter-container">
@@ -47,6 +57,11 @@ export const FilterCard = () => {
 				<CardHeader style={{ padding: '1em 0 0 1em', margin: 0 }} title="Filter" />
 				{isContentAvail(renderContent) ?
 					<>
+						<FilterText
+							title="Contains term"
+							value={searchTerm}
+							setValue={setSearchTerm}
+						/>
 						<FilterDateRange
 							title="Born between"
 							startDate={bornBetweenStart}
@@ -61,10 +76,12 @@ export const FilterCard = () => {
 							setStartDate={setDiedBetweenStart}
 							setEndDate={setDiedBetweenEnd}
 						/>
-						<FilterText
-							title="Contains term"
-							value={searchTerm}
-							setValue={setSearchTerm}
+						<FilterToggle
+							title="Marriage status"
+							values={marriageStatusValues}
+							align={marriageStatus}
+							setAlign={setMarriageStatus}
+							exclusive={true}
 						/>
 						<CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
 							<Button onClick={handleClear}>Clear</Button>

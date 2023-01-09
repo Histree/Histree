@@ -58,6 +58,19 @@ export const matchesFilter = (info: NodeInfo, filters: FilterInfo): boolean => {
         matchesFilter = matchesFilter && deathDate <= endDate;
       }
     }
+
+    if (petals.spouse) {
+      switch (filters.marriageStatus) {
+        case "Married":
+          matchesFilter =
+            matchesFilter && Object.keys(petals.spouse).length > 0;
+          break;
+        case "Unmarried":
+          matchesFilter =
+            matchesFilter && Object.keys(petals.spouse).length === 0;
+          break;
+      }
+    }
   }
   return matchesFilter;
 };
@@ -68,6 +81,7 @@ export const isFilterEnabled = (filters: FilterInfo): boolean => {
     filters.bornBetween.endDate !== "" ||
     filters.diedBetween.startDate !== "" ||
     filters.diedBetween.endDate !== "" ||
-    filters.searchTerm !== undefined
+    filters.searchTerm !== undefined ||
+    filters.marriageStatus !== "Off"
   );
 };
