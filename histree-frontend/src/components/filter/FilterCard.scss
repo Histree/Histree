@@ -10,12 +10,19 @@
         padding: 0 0.5em 0 0.5em;
     }
 
-    &-born-container {
+    &-daterange-container {
         display: flex;
         flex-direction: row;
     }
 
     &-title-container {
         padding-bottom: 1em;
+    }
+
+    &-switch-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        column-gap: 0.5em;
     }
 }
