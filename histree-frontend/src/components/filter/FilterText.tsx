@@ -17,7 +17,7 @@ export const FilterText = ({ title, value, setValue }: {
                 <TextField 
                     variant="outlined"
                     label="Input search"
-                    value={value}
+                    value={value ? value : ""}
                     onChange={handleValueChange}
                 />
             </div>
