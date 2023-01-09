@@ -2,7 +2,7 @@ export interface FilterInfo {
   filtered: boolean;
   bornBetween: DateRange;
   diedBetween: DateRange;
-  hasChildren: SwitchType;
+  searchTerm: TextType;
 }
 
 export interface DateRange {
@@ -11,3 +11,4 @@ export interface DateRange {
 }
 
 export type SwitchType = boolean | undefined;
+export type TextType = string | undefined;

@@ -8,6 +8,15 @@ export const matchesFilter = (info: NodeInfo, filters: FilterInfo): boolean => {
   let matchesFilter = false;
   const petals = info.petals;
 
+  if (filters.searchTerm !== undefined) {
+    matchesFilter = info.name
+      .toLowerCase()
+      .includes(filters.searchTerm.toLowerCase());
+    if (!matchesFilter) {
+      return matchesFilter;
+    }
+  }
+
   if (petals) {
     if (petals.date_of_birth) {
       const birthDate = new Date(petals.date_of_birth);
@@ -58,6 +67,7 @@ export const isFilterEnabled = (filters: FilterInfo): boolean => {
     filters.bornBetween.startDate !== "" ||
     filters.bornBetween.endDate !== "" ||
     filters.diedBetween.startDate !== "" ||
-    filters.diedBetween.endDate !== ""
+    filters.diedBetween.endDate !== "" ||
+    filters.searchTerm !== undefined
   );
 };

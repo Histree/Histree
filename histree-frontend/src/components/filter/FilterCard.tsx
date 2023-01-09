@@ -7,6 +7,7 @@ import { isContentAvail } from "../../utils/utils";
 import "./FilterCard.scss";
 import { FilterDateRange } from "./FilterDateRange";
 import { FilterSwitch } from "./FilterSwitch";
+import { FilterText } from "./FilterText";
 
 export const FilterCard = () => {
 	const dispatch = useDispatch();
@@ -16,14 +17,14 @@ export const FilterCard = () => {
 	const [bornBetweenEnd, setBornBetweenEnd] = useState(filterInfo.bornBetween.endDate);
 	const [diedBetweenStart, setDiedBetweenStart] = useState(filterInfo.diedBetween.startDate);
 	const [diedBetweenEnd, setDiedBetweenEnd] = useState(filterInfo.diedBetween.endDate);
-	const [hasChildren, setHasChildren] = useState(filterInfo.hasChildren);
+	const [searchTerm, setSearchTerm] = useState(filterInfo.searchTerm);
 
 	const handleApplyFilters = () =>
 		dispatch(setFilterInfo({ 
 			filtered: isFilterEnabled(filterInfo), 
 			bornBetween: { startDate: bornBetweenStart, endDate: bornBetweenEnd },
 			diedBetween: { startDate: diedBetweenStart, endDate: diedBetweenEnd },
-			hasChildren: hasChildren
+			searchTerm: searchTerm
 		}));
 
 	const handleClear = () => {
@@ -31,13 +32,13 @@ export const FilterCard = () => {
 			filtered: false,
 			bornBetween: { startDate: "", endDate: "" }, 
 			diedBetween: { startDate: "", endDate: ""},
-			hasChildren: undefined,
+			searchTerm: undefined
 		}));
 		setBornBetweenStart("");
 		setBornBetweenEnd("");
 		setDiedBetweenStart("");
 		setDiedBetweenEnd("");
-		setHasChildren(undefined);
+		setSearchTerm(undefined);
 	}
 
 	return (
@@ -60,10 +61,10 @@ export const FilterCard = () => {
 							setStartDate={setDiedBetweenStart}
 							setEndDate={setDiedBetweenEnd}
 						/>
-						<FilterSwitch 
-							title="Has children"
-							value={hasChildren}
-							setValue={setHasChildren}
+						<FilterText
+							title="Contains term"
+							value={searchTerm}
+							setValue={setSearchTerm}
 						/>
 						<CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
 							<Button onClick={handleClear}>Clear</Button>

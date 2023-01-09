@@ -59,7 +59,7 @@ const initialState: HistreeState = {
     filtered: false,
     bornBetween: { startDate: "", endDate: "" },
     diedBetween: { startDate: "", endDate: "" },
-    hasChildren: undefined,
+    searchTerm: undefined,
   },
 };
 
