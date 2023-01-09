@@ -52,7 +52,7 @@ The application has been developed as part of the 3rd Year Software Engineering 
 
 1. Clone the repository
    ```sh
-   git clone https://github.com/your_username_/Project-Name.git
+   git clone https://github.com/Histree/Histree.git
    ```
 
 Setting up the frontend
