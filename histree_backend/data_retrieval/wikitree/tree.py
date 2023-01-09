@@ -2,7 +2,7 @@ from abc import abstractmethod
 import requests
 import json
 from json import JSONDecodeError
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 from data_retrieval.query.parser import WikiResult, DBResult
 from data_retrieval.wikitree.flower import (
     WikiFlower,
@@ -19,6 +19,7 @@ from database.cypher_runner import (
     merge_nodes_into_db,
     merge_relation_into_db,
 )
+from time import sleep
 
 
 class WikiSeed:
@@ -86,25 +87,25 @@ class WikiSeed:
                         tree.branches[parent_id] = set()
                     tree.branches[parent_id].add(child.id)
 
-        # Find information about parents not in tree
-        if unseen_parent_ids:
-            self.sprout(list(unseen_parent_ids), tree)
-
         unseen_spouse_ids = set()
         # If one ID is an entry point, all IDs must also be entry points
         spouses_only_for_storage = ids and not tree.flowers[ids[0]]._is_entry_point
 
-        # Add spouses without children
-        # Note: no need to check in unseen_parent_ids as they are now in the tree
         for id in ids:
             unseen_spouse_ids.update(
                 spouse
                 for spouse in tree.flowers[id].petals.get("spouse", [])
-                if spouse not in tree.flowers
+                if spouse not in tree.flowers and spouse not in unseen_parent_ids
             )
 
-        if unseen_spouse_ids:
-            self.sprout(list(unseen_spouse_ids), tree, for_storage=spouses_only_for_storage)
+        # Unseen ids include all spouses but only those without children are for storage
+        unseen_ids = unseen_spouse_ids.union(unseen_parent_ids)
+        if unseen_ids:
+            self.sprout(
+                list(unseen_ids),
+                tree,
+                storage_only=(unseen_spouse_ids if spouses_only_for_storage else set()),
+            )
 
         for child in children:
             child.branched_up = True
@@ -119,14 +120,14 @@ class WikiSeed:
         ids: List[str],
         tree: "WikiTree",
         is_entry_point: bool = False,
-        for_storage: bool = False,
+        storage_only: Set[str] = set(),
     ) -> List[WikiFlower]:
         flowers = tree.watering(ids, find_flowers, self.self_stem.get_query, False)
 
         for flower in flowers:
             tree.flowers[flower.id] = flower
             flower._is_entry_point = is_entry_point
-            flower._for_storage = for_storage
+            flower._for_storage = flower.id in storage_only
 
         return flowers
 
@@ -139,16 +140,28 @@ class WikiAPI:
 
 class WikidataAPI(WikiAPI):
     _instance = None
+    TOO_MANY_REQUESTS_ERROR = 429
+    headers = {"User-Agent": "HistreeBot (https://github.com/Histree/Histree)"}
+    session = requests.Session()
 
     def query(self, query_string: str) -> Dict[str, any]:
         try:
-            response = requests.get(
+            response = self.session.get(
                 "https://query.wikidata.org/sparql",
                 params={"format": "json", "query": query_string},
-            ).json()
-        except JSONDecodeError:
-            response = dict()
-        return response
+                headers=self.headers,
+            )
+            return response.json()
+        except JSONDecodeError as e:
+            if response.ok:
+                return dict()
+            if response.status_code == self.TOO_MANY_REQUESTS_ERROR:
+                wait_time = response.request.headers.get("Retry-After", 1.5)
+                sleep(wait_time)
+                return self.query(query_string)
+
+            print(f"Unhandled error: {e}")
+            return dict()
 
     @classmethod
     def instance(cls):
