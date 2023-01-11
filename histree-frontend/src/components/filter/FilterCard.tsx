@@ -21,10 +21,10 @@ export const FilterCard = () => {
 	const [diedBetweenEnd, setDiedBetweenEnd] = useState(filterInfo.diedBetween.endDate);
 	const [searchTerm, setSearchTerm] = useState(filterInfo.searchTerm);
 	const [marriageStatus, setMarriageStatus] = useState(filterInfo.marriageStatus);
-	
+
 	const handleApplyFilters = () => {
-		const filters: FilterInfo = { 
-			filtered: isFilterEnabled(filterInfo), 
+		const filters: FilterInfo = {
+			filtered: isFilterEnabled(filterInfo),
 			bornBetween: { startDate: bornBetweenStart, endDate: bornBetweenEnd },
 			diedBetween: { startDate: diedBetweenStart, endDate: diedBetweenEnd },
 			searchTerm: searchTerm,
@@ -34,10 +34,10 @@ export const FilterCard = () => {
 	}
 
 	const handleClear = () => {
-		dispatch(setFilterInfo({ 
+		dispatch(setFilterInfo({
 			filtered: false,
-			bornBetween: { startDate: "", endDate: "" }, 
-			diedBetween: { startDate: "", endDate: ""},
+			bornBetween: { startDate: "", endDate: "" },
+			diedBetween: { startDate: "", endDate: "" },
 			searchTerm: undefined,
 			marriageStatus: "Off"
 		}));
