@@ -55,25 +55,32 @@ The application has been developed as part of the 3rd Year Software Engineering 
    git clone https://github.com/Histree/Histree.git
    ```
 
-Setting up the frontend
-
 2. Install NPM packages within the frontend repository
    ```sh
    cd histree-frontend
    npm i
    ```
 
-Setting up the backend
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-
-The frontend application can be started up and viewed locally in the browser using:
+### Frontend
+The frontend application can be started up and viewed locally in the browser from the frontend root directory using:
 ```sh
-cd histree-frontend
 npm run start
+```
+
+### Backend
+From the backend root directory, run the server using
+```sh
+sh deploy.sh
+```
+
+Tests can be executed using
+```sh
+cd data_retrieval
+python3 -m unittest discover tests/
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
