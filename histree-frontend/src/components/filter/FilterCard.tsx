@@ -23,13 +23,16 @@ export const FilterCard = () => {
 	const [marriageStatus, setMarriageStatus] = useState(filterInfo.marriageStatus);
 
 	const handleApplyFilters = () => {
-		const filters: FilterInfo = {
-			filtered: isFilterEnabled(filterInfo),
+		const filtersToApply: FilterInfo = { 
+			filtered: filterInfo.filtered, 
 			bornBetween: { startDate: bornBetweenStart, endDate: bornBetweenEnd },
 			diedBetween: { startDate: diedBetweenStart, endDate: diedBetweenEnd },
 			searchTerm: searchTerm,
 			marriageStatus: marriageStatus
 		}
+
+		const filters = { ...filtersToApply, filtered: isFilterEnabled(filtersToApply) };
+
 		dispatch(setFilterInfo(filters));
 	}
 
