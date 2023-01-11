@@ -144,9 +144,11 @@ export const DescriptorCard = forwardRef<HTMLDivElement, DescriptorCardProps>(
 								}
 							</Box>
 						</CardContent>
-						<CardActions>
-							<Button href={selectedItem.article} target="_blank">Learn More</Button>
-						</CardActions>
+						{selectedItem.article !== undefined &&
+							<CardActions>
+								<Button href={selectedItem.article} target="_blank">Learn More</Button>
+							</CardActions>
+						}
 						<CardActions>
 							<>
 								{selectedItem.links &&
