@@ -8,7 +8,8 @@ import {
 	setEdgeInfo,
 	getCompareNodes,
 	getEdgeInfo,
-	getRelationship
+	getRelationship,
+	getRenderContent
 } from '../stores/base';
 import { HandleStatus, NodeId, NodeInfo, RelationshipInfo } from '../models';
 import { Handle, Position } from 'reactflow';
@@ -28,6 +29,7 @@ const TreeNode = ({ id }: { id: NodeId }) => {
 	const ref = useRef<HTMLInputElement>(null);
 
 	const dispatch = useDispatch();
+	const renderContent = useSelector(getRenderContent);
 	const relationship = useSelector(getRelationship);
 	const renderMode = useSelector(getRenderMode);
 	const comparisonNodes = useSelector(getCompareNodes);
@@ -55,6 +57,7 @@ const TreeNode = ({ id }: { id: NodeId }) => {
 	};
 
 	const getNodeStyle = (nodeid: NodeId): CSSProperties => {
+
 		if (comparisonNodes.first && comparisonNodes.first.id === nodeid ||
 			comparisonNodes.second && comparisonNodes.second.id === nodeid ||
 			edgeInfo[nodeid] !== undefined) {
@@ -70,8 +73,13 @@ const TreeNode = ({ id }: { id: NodeId }) => {
 			}
 		}
 
-		if (data.matchedFilter === false) {
+		if (nodeLookup[id] !== undefined && nodeLookup[id].matchedFilter === false) {
 			return { color: 'lightgray', borderColor: 'lightgray' };
+		}
+		if (renderContent.status === "Success") {
+			if (renderContent.content.searchedQid === id) {
+				return { color: 'black', backgroundColor: 'lightgray' };
+			}
 		}
 		return {}
 	}
