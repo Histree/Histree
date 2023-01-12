@@ -51,7 +51,7 @@ export const fetchSearchResults = createAsyncThunk(
   }): Promise<DataSuccess<RenderContent> | DataFail<RenderContent>> => {
     try {
       const response = await axios.get<RenderContent>(
-        `https://histree.fly.dev/person_info/${qid}?depth_up=5&depth_down=5`
+        `https://histree.fly.dev/person_info/${qid}?depth_up=3&depth_down=3`
       );
       return {
         status: "Success",
