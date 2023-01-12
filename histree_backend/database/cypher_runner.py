@@ -71,14 +71,17 @@ def merge_nodes_into_db(tx, json_data, fcreates, ptcreates):
 
 @cypher_runner
 def merge_relation_into_db(tx, json_data):
-    json_data = json_data.replace("'", "\\'")
+    json_data = json_data.replace("'", "\\'").replace('"', '\\"')
     query = (
+        "CALL apoc.periodic.iterate( \""
         f"WITH apoc.convert.fromJsonMap(\'{json_data}\') AS document "
         "UNWIND document.branches AS branch "
         "UNWIND keys(branch) AS parent "
         "UNWIND branch[parent] AS child "
         "MATCH (from:Person {id: parent}), \
                 (to:Person {id: child}) "
+        "RETURN from, to \","
+        "\"MATCH (from), (to) "
         "MERGE (from)-[:PARENT_OF]->(to) "
         "SET \
             to += (CASE from.gender \
@@ -86,7 +89,8 @@ def merge_relation_into_db(tx, json_data):
                     WHEN 'male' THEN {father: from.id} \
                     ELSE {} \
                     END) "
-        "RETURN from, to"
+        "RETURN from, to \","
+        "{batchMode: \"BATCH_SINGLE\", batchSize: 100, parallel: true})"
     )
 
     label = []
